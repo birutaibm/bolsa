@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { routeAdapter } from '@main/adapters';
+import { routeAdapter } from '@infra/server/express-router';
 import { makeLoadLastRankingController } from '@main/factories';
 
 export default function (router: Router): void {

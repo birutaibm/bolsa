@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { Controller } from '@presentation/contracts';
-import { ControllerInputAdapter } from './controller-input';
+import { ControllerInputAdapter } from '@infra/server/controller-input-adapter';
 
 export const routeAdapter = {
   adapt(controller: Controller<void>) {

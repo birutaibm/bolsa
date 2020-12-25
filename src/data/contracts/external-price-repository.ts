@@ -1,0 +1,13 @@
+import { PriceDTO } from "@data/dto";
+
+export interface ExternalSymbolDictionary {
+  getExternalSymbol: (ticker: string, externalLibrary: string) => Promise<string>;
+}
+
+export interface LoadExternalPriceRepository extends ExternalSymbolDictionary {
+  loadPriceBySymbol: (symbol: string) => Promise<Array<Omit<PriceDTO, 'ticker' | 'name'>>>;
+}
+
+export interface SavePriceFromExternalRepository {
+  save: (externalName: string, externalSymbol: string, price: PriceDTO[]) => Promise<PriceDTO[]>
+}
