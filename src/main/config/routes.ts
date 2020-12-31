@@ -1,12 +1,9 @@
-import { Express, Router } from 'express';
-import { readdirSync } from 'fs';
-import { resolve } from 'path';
+import price from '@infra/server/routes/price';
+import ranking from '@infra/server/routes/ranking';
+import { makeLoadLastPriceController, makeLoadLastRankingController } from '@main/factories';
+import ExpressRouterSetup from '@infra/server/express-router-setup';
 
-export function setupRoutes(app: Express): void {
-  const router = Router();
-  app.use('/api', router);
-  readdirSync(resolve(__dirname, '..', 'routes')).map(async fileName => {
-    const filePath = resolve(__dirname, '..', 'routes', fileName);
-    (await import(filePath)).default(router);
-  });
+export function setupRoutes(routerSetup: ExpressRouterSetup): void {
+  routerSetup.use(price, {make: makeLoadLastPriceController});
+  routerSetup.use(ranking, {make: makeLoadLastRankingController});
 }
