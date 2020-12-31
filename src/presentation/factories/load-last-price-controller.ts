@@ -1,10 +1,6 @@
 import { LastPriceLoader } from '@domain/usecases';
-import { Controller } from '@presentation/contracts';
 import { LoadLastPriceController } from '@presentation/controllers';
-
-export interface ControllerFactory<T extends Controller<any>> {
-  make: () => T
-}
+import { ControllerFactory } from '.';
 
 export class LoadLastPriceControllerFactory implements ControllerFactory<LoadLastPriceController> {
   constructor(

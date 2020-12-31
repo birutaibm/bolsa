@@ -1,5 +1,5 @@
 import { ControllerFactory } from "@presentation/factories";
-import { Router, Express } from "express";
+import { Router, Express, Request, Response } from "express";
 
 type setupExpressRoute = (
   router: Router,
