@@ -3,11 +3,8 @@ import { Express } from 'express';
 
 import typeDefs from '@main/graphql/type-defs';
 import resolvers from '@main/graphql/resolvers';
+import { ApolloServerSetup } from '@infra/server/apollo-server-setup';
 
-export function setupApolloServer(app: Express): void {
-  const server = new ApolloServer({
-    resolvers,
-    typeDefs,
-  });
-  server.applyMiddleware({app});
+export function setupApolloServer(apolloServer: ApolloServerSetup): void {
+  apolloServer.setup(resolvers, typeDefs);
 }
