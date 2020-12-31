@@ -8,6 +8,5 @@ export default function (
   router: Router,
   controllerFactory: ControllerFactory<LoadLastRankingController>
 ): void {
-  const controller = controllerFactory.make();
-  router.get('/ranking/last', routeAdapter.adapt(controller));
+  router.get('/ranking/last', routeAdapter.adapt(controllerFactory.make()));
 }

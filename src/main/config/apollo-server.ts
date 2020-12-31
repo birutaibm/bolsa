@@ -1,6 +1,4 @@
-import { ApolloServer } from 'apollo-server-express';
-import { Express } from 'express';
-
+import { ApolloServer } from '@infra/server/apollo-server';
 import typeDefs from '@main/graphql/type-defs';
 import resolvers from '@main/graphql/resolvers';
 import { ApolloServerSetup } from '@infra/server/apollo-server-setup';
