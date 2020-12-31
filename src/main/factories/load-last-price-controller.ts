@@ -1,14 +1,6 @@
-import { LastPriceLoaderService } from '@data/services';
-import { ExternalPriceRepository } from '@data/utils';
-import { FakePriceRepository, LoadAlphavantagePriceRepository } from '@infra/repositories';
-import { LoadLastPriceController } from '@presentation/controllers';
+import { makeLastPriceLoader } from '@infra/factories';
+import { LoadLastPriceControllerFactory } from '@presentation/factories';
 
-export function makeLoadLastPriceController(): LoadLastPriceController {
-  const repo = new FakePriceRepository();
-  const alphavantage = new LoadAlphavantagePriceRepository();
-  const loader = new LastPriceLoaderService(
-    repo,
-    new ExternalPriceRepository('alphavantage', alphavantage, repo, repo, alphavantage),
-  );
-  return new LoadLastPriceController(loader);
-}
+
+export const makeLoadLastPriceController =
+  new LoadLastPriceControllerFactory(makeLastPriceLoader).make;

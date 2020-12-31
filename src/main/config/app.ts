@@ -1,8 +1,8 @@
 import app from '@infra/server';
-import { setupRoutes } from '@main/config/routes';
+import { setupRoutes } from '@main/config/express-routes';
 import { setupApolloServer } from '@main/config/apollo-server';
 
-setupRoutes(app);
-setupApolloServer(app);
+setupRoutes(app.routes);
+setupApolloServer(app.apollo);
 
 export default app;
