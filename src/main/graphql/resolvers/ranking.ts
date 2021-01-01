@@ -1,10 +1,10 @@
 import { adaptResolver } from '@main/adapters';
-import { makeLoadLastRankingController } from '@main/factories';
+import { ControllerFactory } from '@presentation/factories';
 
-export default {
+export default (controllerFactory: ControllerFactory<any>) => ({
   Query: {
     async lastRanking(): Promise<any> {
-      return adaptResolver(makeLoadLastRankingController());
+      return adaptResolver(controllerFactory.make());
     }
   }
-};
+});
