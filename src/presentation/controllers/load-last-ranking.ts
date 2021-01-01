@@ -13,6 +13,7 @@ export class LoadLastRankingController implements Controller {
       const data = Ranking.fromEntities(ranking);
       return ok(data);
     } catch (error) {
+      console.log(error);
       return serverError(error);
     }
   }

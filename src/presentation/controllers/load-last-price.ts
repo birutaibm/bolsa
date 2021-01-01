@@ -17,6 +17,7 @@ export class LoadLastPriceController implements Controller<InputDTO> {
       const data = Price.fromEntity(price);
       return ok(data);
     } catch (error) {
+      console.log(error);
       return serverError(error);
     }
   }

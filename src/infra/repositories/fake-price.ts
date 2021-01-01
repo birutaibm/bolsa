@@ -4,8 +4,6 @@ import { ExternalSymbolNotFoundError } from '@data/errors';
 import { assets } from '@infra/data-source';
 
 export class FakePriceRepository implements LoadPriceRepository, SavePriceFromExternalRepository, ExternalSymbolDictionary {
-  private readonly externalSymbols: {[key: string]: ExternalSymbolDictionary} = {};
-
   async getExternalSymbol(ticker: string, externalLibrary: string): Promise<string> {
     const asset = assets.find(asset => asset.ticker === ticker);
     if (asset) {
