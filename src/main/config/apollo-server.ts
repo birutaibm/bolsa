@@ -1,7 +1,7 @@
-import typeDefs from '@main/graphql/type-defs';
-import { ApolloServerSetup } from '@infra/server/apollo-server-setup';
 import { LoadLastRankingControllerFactory } from '@presentation/factories';
-import rankingResolver from '@main/graphql/resolvers/ranking';
+import { ApolloServerSetup } from '@infra/server/apollo-server-setup';
+import typeDefs from '@infra/graphql/type-defs';
+import rankingResolver from '@infra/graphql/resolvers/ranking';
 
 type ControllerFactories = {
   ranking: LoadLastRankingControllerFactory;
