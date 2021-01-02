@@ -1,7 +1,7 @@
 import { LastPriceLoaderService } from '@data/services';
 import { ExternalPriceRepository } from '@data/utils';
-import { Mongo } from '@infra/database';
-import { MongoPriceRepository, LoadAlphavantagePriceRepository, FakePriceRepository } from '@infra/repositories';
+import { Mongo } from '@infra/data-source/database';
+import { MongoPriceRepository, LoadAlphavantagePriceRepository, FakePriceRepository } from '@infra/data-source/repositories';
 
 export function makeLastPriceLoader(mongo?: Mongo): LastPriceLoaderService {
   const repo = mongo

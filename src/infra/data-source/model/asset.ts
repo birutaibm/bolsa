@@ -1,9 +1,5 @@
 import { Schema, Document, model } from 'mongoose';
 
-type ExternalSymbols = {
-  [library: string]: string;
-};
-
 type PriceAtDate = {
   date: number;
   open: number;
@@ -12,7 +8,7 @@ type PriceAtDate = {
   max: number;
 }
 
-export interface Asset extends Document {
+export interface Asset {
   ticker: string;
   name?: string;
   prices: PriceAtDate[];
@@ -20,6 +16,8 @@ export interface Asset extends Document {
     [key: string]: string
   };
 }
+
+export type AssetDocument = Document & Asset;
 
 const AssetSchema = new Schema({
   ticker: {
@@ -42,4 +40,4 @@ const AssetSchema = new Schema({
   },
 });
 
-export default model<Asset>('Asset', AssetSchema);
+export default model<AssetDocument>('Asset', AssetSchema);

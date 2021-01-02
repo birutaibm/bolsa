@@ -1,5 +1,5 @@
 import { LastRankingLoaderService } from '@data/services';
-import { FakeRankingRepository } from '@infra/repositories';
+import { FakeRankingRepository } from '@infra/data-source/repositories';
 
 export function makeLastRankingLoader(): LastRankingLoaderService {
   const repo = new FakeRankingRepository();

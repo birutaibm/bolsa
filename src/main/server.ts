@@ -1,5 +1,5 @@
 import app from '@main/config/app';
-import { env } from '@main/config/env';
+import { env } from '@infra/environment';
 
 app.listen(
   env.port,

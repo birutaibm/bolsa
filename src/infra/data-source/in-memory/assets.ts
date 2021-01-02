@@ -1,21 +1,4 @@
-type ExternalSymbols = {
-  [library: string]: string;
-};
-
-type PriceAtDate = {
-  date: number;
-  open: number;
-  close: number;
-  min: number;
-  max: number;
-}
-
-type Asset = {
-  ticker: string;
-  name: string;
-  prices: PriceAtDate[];
-  externals: Partial<ExternalSymbols>;
-}
+import { Asset } from '@infra/data-source/model/asset';
 
 export const assets: Asset[] = [
   {
