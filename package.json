@@ -7,7 +7,9 @@
     "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files",
     "dev": "ts-node-dev -r tsconfig-paths/register --inspect --ignore-watch node_modules src/main/server.ts",
     "start": "ts-node dist/main/server.ts",
-    "test": "jest"
+    "test": "cross-env NODE_ENV=test jest --testTimeout=10000",
+    "pretest": "docker-compose up -d mongodb",
+    "posttest": "docker-compose down"
   },
   "dependencies": {
     "apollo-server-express": "^2.19.0",
@@ -20,7 +22,10 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.9",
+    "@types/jest": "^26.0.19",
     "@types/mongodb": "^3.6.3",
+    "@types/supertest": "^2.0.10",
+    "cross-env": "^7.0.3",
     "eslint": "^7.16.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.1.0",
@@ -29,6 +34,7 @@
     "eslint-plugin-prettier": "^3.3.0",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
+    "supertest": "^6.0.1",
     "ts-jest": "^26.4.4",
     "ts-node-dev": "^1.1.1",
     "tsconfig-paths": "^3.9.0",
