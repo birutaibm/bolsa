@@ -1,10 +1,24 @@
 import axios from 'axios';
 
-import { LoadExternalPriceRepository } from "@data/contracts";
-import { PriceDTO } from "@data/dto";
+import { LoadExternalPriceRepository, SearchExternalSymbolRepository } from "@data/contracts";
+import { ExternalSymbolsDTO, PriceDTO } from "@data/dto";
 import { ExternalPriceLoaderError } from '@infra/errors';
 
-export class LoadAlphavantagePriceRepository implements LoadExternalPriceRepository {
+export class LoadAlphavantagePriceRepository implements LoadExternalPriceRepository, SearchExternalSymbolRepository {
+  name = 'alphavantage';
+
+  async getExternalSymbols(ticker: string): Promise<ExternalSymbolsDTO> {
+    const response = await this.api.get(`&function=SYMBOL_SEARCH&keywords=${ticker}`);
+    const data: Array<{[key: string]: string}> = this.extractOrFail(response, 'bestMatches');
+    const result: ExternalSymbolsDTO = {};
+    data.map(entry => {
+      const symbol = entry['1. symbol'];
+      delete entry['1. symbol'];
+      result[symbol] = entry;
+    });
+    return result;
+  }
+
   private readonly api = axios.create({
     baseURL: 'https://www.alphavantage.co/query?apikey=TBKVBVUN7P8KMWT0',
   });

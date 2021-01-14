@@ -1,4 +1,4 @@
-import { PriceDTO } from "@data/dto";
+import { ExternalSymbolsDTO, PriceDTO } from "@data/dto";
 
 export interface ExternalSymbolDictionary {
   getExternalSymbol: (ticker: string, externalLibrary: string) => Promise<string>;
@@ -10,4 +10,9 @@ export interface LoadExternalPriceRepository extends ExternalSymbolDictionary {
 
 export interface SavePriceFromExternalRepository {
   save: (externalName: string, externalSymbol: string, price: PriceDTO[]) => Promise<PriceDTO[]>
+}
+
+export interface SearchExternalSymbolRepository {
+  readonly name: string;
+  getExternalSymbols: (ticker: string) => Promise<ExternalSymbolsDTO>;
 }
