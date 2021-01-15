@@ -13,3 +13,14 @@ export function from<T1, T2>(
 }
 
 export const tickerFromRoute = (req: Request) => ({ticker: req.params.ticker});
+
+export function externalSymbolFromBody({ body }: Request) {
+  const externalSymbols: {[source: string]: string} = {};
+  const knownSources = ['alphavantage']; // TODO create an external provider for this constant
+  knownSources.forEach(source => {
+    if (body[source]) {
+      externalSymbols[source] = body[source];
+    }
+  });
+  return externalSymbols;
+}

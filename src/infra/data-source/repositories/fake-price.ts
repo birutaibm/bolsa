@@ -1,11 +1,24 @@
-import { ExternalSymbolDictionary, LoadPriceRepository, SavePriceFromExternalRepository } from '@data/contracts';
-import { PriceDTO } from '@data/dto';
+import { ExternalSymbolDictionary, LoadPriceRepository, RegistryExternalSymbolRepository, SavePriceFromExternalRepository } from '@data/contracts';
+import { PriceDTO, SymbolDictionaryEntryDTO } from '@data/dto';
 import { ExternalSymbolNotFoundError } from '@data/errors';
 import { assets } from '@infra/data-source/in-memory';
 import { assetAdapter } from '@infra/adapters';
 import { Asset } from '../model/asset';
 
-export class FakePriceRepository implements LoadPriceRepository, SavePriceFromExternalRepository, ExternalSymbolDictionary {
+export class FakePriceRepository implements LoadPriceRepository, SavePriceFromExternalRepository, ExternalSymbolDictionary, RegistryExternalSymbolRepository {
+  async registryExternalSymbol(entry: SymbolDictionaryEntryDTO): Promise<SymbolDictionaryEntryDTO> {
+    const { ticker, source, externalSymbol } = entry;
+    const existent = assets.find(asset => asset.ticker === ticker);
+    const asset: Asset = existent || {
+      ticker,
+      name: ticker,
+      externals: {},
+      prices: [],
+    };
+    asset.externals[source] = externalSymbol;
+    return entry;
+  }
+
   async getExternalSymbol(ticker: string, externalLibrary: string): Promise<string> {
     const asset = assets.find(asset => asset.ticker === ticker);
     if (asset) {

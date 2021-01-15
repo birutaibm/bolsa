@@ -1,5 +1,4 @@
 import { SearchExternalSymbolRepository } from '@data/contracts';
-import { ExternalSymbolsDTO } from '@data/dto';
 import { NoneExternalSymbolRepository } from '@data/errors';
 import { promise } from '@data/utils';
 import { ExternalSymbolSearch, SearchResult } from '@domain/usecases';
@@ -19,7 +18,6 @@ export class ExternalSymbolSearchService implements ExternalSymbolSearch {
       console.log('NoneExternalSymbolRepository');
       throw new NoneExternalSymbolRepository();
     }
-    console.log(`Looking for ${ticker} at repositories`);
     const promises = this.repositories.map(repository =>
       promise.noRejection(() => repository.getExternalSymbols(ticker))
     );

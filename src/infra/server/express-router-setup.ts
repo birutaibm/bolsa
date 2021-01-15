@@ -1,5 +1,5 @@
 import { ControllerFactory } from "@presentation/factories";
-import { Router, Express } from "express";
+import { Router, Express, json } from "express";
 
 type setupExpressRoute = (
   router: Router,
@@ -11,6 +11,7 @@ export default class ExpressRouterSetup {
 
   constructor(app: Express) {
     this.router = Router();
+    app.use(json());
     app.use('/api', this.router);
   }
 
