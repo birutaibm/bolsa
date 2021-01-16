@@ -1,5 +1,5 @@
-import { Response } from '@presentation/contracts';
+import { Response, Params } from '@presentation/contracts';
 
-export interface Controller<I = void> {
-  handle: (request: I) => Promise<Response>
+export interface Controller {
+  handle: (params: Params) => Promise<Response>
 }

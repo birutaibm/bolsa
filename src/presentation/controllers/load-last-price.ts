@@ -1,17 +1,17 @@
 import { LastPriceLoader } from '@domain/usecases';
-import { Controller, ok, Response, serverError } from '@presentation/contracts';
+import { Controller, ok, Params, Response, serverError } from '@presentation/contracts';
 import { Price } from '@presentation/view';
 
-type InputDTO = {
-  ticker: string;
-}
-
-export class LoadLastPriceController implements Controller<InputDTO> {
+export class LoadLastPriceController implements Controller {
   constructor(
     private readonly lastPriceLoader: LastPriceLoader
   ) {}
 
-  async handle({ticker}: InputDTO): Promise<Response<Price>> {
+  async handle({route}: Params): Promise<Response<Price>> {
+    const ticker = route?.ticker;
+    if (!ticker) {
+      return serverError(new Error('Can not find ticker at route'));
+    }
     try {
       const price = await this.lastPriceLoader.load(ticker);
       const data = Price.fromEntity(price);

@@ -1,16 +1,16 @@
 import { ExternalSymbolSearch, SearchResult } from "@domain/usecases";
-import { Controller, ok, Response, serverError } from "@presentation/contracts";
+import { Controller, ok, Params, Response, serverError } from "@presentation/contracts";
 
-type InputDTO = {
-  ticker: string;
-}
-
-export class ExternalSymbolSearchController implements Controller<InputDTO> {
+export class ExternalSymbolSearchController implements Controller {
   constructor(
     private readonly useCase: ExternalSymbolSearch,
   ) {}
 
-  async handle({ticker}: InputDTO): Promise<Response<SearchResult>> {
+  async handle({route}: Params): Promise<Response<SearchResult>> {
+    const ticker = route?.ticker;
+    if (!ticker) {
+      return serverError(new Error('Can not find ticker at route'));
+    }
     try {
       const result = await this.useCase.search(ticker);
       return ok(result);

@@ -1,4 +1,4 @@
-import { adaptResolver } from '@main/adapters';
+import { adaptResolver } from '@infra/adapters';
 import { ControllerFactory } from '@presentation/factories';
 
 export default (controllerFactory: ControllerFactory<any>) => ({

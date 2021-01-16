@@ -1,26 +1,28 @@
 import { promise } from "@data/utils";
 import { SymbolDictionaryEntry } from "@domain/entities";
 import { ExternalSymbolRegister } from "@domain/usecases";
-import { Controller, created, Response, serverError } from "@presentation/contracts";
+import { Controller, created, Params, Response, serverError } from "@presentation/contracts";
 
-type InputDTO = {
-  ticker: string;
-  [source: string]: string; // each source refers to one symbol
-}
-
-export class ExternalSymbolRegisterController implements Controller<InputDTO> {
+export class ExternalSymbolRegisterController implements Controller {
   constructor(
     private readonly useCase: ExternalSymbolRegister,
   ) {}
 
-  async handle(data: InputDTO): Promise<Response<SymbolDictionaryEntry[]>> {
-    const { ticker } = data;
-    const dictionary: SymbolDictionaryEntry[] = Object.keys(data)
-      .filter(key => key !== 'ticker')
+  async handle({ route, body }: Params): Promise<Response<SymbolDictionaryEntry[]>> {
+    const ticker = route?.ticker;
+    if (!ticker) {
+      return serverError(new Error('Can not find ticker at route'));
+    }
+    if (!body) {
+      return serverError(new Error('Can not find any symbol at body'));
+    }
+    const knownSources = ['alphavantage']; // TODO create an external provider for this constant
+    const dictionary: SymbolDictionaryEntry[] = knownSources
+      .filter(source => body[source])
       .map(source => ({
         ticker,
         source,
-        externalSymbol: data[source],
+        externalSymbol: body[source],
       }));
     const promises = dictionary.map(entry =>
       promise.noRejection(() => this.useCase.registry(entry))

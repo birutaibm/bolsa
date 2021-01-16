@@ -1,12 +1,34 @@
 import { Request, Response } from 'express';
 
-import { Controller } from '@presentation/contracts';
-import { ExpressInputAdapter } from '@infra/server/express-input-adapter';
+import { Controller, Params } from '@presentation/contracts';
 
-const voidInputAdapter: ExpressInputAdapter<void> = (_: Request) => {};
+function adaptInput(req: Request): Params {
+  const { body, headers, params } = req;
+  const header = Object.keys(headers).reduce((reduced, key) => {
+    const value = headers[key];
+    const parsed = (typeof value === 'string') ? value : JSON.stringify(value);
+    return {
+      ...reduced,
+      [key]: parsed,
+    };
+  }, {});
+  const query = Object.keys(req.query).reduce((reduced, key) => {
+    const value = req.query[key];
+    const parsed = (typeof value === 'string') ? value : JSON.stringify(value);
+    return {
+      ...reduced,
+      [key]: parsed,
+    };
+  }, {});
+  return {
+    body,
+    route: params,
+    header,
+    query,
+  };
+}
 
-function adapt<T>(controller: Controller<T>, adaptInput: ExpressInputAdapter<T>) {
-  console.log('create route from controller');
+function adapt(controller: Controller) {
   return async (req: Request, res: Response) => {
     const input = adaptInput(req);
     const result = await controller.handle(input);
@@ -15,6 +37,5 @@ function adapt<T>(controller: Controller<T>, adaptInput: ExpressInputAdapter<T>)
 }
 
 export const routeAdapter = {
-  adapt: (controller: Controller<void>) => adapt(controller, voidInputAdapter),
-  adaptWith: adapt,
+  adapt,
 }

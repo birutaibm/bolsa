@@ -1,6 +1,6 @@
 import { Controller } from "@presentation/contracts";
 
-export class ControllerFactory<T extends Controller<any>> {
+export class ControllerFactory<T extends Controller> {
   private instance: T;
 
   make(): T {
