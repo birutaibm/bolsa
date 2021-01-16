@@ -28,4 +28,8 @@ export class ExternalSymbolRegisterService implements ExternalSymbolRegister {
     const registered = await repositories.register.registryExternalSymbol(info);
     return registered;
   }
+
+  getKnownSources(): string[] {
+    return Object.keys(this.repositories);
+  }
 }

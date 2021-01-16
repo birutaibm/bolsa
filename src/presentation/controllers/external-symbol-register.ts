@@ -16,7 +16,7 @@ export class ExternalSymbolRegisterController implements Controller {
     if (!body) {
       return serverError(new Error('Can not find any symbol at body'));
     }
-    const knownSources = ['alphavantage']; // TODO create an external provider for this constant
+    const knownSources = this.useCase.getKnownSources();
     const dictionary: SymbolDictionaryEntry[] = knownSources
       .filter(source => body[source])
       .map(source => ({
