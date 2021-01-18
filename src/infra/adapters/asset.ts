@@ -1,4 +1,4 @@
-import { PriceDTO } from "@data/dto";
+import { AssetPriceDTO } from "@data/dto";
 import { Asset } from "@infra/data-source/model/asset";
 
 export const assetAdapter = {
@@ -12,7 +12,7 @@ export const assetAdapter = {
     date: new Date(price.date),
   })),
 
-  fromPriceDTO(price: PriceDTO): Asset {
+  fromPriceDTO(price: AssetPriceDTO): Asset {
     return {
       ticker: price.ticker,
       name: price.name,
@@ -27,7 +27,7 @@ export const assetAdapter = {
     };
   },
 
-  fromPriceDTOs(prices: PriceDTO[]): Asset[] {
+  fromPriceDTOs(prices: AssetPriceDTO[]): Asset[] {
     const assets: {[key: string]: Asset} = {};
     prices.forEach(price => {
       const assetPrice = {

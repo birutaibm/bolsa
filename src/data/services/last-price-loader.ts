@@ -2,28 +2,28 @@ import { Price } from '@domain/entities';
 import { PriceUnavailableError } from '@domain/errors';
 import { LastPriceLoader } from '@domain/usecases';
 import { LoadPriceRepository } from '@data/contracts';
-import { ExternalPriceRepository } from '@data/utils';
+import { ExternalPriceRegisterService } from '@data/services';
 
 export class LastPriceLoaderService implements LastPriceLoader {
-  private readonly externalPriceRepositories: ExternalPriceRepository[];
+  private readonly externalPriceRegisters: ExternalPriceRegisterService[];
 
   constructor(
     private readonly loadPriceRepository: LoadPriceRepository,
-    ...externalPriceRepositories: ExternalPriceRepository[]
+    ...externalPriceRegisters: ExternalPriceRegisterService[]
   ) {
-    this.externalPriceRepositories = externalPriceRepositories;
+    this.externalPriceRegisters = externalPriceRegisters;
   }
 
   private selectTheLastOne = (p1: Price, p2: Price) =>
     (p1.date.getTime() > p2.date.getTime()) ? p1 : p2;
 
   async load(ticker: string): Promise<Price> {
-    const repositories = [
-      this.loadPriceRepository,
-      ...this.externalPriceRepositories,
+    const loaders = [
+      this.loadPriceRepository.loadPriceByTicker,
+      ...this.externalPriceRegisters.map(service => service.registry),
     ];
-    for (const repository of Object.values(repositories)) {
-      const prices = await repository.loadPriceByTicker(ticker);
+    for (const load of Object.values(loaders)) {
+      const prices = await load(ticker);
       if (prices && prices.length) {
         return prices.reduce(this.selectTheLastOne, prices[0]);
       }

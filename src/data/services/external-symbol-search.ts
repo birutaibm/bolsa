@@ -1,6 +1,6 @@
 import { SearchExternalSymbolRepository } from '@data/contracts';
 import { NoneExternalSymbolRepository } from '@data/errors';
-import { promise } from '@data/utils';
+import { promise } from '@domain/utils';
 import { ExternalSymbolSearch, SearchResult } from '@domain/usecases';
 
 export class ExternalSymbolSearchService implements ExternalSymbolSearch {

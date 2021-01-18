@@ -1,4 +1,4 @@
-import { promise } from "@data/utils";
+import { promise } from "@domain/utils";
 import { SymbolDictionaryEntry } from "@domain/entities";
 import { ExternalSymbolRegister } from "@domain/usecases";
 import { Controller, created, Params, Response, serverError } from "@presentation/contracts";

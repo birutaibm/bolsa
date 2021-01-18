@@ -1,20 +1,26 @@
-import { ExternalSymbolDictionary, LoadPriceRepository, RegistryExternalSymbolRepository, SavePriceFromExternalRepository } from '@data/contracts';
-import { PriceDTO, SymbolDictionaryEntryDTO } from '@data/dto';
-import { ExternalSymbolNotFoundError } from '@data/errors';
+import { InternalRepository } from '@data/contracts';
+import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@data/dto';
+import { AssetNotFoundError, ExternalSymbolNotFoundError } from '@data/errors';
 import { assets } from '@infra/data-source/in-memory';
 import { assetAdapter } from '@infra/adapters';
 import { Asset } from '../model/asset';
 
-export class FakePriceRepository implements LoadPriceRepository, SavePriceFromExternalRepository, ExternalSymbolDictionary, RegistryExternalSymbolRepository {
+export class FakePriceRepository implements InternalRepository {
   async registryExternalSymbol(entry: SymbolDictionaryEntryDTO): Promise<SymbolDictionaryEntryDTO> {
     const { ticker, source, externalSymbol } = entry;
     const existent = assets.find(asset => asset.ticker === ticker);
-    const asset: Asset = existent || {
-      ticker,
-      name: ticker,
-      externals: {},
-      prices: [],
-    };
+    let asset: Asset;
+    if (existent) {
+      asset = existent;
+    } else {
+      asset = {
+        ticker,
+        name: ticker,
+        externals: {},
+        prices: [],
+      };
+      assets.push(asset);
+    }
     asset.externals[source] = externalSymbol;
     return entry;
   }
@@ -30,12 +36,12 @@ export class FakePriceRepository implements LoadPriceRepository, SavePriceFromEx
     throw new ExternalSymbolNotFoundError(externalLibrary, ticker);
   }
 
-  async save(externalName: string, externalSymbol: string, price: PriceDTO[]): Promise<PriceDTO[]> {
-    const existent = assets.find(asset => asset.ticker === price[0].ticker);
+  async save(ticker: string, prices: PriceDTO[]): Promise<AssetPriceDTO[]> {
+    const existent = assets.find(asset => asset.ticker === ticker);
     let asset: Asset;
     if (existent) {
       asset = existent;
-      asset.prices.push(...price.map(p => ({
+      asset.prices.push(...prices.map(p => ({
           date: p.date.getTime(),
           open: p.open,
           close: p.close,
@@ -44,16 +50,21 @@ export class FakePriceRepository implements LoadPriceRepository, SavePriceFromEx
         }))
       );
     } else {
-      asset = assetAdapter.fromPriceDTOs(price)[0];
+      const assetPrices: AssetPriceDTO[] = prices.map(price => ({
+        ...price,
+        ticker,
+        name: ticker,
+      }));
+      asset = assetAdapter.fromPriceDTOs(assetPrices)[0];
+      assets.push(asset);
     }
-    asset.externals[externalName] = externalSymbol;
     return assetAdapter.toPriceDTOs(asset);
   }
 
-  async loadPriceByTicker(ticker: string): Promise<PriceDTO[] | undefined> {
+  async loadPriceByTicker(ticker: string): Promise<AssetPriceDTO[]> {
     const asset = assets.find(asset => asset.ticker === ticker);
     if (!asset) {
-      return undefined;
+      throw new AssetNotFoundError(ticker);
     }
     return assetAdapter.toPriceDTOs(asset);
   }

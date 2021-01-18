@@ -1,15 +1,14 @@
-import { LastPriceLoaderService } from '@data/services';
-import { ExternalPriceRepository } from '@data/utils';
+import { ExternalPriceRegisterService, LastPriceLoaderService } from '@data/services';
 import { Mongo } from '@infra/data-source/database';
-import { MongoPriceRepository, LoadAlphavantagePriceRepository, FakePriceRepository } from '@infra/data-source/repositories';
+import { MongoPriceRepository, AlphavantagePriceRepository, FakePriceRepository } from '@infra/data-source/repositories';
 
 export function makeLastPriceLoader(mongo?: Mongo): LastPriceLoaderService {
   const repo = mongo
     ? new MongoPriceRepository(mongo)
     : new FakePriceRepository();
-  const alphavantage = new LoadAlphavantagePriceRepository();
+  const alphavantage = new AlphavantagePriceRepository();
   return new LastPriceLoaderService(
     repo,
-    new ExternalPriceRepository('alphavantage', alphavantage, repo, repo, alphavantage),
+    new ExternalPriceRegisterService(repo, repo, alphavantage),
   );
 }

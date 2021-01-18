@@ -1,11 +1,14 @@
 import axios from 'axios';
 
-import { LoadExternalPriceRepository, SearchExternalSymbolRepository } from "@data/contracts";
-import { ExternalSymbolsDTO, PriceDTO } from "@data/dto";
+import { ExternalRepository } from "@data/contracts";
+import { ExternalSymbolsDTO, AssetPriceDTO } from "@data/dto";
 import { ExternalPriceLoaderError } from '@infra/errors';
 
-export class LoadAlphavantagePriceRepository implements LoadExternalPriceRepository, SearchExternalSymbolRepository {
-  name = 'alphavantage';
+export class AlphavantagePriceRepository implements ExternalRepository {
+  public name = 'alphavantage';
+  private readonly api = axios.create({
+    baseURL: 'https://www.alphavantage.co/query?apikey=TBKVBVUN7P8KMWT0',
+  });
 
   async getExternalSymbols(ticker: string): Promise<ExternalSymbolsDTO> {
     const response = await this.api.get(`&function=SYMBOL_SEARCH&keywords=${ticker}`);
@@ -19,16 +22,7 @@ export class LoadAlphavantagePriceRepository implements LoadExternalPriceReposit
     return result;
   }
 
-  private readonly api = axios.create({
-    baseURL: 'https://www.alphavantage.co/query?apikey=TBKVBVUN7P8KMWT0',
-  });
-
-  async getExternalSymbol(ticker: string): Promise<string> {
-    const response = await this.api.get(`&function=SYMBOL_SEARCH&keywords=${ticker}`);
-    return this.extractOrFail(response, 'bestMatches', 0, '1. symbol');
-  }
-
-  async loadPriceBySymbol(symbol: string): Promise<Array<Omit<PriceDTO, 'ticker' | 'name'>>> {
+  async loadPriceBySymbol(symbol: string): Promise<Array<Omit<AssetPriceDTO, 'ticker' | 'name'>>> {
     const response = await this.api.get(`&function=TIME_SERIES_DAILY&symbol=${symbol}`);
     const data = this.extractOrFail(response, 'Time Series (Daily)');
     return Object.keys(data).map(key => {
