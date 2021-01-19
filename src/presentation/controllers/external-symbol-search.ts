@@ -3,6 +3,7 @@ import { Controller, ok, Params, Response, serverError } from "@presentation/con
 
 export class ExternalSymbolSearchController implements Controller {
   constructor(
+    // TODO change to array
     private readonly useCase: ExternalSymbolSearch,
   ) {}
 

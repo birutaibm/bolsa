@@ -1,4 +1,4 @@
-import { InternalRepository } from "@data/contracts";
+import { ExternalRepository, InternalRepository } from "@data/contracts";
 import { ExternalPriceRegisterService, ExternalSymbolRegisterService, ExternalSymbolSearchService, LastPriceLoaderService } from "@data/services";
 import { Mongo } from "@infra/data-source/database";
 import { FakePriceRepository, AlphavantagePriceRepository, MongoPriceRepository } from "@infra/data-source/repositories";
@@ -6,34 +6,35 @@ import { FakePriceRepository, AlphavantagePriceRepository, MongoPriceRepository 
 type ServiceFactory<T> = () => T;
 
 export class ExternalSymbolServicesFactory {
-  private readonly alphavantage = new AlphavantagePriceRepository();
-  private readonly repo: InternalRepository;
+  private readonly external: ExternalRepository[] = [
+    new AlphavantagePriceRepository()
+  ];
+  private readonly internal: InternalRepository;
 
   constructor(mongo?: Mongo) {
-    this.repo = mongo
+    this.internal = mongo
       ? new MongoPriceRepository(mongo)
       : new FakePriceRepository();
   }
 
   makeExternalSymbolSearch(): ServiceFactory<ExternalSymbolSearchService> {
-    return () => new ExternalSymbolSearchService(this.alphavantage);
+    return () => new ExternalSymbolSearchService(this.external[0]);
   }
 
   makeExternalSymbolRegister(): ServiceFactory<ExternalSymbolRegisterService> {
     const repositories = {
-      [this.alphavantage.name]: {
-        search: this.alphavantage,
-        register: this.repo,
+      [this.external[0].name]: {
+        search: this.external[0],
+        register: this.internal,
       },
     }
     return () => new ExternalSymbolRegisterService(repositories);
   }
 
   makeLastPriceLoader(): ServiceFactory<LastPriceLoaderService> {
-    const alphavantage = new AlphavantagePriceRepository();
     return () => new LastPriceLoaderService(
-      this.repo,
-      new ExternalPriceRegisterService(this.repo, this.repo, alphavantage),
+      this.internal,
+      new ExternalPriceRegisterService(this.internal, this.internal, ...this.external),
     );
   }
 }

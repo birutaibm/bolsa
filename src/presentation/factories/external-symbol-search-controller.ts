@@ -1,12 +1,13 @@
 import { ExternalSymbolSearch } from '@domain/usecases';
+import { Factory } from '@domain/utils';
 import { ExternalSymbolSearchController } from '@presentation/controllers';
 import { ControllerFactory } from '.';
 
 export class ExternalSymbolSearchControllerFactory extends ControllerFactory<ExternalSymbolSearchController> {
   constructor(
-    makeExternalSymbolSearch: () => ExternalSymbolSearch,
+    externalSymbolSearch: Factory<ExternalSymbolSearch>,
   ) {
     super();
-    this.createInstance = () => new ExternalSymbolSearchController(makeExternalSymbolSearch());
+    this.createInstance = () => new ExternalSymbolSearchController(externalSymbolSearch.make());
   }
 }
