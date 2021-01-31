@@ -1,10 +1,10 @@
 import { ExternalSymbolSearch, SearchResult } from "@domain/usecases";
-import { Controller, ok, Params, Response, serverError } from "@presentation/contracts";
+import { promise } from "@domain/utils";
+import { Controller, notFoundError, ok, Params, Response, serverError } from "@presentation/contracts";
 
 export class ExternalSymbolSearchController implements Controller {
   constructor(
-    // TODO change to array
-    private readonly useCase: ExternalSymbolSearch,
+    private readonly useCase: ExternalSymbolSearch[],
   ) {}
 
   async handle({route}: Params): Promise<Response<SearchResult>> {
@@ -13,8 +13,13 @@ export class ExternalSymbolSearchController implements Controller {
       return serverError(new Error('Can not find ticker at route'));
     }
     try {
-      const result = await this.useCase.search(ticker);
-      return ok(result);
+      const promises = this.useCase.map(uc => promise.noRejection(() => uc.search(ticker)));
+      const resolved = await Promise.all(promises);
+      const results = resolved.reduce((reduced, result) => ({...reduced, ...result}), {});
+      if (Object.keys(results).length === 0) {
+        return notFoundError(`Ticker ${ticker} was not found in any external repository`);
+      }
+      return ok(results);
     } catch (error) {
       console.log(error);
       return serverError(error);

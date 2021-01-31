@@ -7,7 +7,6 @@ export class ExternalSymbolRegisterControllerFactory extends ControllerFactory<E
   constructor(
     externalSymbolRegister: Factory<ExternalSymbolRegister>,
   ) {
-    super();
-    this.createInstance = () => new ExternalSymbolRegisterController(externalSymbolRegister.make());
+    super(() => new ExternalSymbolRegisterController(externalSymbolRegister.make()));
   }
 }

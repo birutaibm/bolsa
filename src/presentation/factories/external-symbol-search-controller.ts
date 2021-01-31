@@ -5,9 +5,8 @@ import { ControllerFactory } from '.';
 
 export class ExternalSymbolSearchControllerFactory extends ControllerFactory<ExternalSymbolSearchController> {
   constructor(
-    externalSymbolSearch: Factory<ExternalSymbolSearch>,
+    externalSymbolSearch: Factory<ExternalSymbolSearch[]>,
   ) {
-    super();
-    this.createInstance = () => new ExternalSymbolSearchController(externalSymbolSearch.make());
+    super(() => new ExternalSymbolSearchController(externalSymbolSearch.make()));
   }
 }

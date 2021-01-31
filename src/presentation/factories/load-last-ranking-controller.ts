@@ -7,7 +7,6 @@ export class LoadLastRankingControllerFactory extends ControllerFactory<LoadLast
   constructor(
     lastRankingLoader: Factory<LastRankingLoader>,
   ) {
-    super();
-    this.createInstance = () => new LoadLastRankingController(lastRankingLoader.make());
+    super(() => new LoadLastRankingController(lastRankingLoader.make()));
   }
 }

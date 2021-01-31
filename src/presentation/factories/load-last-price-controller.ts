@@ -7,7 +7,6 @@ export class LoadLastPriceControllerFactory extends ControllerFactory<LoadLastPr
   constructor(
     lastPriceLoader: Factory<LastPriceLoader>,
   ) {
-    super();
-    this.createInstance = () => new LoadLastPriceController(lastPriceLoader.make());
+    super(() => new LoadLastPriceController(lastPriceLoader.make()));
   }
 }
