@@ -33,10 +33,11 @@
     "rootDir": "./src",
     "baseUrl": "./src",
     "paths": {
-      "@data/*": ["data/*"],
       "@domain/*": ["domain/*"],
+      "@errors/*": ["errors/*"],
+      "@utils/*": ["utils/*"],
       "@main/*": ["main/*"],
-      "@presentation/*": ["presentation/*"],
+      "@gateway/*": ["gateway/*"],
       "@infra/*": ["infra/*"]
     }
   }

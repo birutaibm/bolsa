@@ -1,11 +1,15 @@
 import express from 'express';
 
-import ExpressRouterSetup from '@infra/server/express-router-setup';
-import { ApolloServerSetup } from '@infra/server/apollo-server-setup';
+import API from '@infra/api';
+import ApolloServerSetup from '@infra/graphql';
+import { controllerFactories } from '@infra/factories'
 
 const app = express();
 
-export const routerSetup = new ExpressRouterSetup(app);
-export const graphqlSetup = new ApolloServerSetup(app);
+const api = new API(app);
+const graphql = new ApolloServerSetup(app);
+
+api.setup(controllerFactories);
+graphql.setup(controllerFactories);
 
 export default app;

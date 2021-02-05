@@ -1,5 +1,5 @@
-import { LoadLastRankingRepository } from '@data/contracts';
-import { RankingDTO } from '@data/dto';
+import { LoadLastRankingRepository } from '@gateway/data/contracts';
+import { RankingDTO } from '@gateway/data/dto';
 
 import { ranking } from '@infra/data-source/in-memory';
 

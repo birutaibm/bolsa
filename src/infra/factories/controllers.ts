@@ -2,13 +2,13 @@ import { Mongo } from '@infra/data-source/database';
 import { env } from '@infra/environment';
 import { lastRankingLoaderFactory } from './last-ranking-loader';
 import { PriceRepositories } from './price-repositories';
-import { PriceUseCasesFactories } from '@data/usecase-factories';
+import { PriceUseCasesFactories } from '@gateway/data/factories';
 import {
   ExternalSymbolRegisterControllerFactory,
   ExternalSymbolSearchControllerFactory,
   LoadLastPriceControllerFactory,
   LoadLastRankingControllerFactory,
-} from '@presentation/factories';
+} from '@gateway/presentation/factories';
 
 const mongo = new Mongo(env.mongodb);
 const repositories = new PriceRepositories(mongo);

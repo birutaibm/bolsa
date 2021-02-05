@@ -2,7 +2,7 @@ import {
   ExternalRepository,
   InternalRepository,
   PriceRepositoriesProvider
-} from '@data/contracts';
+} from '@gateway/data/contracts';
 import { Mongo } from '@infra/data-source/database';
 import {
   MongoPriceRepository,

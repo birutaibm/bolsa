@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '@main/config/app';
+import app from '@infra/server';
 
 describe('Get Endpoints', () => {
   it('should be able to access last ranking route', async (done) => {

@@ -1,6 +1,7 @@
-import { InternalRepository } from '@data/contracts';
-import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@data/dto';
-import { AssetNotFoundError, ExternalSymbolNotFoundError } from '@data/errors';
+import { InternalRepository } from '@gateway/data/contracts';
+import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
+import { AssetNotFoundError } from '@errors/asset-not-found';
+import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 
 import { assets } from '@infra/data-source/in-memory';
 import { assetAdapter } from '@infra/adapters';

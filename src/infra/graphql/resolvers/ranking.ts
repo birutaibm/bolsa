@@ -1,5 +1,5 @@
 import { adaptResolver } from '@infra/adapters';
-import { LoadLastRankingControllerFactory } from '@presentation/factories';
+import { LoadLastRankingControllerFactory } from '@gateway/presentation/factories';
 
 export default (controllerFactory: LoadLastRankingControllerFactory) => ({
   Query: {

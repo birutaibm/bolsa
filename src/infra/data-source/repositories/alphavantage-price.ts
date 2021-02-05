@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-import { ExternalRepository } from '@data/contracts';
-import { ExternalSymbolsDTO, AssetPriceDTO } from '@data/dto';
+import { ExternalRepository } from '@gateway/data/contracts';
+import { ExternalSymbolsDTO, AssetPriceDTO } from '@gateway/data/dto';
 
-import { ExternalPriceLoaderError } from '@infra/errors';
+import { ExternalPriceLoaderError } from '@errors/external-price-loader';
 
 type Prices = Promise<Array<Omit<AssetPriceDTO, 'ticker' | 'name'>>>;
 

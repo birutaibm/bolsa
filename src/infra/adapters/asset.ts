@@ -1,4 +1,4 @@
-import { AssetPriceDTO } from '@data/dto';
+import { AssetPriceDTO } from '@gateway/data/dto';
 import { Asset } from '@infra/data-source/model/asset';
 
 export const assetAdapter = {

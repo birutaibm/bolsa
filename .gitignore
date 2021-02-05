@@ -6,6 +6,7 @@ temp/
 coverage
 .env
 ormconfig.json
+yarn.lock
 
 tmp/*
 !tmp/.gitkeep
