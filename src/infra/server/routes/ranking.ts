@@ -1,12 +1,11 @@
 import { Router } from 'express';
 
 import { routeAdapter } from '@infra/server/express-router';
-import { ControllerFactory } from '@presentation/factories';
-import { LoadLastRankingController } from '@presentation/controllers';
+import { LoadLastRankingControllerFactory } from '@presentation/factories';
 
 export default function (
   router: Router,
-  controllerFactory: ControllerFactory<LoadLastRankingController>
+  controllerFactory: LoadLastRankingControllerFactory
 ): void {
   router.get('/ranking/last', routeAdapter.adapt(controllerFactory.make()));
 }

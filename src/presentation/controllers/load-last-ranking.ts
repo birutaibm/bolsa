@@ -1,16 +1,20 @@
 import { LastRankingLoader } from '@domain/usecases';
-import { Controller, ok, Params, Response, serverError } from '@presentation/contracts';
-import { Ranking } from '@presentation/view';
+import {
+  Controller, Params, Response, ok, serverError
+} from '@presentation/contracts';
+import {
+  RankingEntity, RankingView, rankingTranslator
+} from '@presentation/view';
 
 export class LoadLastRankingController implements Controller {
   constructor(
     private readonly lastRankingLoader: LastRankingLoader
   ) {}
 
-  async handle(_: Params): Promise<Response<Ranking[]>> {
+  async handle(_: Params): Promise<Response<RankingView[]>> {
     try {
-      const ranking = await this.lastRankingLoader.load();
-      const data = Ranking.fromEntities(ranking);
+      const ranking: RankingEntity[] = await this.lastRankingLoader.load();
+      const data = rankingTranslator.entitiesToViews(ranking);
       return ok(data);
     } catch (error) {
       console.log(error);

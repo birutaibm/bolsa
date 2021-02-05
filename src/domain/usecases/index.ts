@@ -1,5 +1,5 @@
-export * from './last-ranking-loader';
-export * from './last-price-loader';
-export * from './external-symbol-search';
-export * from './external-symbol-register';
-export * from './external-price-register';
+export { LastRankingLoader } from './last-ranking-loader';
+export { LastPriceLoader } from './last-price-loader';
+export { ExternalSymbolSearch, SearchResult } from './external-symbol-search';
+export { ExternalSymbolRegister } from './external-symbol-register';
+export { ExternalPriceRegister } from './external-price-register';

@@ -1,5 +1,5 @@
-import { AssetPriceDTO } from "@data/dto";
-import { Asset } from "@infra/data-source/model/asset";
+import { AssetPriceDTO } from '@data/dto';
+import { Asset } from '@infra/data-source/model/asset';
 
 export const assetAdapter = {
   toPriceDTOs: (asset: Asset) => asset.prices.map(price => ({

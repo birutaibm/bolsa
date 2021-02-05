@@ -1,12 +1,20 @@
-import { ExternalRepository, InternalRepository, PriceRepositoriesProvider } from "@data/contracts";
-import { Mongo } from "@infra/data-source/database";
-import { MongoPriceRepository, FakePriceRepository, AlphavantagePriceRepository } from "@infra/data-source/repositories";
+import {
+  ExternalRepository,
+  InternalRepository,
+  PriceRepositoriesProvider
+} from '@data/contracts';
+import { Mongo } from '@infra/data-source/database';
+import {
+  MongoPriceRepository,
+  FakePriceRepository,
+  AlphavantagePriceRepository
+} from '@infra/data-source/repositories';
 
 export class PriceRepositories implements PriceRepositoriesProvider {
   private readonly internal: InternalRepository;
   private readonly externals: ExternalRepository[];
 
-  constructor(mongo: Mongo | undefined) {
+  constructor(mongo?: Mongo) {
     this.internal = mongo
       ? new MongoPriceRepository(mongo)
       : new FakePriceRepository();
@@ -20,6 +28,6 @@ export class PriceRepositories implements PriceRepositoriesProvider {
   }
 
   getExternals(): ExternalRepository[] {
-    return this.externals
+    return this.externals;
   }
 }

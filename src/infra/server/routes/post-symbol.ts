@@ -1,12 +1,13 @@
 import { Router } from 'express';
 
 import { routeAdapter } from '@infra/server/express-router';
-import { ControllerFactory } from '@presentation/factories';
-import { ExternalSymbolRegisterController } from '@presentation/controllers';
+import {
+  ExternalSymbolRegisterControllerFactory
+} from '@presentation/factories';
 
 export default function (
   router: Router,
-  controllerFactory: ControllerFactory<ExternalSymbolRegisterController>
+  controllerFactory: ExternalSymbolRegisterControllerFactory
 ): void {
   router.put(
     '/symbols/:ticker',

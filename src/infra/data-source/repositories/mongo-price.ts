@@ -1,6 +1,7 @@
 import { InternalRepository } from '@data/contracts';
 import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@data/dto';
 import { AssetNotFoundError, ExternalSymbolNotFoundError } from '@data/errors';
+
 import Assets, { AssetDocument } from '@infra/data-source/model/asset';
 import { Mongo } from '@infra/data-source/database';
 import { assetAdapter } from '@infra/adapters';
@@ -12,8 +13,9 @@ export class MongoPriceRepository implements InternalRepository {
     mongo.connect();
   }
 
-  async registryExternalSymbol(entry: SymbolDictionaryEntryDTO): Promise<SymbolDictionaryEntryDTO> {
-    const { ticker, source, externalSymbol } = entry;
+  async registryExternalSymbol(
+    { ticker, source, externalSymbol }: SymbolDictionaryEntryDTO
+  ): Promise<SymbolDictionaryEntryDTO> {
     const existent = await Assets.findOne({ ticker });
     let asset: AssetDocument;
     if (existent) {
@@ -28,10 +30,12 @@ export class MongoPriceRepository implements InternalRepository {
     }
     asset.externals[source] = externalSymbol;
     await asset.save();
-    return entry;
+    return { ticker, source, externalSymbol };
   }
 
-  async getExternalSymbol(ticker: string, externalLibrary: string): Promise<string> {
+  async getExternalSymbol(
+    ticker: string, externalLibrary: string
+  ): Promise<string> {
     const asset = await Assets.findOne({ ticker });
     if (asset && asset.externals) {
       const symbol = asset.externals[externalLibrary];

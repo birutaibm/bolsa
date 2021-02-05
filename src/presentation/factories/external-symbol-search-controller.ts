@@ -3,10 +3,14 @@ import { Factory } from '@domain/utils';
 import { ExternalSymbolSearchController } from '@presentation/controllers';
 import { ControllerFactory } from '.';
 
-export class ExternalSymbolSearchControllerFactory extends ControllerFactory<ExternalSymbolSearchController> {
+export class ExternalSymbolSearchControllerFactory
+  extends ControllerFactory<ExternalSymbolSearchController> {
+
   constructor(
-    externalSymbolSearch: Factory<ExternalSymbolSearch[]>,
+    externalSymbolSearch: Factory<ExternalSymbolSearch>,
   ) {
-    super(() => new ExternalSymbolSearchController(externalSymbolSearch.make()));
+    super(() =>
+      new ExternalSymbolSearchController(externalSymbolSearch.make())
+    );
   }
 }

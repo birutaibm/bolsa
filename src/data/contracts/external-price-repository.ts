@@ -1,4 +1,4 @@
-import { ExternalSymbolsDTO, PriceDTO } from "@data/dto";
+import { ExternalSymbolsDTO, PriceDTO } from '@data/dto';
 
 export interface LoadExternalPriceRepository {
   readonly name: string;

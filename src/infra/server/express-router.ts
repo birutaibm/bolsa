@@ -2,24 +2,21 @@ import { Request, Response } from 'express';
 
 import { Controller, Params } from '@presentation/contracts';
 
+function adaptInputField(field: {[key: string]: any}): {[key: string]: string} {
+  return Object.keys(field).reduce((reduced, key) => {
+    const value = field[key];
+    const parsed = (typeof value === 'string') ? value : JSON.stringify(value);
+    return {
+      ...reduced,
+      [key]: parsed,
+    };
+  }, {});
+}
+
 function adaptInput(req: Request): Params {
   const { body, headers, params } = req;
-  const header = Object.keys(headers).reduce((reduced, key) => {
-    const value = headers[key];
-    const parsed = (typeof value === 'string') ? value : JSON.stringify(value);
-    return {
-      ...reduced,
-      [key]: parsed,
-    };
-  }, {});
-  const query = Object.keys(req.query).reduce((reduced, key) => {
-    const value = req.query[key];
-    const parsed = (typeof value === 'string') ? value : JSON.stringify(value);
-    return {
-      ...reduced,
-      [key]: parsed,
-    };
-  }, {});
+  const header = adaptInputField(headers);
+  const query = adaptInputField(req.query);
   return {
     body,
     route: params,

@@ -1,16 +1,34 @@
-import { Mongo } from "@infra/data-source/database";
-import { lastRankingLoaderFactory, PriceRepositories } from '@infra/factories';
-import { ExternalSymbolRegisterControllerFactory, ExternalSymbolSearchControllerFactory, LoadLastPriceControllerFactory, LoadLastRankingControllerFactory } from "@presentation/factories";
+import { Mongo } from '@infra/data-source/database';
 import { env } from '@infra/environment';
-import { PriceServiceFactories } from "@data/contracts";
+import { lastRankingLoaderFactory } from './last-ranking-loader';
+import { PriceRepositories } from './price-repositories';
+import { PriceUseCasesFactories } from '@data/usecase-factories';
+import {
+  ExternalSymbolRegisterControllerFactory,
+  ExternalSymbolSearchControllerFactory,
+  LoadLastPriceControllerFactory,
+  LoadLastRankingControllerFactory,
+} from '@presentation/factories';
 
 const mongo = new Mongo(env.mongodb);
-const repositories = new PriceRepositories(mongo)
-const services = new PriceServiceFactories(repositories).getAll();
+const repositories = new PriceRepositories(mongo);
+const services = new PriceUseCasesFactories(repositories);
+const {
+  lastPriceLoader,
+  externalSymbolSearch,
+  externalSymbolRegister,
+} = services.getAll();
 
 export const controllerFactories = {
-  price: new LoadLastPriceControllerFactory(services.lastPriceLoader),
+  price: new LoadLastPriceControllerFactory(lastPriceLoader),
+
   ranking: new LoadLastRankingControllerFactory(lastRankingLoaderFactory),
-  symbolSearch: new ExternalSymbolSearchControllerFactory(services.externalSymbolSearch),
-  symbolRegister: new ExternalSymbolRegisterControllerFactory(services.externalSymbolRegister),
+
+  symbolSearch: new ExternalSymbolSearchControllerFactory(
+    externalSymbolSearch
+  ),
+
+  symbolRegister: new ExternalSymbolRegisterControllerFactory(
+    externalSymbolRegister
+  ),
 };

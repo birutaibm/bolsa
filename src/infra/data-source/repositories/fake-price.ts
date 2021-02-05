@@ -1,13 +1,15 @@
 import { InternalRepository } from '@data/contracts';
 import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@data/dto';
 import { AssetNotFoundError, ExternalSymbolNotFoundError } from '@data/errors';
+
 import { assets } from '@infra/data-source/in-memory';
 import { assetAdapter } from '@infra/adapters';
-import { Asset } from '../model/asset';
+import { Asset } from '@infra/data-source/model/asset';
 
 export class FakePriceRepository implements InternalRepository {
-  async registryExternalSymbol(entry: SymbolDictionaryEntryDTO): Promise<SymbolDictionaryEntryDTO> {
-    const { ticker, source, externalSymbol } = entry;
+  async registryExternalSymbol(
+    { ticker, source, externalSymbol }: SymbolDictionaryEntryDTO
+  ): Promise<SymbolDictionaryEntryDTO> {
     const existent = assets.find(asset => asset.ticker === ticker);
     let asset: Asset;
     if (existent) {
@@ -22,10 +24,12 @@ export class FakePriceRepository implements InternalRepository {
       assets.push(asset);
     }
     asset.externals[source] = externalSymbol;
-    return entry;
+    return { ticker, source, externalSymbol };
   }
 
-  async getExternalSymbol(ticker: string, externalLibrary: string): Promise<string> {
+  async getExternalSymbol(
+    ticker: string, externalLibrary: string
+  ): Promise<string> {
     const asset = assets.find(asset => asset.ticker === ticker);
     if (asset) {
       const symbol = asset.externals[externalLibrary];

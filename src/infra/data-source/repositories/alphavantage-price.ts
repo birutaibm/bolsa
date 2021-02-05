@@ -1,18 +1,24 @@
 import axios from 'axios';
 
-import { ExternalRepository } from "@data/contracts";
-import { ExternalSymbolsDTO, AssetPriceDTO } from "@data/dto";
+import { ExternalRepository } from '@data/contracts';
+import { ExternalSymbolsDTO, AssetPriceDTO } from '@data/dto';
+
 import { ExternalPriceLoaderError } from '@infra/errors';
 
+type Prices = Promise<Array<Omit<AssetPriceDTO, 'ticker' | 'name'>>>;
+
 export class AlphavantagePriceRepository implements ExternalRepository {
-  public name = 'alphavantage';
+  public readonly name = 'alphavantage';
   private readonly api = axios.create({
     baseURL: 'https://www.alphavantage.co/query?apikey=TBKVBVUN7P8KMWT0',
   });
 
   async getExternalSymbols(ticker: string): Promise<ExternalSymbolsDTO> {
-    const response = await this.api.get(`&function=SYMBOL_SEARCH&keywords=${ticker}`);
-    const data: Array<{[key: string]: string}> = this.extractOrFail(response, 'bestMatches');
+    const response = await this.api.get(
+      `&function=SYMBOL_SEARCH&keywords=${ticker}`
+    );
+    const data: Array<{[key: string]: string}> =
+      this.extractOrFail(response, 'bestMatches');
     const result: ExternalSymbolsDTO = {};
     data.map(entry => {
       const symbol = entry['1. symbol'];
@@ -22,8 +28,10 @@ export class AlphavantagePriceRepository implements ExternalRepository {
     return result;
   }
 
-  async loadPriceBySymbol(symbol: string): Promise<Array<Omit<AssetPriceDTO, 'ticker' | 'name'>>> {
-    const response = await this.api.get(`&function=TIME_SERIES_DAILY&symbol=${symbol}`);
+  async loadPriceBySymbol(symbol: string): Prices {
+    const response = await this.api.get(
+      `&function=TIME_SERIES_DAILY&symbol=${symbol}`
+    );
     const data = this.extractOrFail(response, 'Time Series (Daily)');
     return Object.keys(data).map(key => {
       const [ year, month, day ] = key.split('-').map(Number);
@@ -55,7 +63,10 @@ export class AlphavantagePriceRepository implements ExternalRepository {
     for (const key of path) {
       value = value[key];
       if (!value) {
-        throw new ExternalPriceLoaderError('alphavantage', `API returns wrong data format: ${data}`);
+        throw new ExternalPriceLoaderError(
+          'alphavantage',
+          `API returns wrong data format: ${data}`,
+        );
       }
     }
     return value;

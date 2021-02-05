@@ -17,6 +17,13 @@ export function created<T = any>(data: T): Response<T> {
   };
 };
 
+export function clientError(message: string): Response {
+  return {
+    statusCode: 400,
+    data: { message },
+  };
+};
+
 export function notFoundError(message: string): Response {
   return {
     statusCode: 404,

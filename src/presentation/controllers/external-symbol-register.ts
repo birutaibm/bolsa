@@ -1,36 +1,34 @@
-import { promise } from "@domain/utils";
-import { SymbolDictionaryEntry } from "@domain/entities";
-import { ExternalSymbolRegister } from "@domain/usecases";
-import { Controller, created, Params, Response, serverError } from "@presentation/contracts";
+import { ExternalSymbolRegister } from '@domain/usecases';
+import {
+  Controller, Params, Response, created, clientError, serverError
+} from '@presentation/contracts';
 
 export class ExternalSymbolRegisterController implements Controller {
   constructor(
     private readonly useCase: ExternalSymbolRegister,
   ) {}
 
-  async handle({ route, body }: Params): Promise<Response<SymbolDictionaryEntry[]>> {
+  async handle({ route, body }: Params): Promise<Response> {
     const ticker = route?.ticker;
     if (!ticker) {
-      return serverError(new Error('Can not find ticker at route'));
+      return clientError('Can not find ticker at route');
     }
     if (!body) {
-      return serverError(new Error('Can not find any symbol at body'));
+      return clientError('Can not find any symbol at body');
     }
     const knownSources = this.useCase.getKnownSources();
-    const dictionary: SymbolDictionaryEntry[] = knownSources
+    const dictionary = knownSources
       .filter(source => body[source])
       .map(source => ({
         ticker,
         source,
         externalSymbol: body[source],
       }));
-    const promises = dictionary.map(entry =>
-      promise.noRejection(() => this.useCase.registry(entry))
-    );
     try {
-      const result = await Promise.all(promises);
-      const success = result.filter(entry => Object.keys(entry).length !== 0);
-      return created(success);
+      const result = await this.useCase.registryAll(dictionary);
+      return result.length
+        ? created(result)
+        : clientError('Can not find any valid symbol at body');
     } catch (error) {
       console.log(error);
       return serverError(error);

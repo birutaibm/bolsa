@@ -8,7 +8,7 @@ type PriceAtDate = {
   max: number;
 }
 
-export interface Asset {
+export type Asset = {
   ticker: string;
   name?: string;
   prices: PriceAtDate[];

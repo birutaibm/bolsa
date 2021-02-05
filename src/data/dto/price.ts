@@ -1,5 +1,12 @@
-import { Price } from '@domain/entities';
+export type AssetPriceDTO = PriceDTO & {
+  ticker: string;
+  name: string;
+};
 
-export type AssetPriceDTO = Price;
-
-export type PriceDTO = Omit<AssetPriceDTO, 'ticker' | 'name'>;
+export type PriceDTO = {
+  date: Date;
+  open: number;
+  close: number;
+  min: number;
+  max: number;
+};
