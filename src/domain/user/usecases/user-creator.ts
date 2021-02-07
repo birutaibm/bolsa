@@ -1,8 +1,7 @@
 import User, { Role } from '@domain/user/entities/user';
 
 import { encoder } from './encoder'
-
-export type UserData = Omit<User, 'checkPassword'>;
+import { UserData } from './dto';
 
 export interface RequiredFunctionalities {
   save(user: UserData): Promise<void>;
@@ -20,11 +19,5 @@ export default class UserCreator {
     const user = new User(userName, passHash, role, encoder.verify);
     await this.worker.save(user)
     return user;
-  }
-
-  async fromHashedPassword(
-    userName: string, passHash: string, role: Role = 'USER'
-  ): Promise<User> {
-    return new User(userName, passHash, role, encoder.verify);
   }
 }

@@ -32,6 +32,41 @@ describe('API', () => {
       });
   });
 
+  it('should be able to sign-in', async (done) => {
+    request(app)
+      .post('/api/users')
+      .send({
+        userName: 'eu mesmo',
+        password: 'minha senha',
+      })
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .expect(201)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toBeInstanceOf(Object);
+        expect(res.body.userName).toBe('eu mesmo');
+        expect(res.body.role).toBe('USER');
+        expect(Object.keys(res.body).length).toBe(2);
+        request(app)
+          .post('/api/sessions')
+          .send({
+            userName: 'eu mesmo',
+            password: 'minha senha',
+          })
+          .set("Accept", "application/json")
+          .expect("Content-Type", /json/)
+          .expect(201)
+          .end((err, res) => {
+            if (err) return done(err);
+            expect(res.body).toBeInstanceOf(Object);
+            expect(typeof res.body.token).toBe('string');
+            expect(Object.keys(res.body).length).toBe(1);
+            done();
+          });
+      });
+  });
+
   it('should be able to access ITUB3 symbol route', async (done) => {
     request(app)
       .get('/api/symbols/ITUB3')
