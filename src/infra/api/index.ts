@@ -5,12 +5,14 @@ import {
   ExternalSymbolRegisterControllerFactory,
   ExternalSymbolSearchControllerFactory,
   LoadLastPriceControllerFactory,
-  LoadLastRankingControllerFactory
+  LoadLastRankingControllerFactory,
+  UserCreatorControllerFactory,
 } from '@gateway/presentation/factories';
 
 import price from './routes/price';
 import getSymbol from './routes/get-symbol';
 import postSymbol from './routes/post-symbol';
+import postUser from './routes/post-user';
 import ranking from './routes/ranking';
 
 type setupExpressRoute = (
@@ -23,6 +25,7 @@ type ControllerFactories = {
   ranking: LoadLastRankingControllerFactory;
   symbolSearch: ExternalSymbolSearchControllerFactory;
   symbolRegister: ExternalSymbolRegisterControllerFactory;
+  userCreator: UserCreatorControllerFactory;
 };
 
 export default class API {
@@ -45,5 +48,6 @@ export default class API {
     ranking(this.router, controllerFactories.ranking);
     getSymbol(this.router, controllerFactories.symbolSearch);
     postSymbol(this.router, controllerFactories.symbolRegister);
+    postUser(this.router, controllerFactories.userCreator);
   }
 }

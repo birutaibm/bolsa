@@ -3,9 +3,9 @@ import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 
+import { assetAdapter } from '@infra/adapters';
 import Assets, { AssetDocument } from '@infra/data-source/model/asset';
 import { Mongo } from '@infra/data-source/database';
-import { assetAdapter } from '@infra/adapters';
 
 export class MongoPriceRepository implements InternalRepository {
   constructor(
