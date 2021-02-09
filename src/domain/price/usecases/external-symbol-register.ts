@@ -20,16 +20,18 @@ export class ExternalSymbolRegister {
   ) {}
 
   async registryAll(dictionary: SymbolDictionary): Promise<SymbolDictionary> {
-    const promises = dictionary.map(entry =>
-      promise.noRejection(() => this.registry(entry))
-    );
-    const results = await Promise.all(promises);
-    const result = results.filter(entry => Object.keys(entry).length !== 0);
-    return result;
+    const promises = dictionary.map(entry => this.registry(entry));
+    const { resolved } = await promise.all(promises);
+    return resolved;
   }
 
   async registry(info: SymbolDictionaryEntry): Promise<SymbolDictionaryEntry> {
-    const internalWorker = this.worker.getInternalWorker(info.source);
+    let internalWorker: InternalWorker;
+    try {
+      internalWorker = this.worker.getInternalWorker(info.source);
+    } catch (error) {
+      throw new InvalidSymbolDictionaryEntryError(info);
+    }
     await this.ensureValidSymbol(internalWorker, info);
     return internalWorker.register(info);
   }

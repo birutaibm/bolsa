@@ -1,6 +1,9 @@
 export class PriceUnavailableError extends Error {
-  constructor(ticker: string) {
+  private readonly causes: Error[];
+
+  constructor(ticker: string, ...causes: Error[]) {
     super(`Price of ${ticker} unavailable`);
     this.name = 'PriceUnavailableError';
+    this.causes = causes;
   }
 }

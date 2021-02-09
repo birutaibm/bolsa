@@ -68,13 +68,9 @@ describe('API', () => {
   });
 
   it('should be able to access ITUB3 symbol route', async (done) => {
-    request(app)
-      .get('/api/symbols/ITUB3')
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        done();
-      });
+    const response = await request(app).get('/api/symbols/ITUB3');
+    expect(response.status).toBe(200);
+    done();
   });
 
   // it('should be able to access ITUB4 last price route', async (done) => {

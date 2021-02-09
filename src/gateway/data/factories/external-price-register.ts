@@ -9,6 +9,7 @@ import {
   ExternalPriceRegister, RequiredFunctionalities,
 } from '@domain/price/usecases/external-price-register';
 import { SingletonFactory } from '@utils/factory';
+import { AssetNotFoundError } from '@errors/asset-not-found';
 
 type Compatible = {
   [source: string]: {
@@ -17,7 +18,7 @@ type Compatible = {
   }
 };
 
-class Functionalities implements RequiredFunctionalities<Compatible> {
+class Functionalities implements RequiredFunctionalities {
   private readonly externals: LoadExternalPriceRepository[];
 
   constructor(
@@ -32,7 +33,7 @@ class Functionalities implements RequiredFunctionalities<Compatible> {
     return this.externals.length > 0;
   }
 
-  getCompatibleExternals(ticker: string): Compatible {
+  private getCompatibleExternals(ticker: string): Compatible {
     const compatible = {} as Compatible;
     this.externals.forEach(async (external) => {
       const { name } = external;
@@ -48,11 +49,15 @@ class Functionalities implements RequiredFunctionalities<Compatible> {
     return compatible;
   }
 
-  getExternalPrices(compatible: Compatible): Promise<PriceDTO[]> {
+  getExternalPrices(ticker: string): Promise<PriceDTO[]> {
+    const compatible: Compatible = this.getCompatibleExternals(ticker);
     const promises = Object.keys(compatible).map(source => {
       const { external, symbol } = compatible[source];
       return external.loadPriceBySymbol(symbol);
     });
+    if (promises.length === 0) {
+      throw new AssetNotFoundError(ticker);
+    }
     return Promise.race(promises);
   }
 

@@ -2,7 +2,7 @@ import { Price } from '@domain/price/entities';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 
 export interface RequiredFunctionalities<T extends Price> {
-  getLoadFunctions(): Array<(ticker: string) => Promise<T[]>>
+  readonly loadFunctions: Array<(ticker: string) => Promise<T[]>>
 }
 
 export class LastPriceLoader {
@@ -11,14 +11,22 @@ export class LastPriceLoader {
   ) {}
 
   async load(ticker: string): Promise<Price> {
-    const loaders = this.worker.getLoadFunctions();
-    for (const load of Object.values(loaders)) {
-      const prices = await load(ticker);
-      if (prices && prices.length) {
-        return prices.reduce(this.selectTheLastOne, prices[0]);
+    const loaders = this.worker.loadFunctions;
+    const allPrices: Price[] = [];
+    const errors: Error[] = [];
+    for (const load of loaders) {
+      try {
+        const prices = await load(ticker);
+        if (prices && prices.length) {
+          allPrices.push(...prices);
+        }
+      } catch (error) {
+        errors.push(error)
       }
     }
-    throw new PriceUnavailableError(ticker);
+    const price = allPrices.reduce(this.selectTheLastOne, allPrices[0]);
+    if (price) return price;
+    throw new PriceUnavailableError(ticker, ...errors);
   }
 
   private selectTheLastOne = (p1: Price, p2: Price) =>

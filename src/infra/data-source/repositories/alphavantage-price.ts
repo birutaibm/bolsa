@@ -22,6 +22,12 @@ export class AlphavantagePriceRepository implements ExternalRepository {
     const result: ExternalSymbolsDTO = {};
     data.map(entry => {
       const symbol = entry['1. symbol'];
+      if (!symbol) {
+        throw new ExternalPriceLoaderError(
+          'alphavantage',
+          `API returns wrong bestMatches format: ${data}`,
+        );
+      }
       delete entry['1. symbol'];
       result[symbol] = entry;
     });

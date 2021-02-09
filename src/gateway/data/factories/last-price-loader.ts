@@ -9,15 +9,15 @@ import { SingletonFactory } from '@utils/factory';
 import { ExternalPriceRegisterFactory } from './external-price-register';
 
 class Functionalities implements RequiredFunctionalities<AssetPriceDTO> {
-  constructor(
-    private readonly loadPriceRepository: LoadPriceRepository,
-    private readonly externalPriceRegister: ExternalPriceRegister,
-  ) {}
+  public readonly loadFunctions: Array<(ticker: string) => Promise<AssetPriceDTO[]>>;
 
-  getLoadFunctions(): Array<(ticker: string) => Promise<AssetPriceDTO[]>> {
-    return [
-      (ticker: string) => this.loadPriceRepository.loadPriceByTicker(ticker),
-      (ticker: string) => this.externalPriceRegister.registry(ticker),
+  constructor(
+    loadPriceRepository: LoadPriceRepository,
+    externalPriceRegister: ExternalPriceRegister,
+  ) {
+    this.loadFunctions = [
+      (ticker: string) => loadPriceRepository.loadPriceByTicker(ticker),
+      (ticker: string) => externalPriceRegister.registry(ticker),
     ];
   }
 }

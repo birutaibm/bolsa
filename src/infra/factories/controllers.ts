@@ -6,17 +6,18 @@ import {
   LoadLastRankingControllerFactory,
   UserCreatorControllerFactory,
 } from '@gateway/presentation/factories';
-
-import { FakeUserRepository } from '@infra/data-source/in-memory';
-import { Mongo } from '@infra/data-source/database';
-import { env } from '@infra/environment';
-import { lastRankingLoaderFactory } from './last-ranking-loader';
-import { PriceRepositories } from './price-repositories';
-import { MongoUserRepository } from '@infra/data-source/repositories/mongo-user';
 import { SignInControllerFactory } from '@gateway/presentation/factories/sign-in-controller';
 import { SignInFactory } from '@gateway/security/factories/sign-in';
 import { UserLoaderFactory } from '@gateway/data/factories/user-loader';
+
 import { signIn } from '@infra/security/jwt';
+import { FakeUserRepository } from '@infra/data-source/in-memory';
+import { MongoUserRepository } from '@infra/data-source/repositories/mongo-user';
+import { Mongo } from '@infra/data-source/database';
+import { env } from '@infra/environment';
+
+import { lastRankingLoaderFactory } from './last-ranking-loader';
+import { PriceRepositories } from './price-repositories';
 
 const mongo = new Mongo(env.mongodb);
 const repositories = new PriceRepositories(mongo);

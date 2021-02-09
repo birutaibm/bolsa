@@ -1,4 +1,6 @@
+import { MultipleErrors } from '@errors/multiple-errors';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
+import { promise } from '@utils/promise';
 
 export type SearchResult = {
   [source: string]: SymbolInfo;
@@ -27,7 +29,13 @@ export class ExternalSymbolSearch {
       throw new NoneExternalSymbolRepository();
     }
     const promises = this.worker.getExternalSymbols(ticker);
-    const resolved = await Promise.all(promises);
-    return resolved.reduce((result, item) => ({...result, ...item}), {});
+    const { resolved, rejected } = await promise.all(promises);
+    if (resolved.length) {
+      return resolved.reduce((result, item) => ({...result, ...item}), {});
+    }
+    if (rejected.length) {
+      throw new MultipleErrors(rejected);
+    }
+    return {};
   }
 }
