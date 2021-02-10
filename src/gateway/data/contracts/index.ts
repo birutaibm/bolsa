@@ -5,3 +5,4 @@ export * from './price-repositories-provider';
 export * from './external-symbol-repository';
 export * from './create-user-repository';
 export * from './load-user-repository';
+export * from './user-repository';

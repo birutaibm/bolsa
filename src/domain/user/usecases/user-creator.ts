@@ -1,7 +1,7 @@
 import User, { Role } from '@domain/user/entities/user';
 
-import { encoder } from './encoder'
 import { UserData } from './dto';
+import Encoder from './encoder';
 
 export interface RequiredFunctionalities {
   save(user: UserData): Promise<void>;
@@ -10,13 +10,14 @@ export interface RequiredFunctionalities {
 export default class UserCreator {
   constructor(
     private readonly worker: RequiredFunctionalities,
+    private readonly encoder: Encoder,
   ) {}
 
   async create(
     userName: string, password: string, role: Role = 'USER'
   ): Promise<User> {
-    const passHash = await encoder.encode(password);
-    const user = new User(userName, passHash, role, encoder.verify);
+    const passHash = await this.encoder.encode(password);
+    const user = new User(userName, passHash, role, this.encoder.verify);
     await this.worker.save(user);
     return user;
   }

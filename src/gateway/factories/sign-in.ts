@@ -1,14 +1,15 @@
 import UserLoader from '@domain/user/usecases/user-loader';
 import SignIn from '@domain/user/usecases/sign-in';
 import { Factory, SingletonFactory } from '@utils/factory';
+import Security from '@gateway/security';
 
 export class SignInFactory extends SingletonFactory<SignIn> {
   constructor(
-    private readonly createToken: (payload: object) => string,
+    security: Security,
     userLoader: Factory<UserLoader>,
   ) {
     super(() => new SignIn(
-      { createToken },
+      security,
       userLoader.make(),
     ));
   }

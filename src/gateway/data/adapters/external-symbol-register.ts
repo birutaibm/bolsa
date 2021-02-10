@@ -4,9 +4,8 @@ import {
   ExternalSymbolRepository,
 } from '@gateway/data/contracts';
 import {
-  ExternalSymbolRegister, RequiredFunctionalities
+  RequiredFunctionalities
 } from '@domain/price/usecases/external-symbol-register';
-import { SingletonFactory } from '@utils/factory';
 import { SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 
 type TypeOfMember<T, M extends keyof T> = T[M];
@@ -19,7 +18,7 @@ interface Worker {
   getValidSymbols: (ticker: string) => Promise<string[]>;
 };
 
-class Functionalities implements RequiredFunctionalities<Worker> {
+export class ExternalSymbolRegisterFunctionalities implements RequiredFunctionalities<Worker> {
   constructor(
     private readonly repositories: ExternalSymbolRepositories,
   ) {}
@@ -38,13 +37,5 @@ class Functionalities implements RequiredFunctionalities<Worker> {
 
   getKnownSources(): string[] {
     return Object.keys(this.repositories);
-  }
-}
-
-export class ExternalSymbolRegisterFactory extends SingletonFactory<ExternalSymbolRegister> {
-  constructor(
-    repositories: ExternalSymbolRepositories,
-  ) {
-    super(() => new ExternalSymbolRegister(new Functionalities(repositories)));
   }
 }

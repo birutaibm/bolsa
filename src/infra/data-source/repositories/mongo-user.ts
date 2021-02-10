@@ -1,11 +1,11 @@
-import { CreateUserRepository, LoadUserRepository } from '@gateway/data/contracts';
+import { UserRepository } from '@gateway/data/contracts';
 import { UserDTO } from '@gateway/data/dto';
 import { UserNotFoundError } from '@errors/user-not-found';
 
 import Users from '@infra/data-source/model/user';
 import { Mongo } from '@infra/data-source/database';
 
-export class MongoUserRepository implements CreateUserRepository, LoadUserRepository {
+export class MongoUserRepository implements UserRepository {
   constructor(
     mongo: Mongo,
   ) {

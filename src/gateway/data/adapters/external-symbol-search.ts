@@ -1,12 +1,10 @@
 import { SearchExternalSymbolRepository } from '@gateway/data/contracts';
 import {
-  ExternalSymbolSearch,
   SearchResult,
   RequiredFunctionalities,
 } from '@domain/price/usecases/external-symbol-search';
-import { SingletonFactory } from '@utils/factory';
 
-class Functionalities implements RequiredFunctionalities {
+export class ExternalSymbolSearchFunctionalities implements RequiredFunctionalities {
   constructor(
     private readonly repositories: SearchExternalSymbolRepository[],
   ) {}
@@ -26,15 +24,5 @@ class Functionalities implements RequiredFunctionalities {
         return {};
       }
     });
-  }
-}
-
-export class ExternalSymbolSearchFactory extends SingletonFactory<ExternalSymbolSearch> {
-  constructor(
-    ...repositories: SearchExternalSymbolRepository[]
-  ) {
-    super(
-      () => new ExternalSymbolSearch(new Functionalities(repositories))
-    );
   }
 }

@@ -6,9 +6,8 @@ import {
 import { AssetPriceDTO, PriceDTO } from '@gateway/data/dto';
 
 import {
-  ExternalPriceRegister, RequiredFunctionalities,
+  RequiredFunctionalities,
 } from '@domain/price/usecases/external-price-register';
-import { SingletonFactory } from '@utils/factory';
 import { AssetNotFoundError } from '@errors/asset-not-found';
 
 type Compatible = {
@@ -18,7 +17,7 @@ type Compatible = {
   }
 };
 
-class Functionalities implements RequiredFunctionalities {
+export class ExternalPriceRegisterFunctionalities implements RequiredFunctionalities {
   private readonly externals: LoadExternalPriceRepository[];
 
   constructor(
@@ -63,17 +62,5 @@ class Functionalities implements RequiredFunctionalities {
 
   putPrices(ticker: string, prices: PriceDTO[]): Promise<AssetPriceDTO[]> {
     return this.writer.save(ticker, prices);
-  }
-}
-
-export class ExternalPriceRegisterFactory extends SingletonFactory<ExternalPriceRegister> {
-  constructor(
-    writer: SavePricesRepository,
-    dictionary: ExternalSymbolDictionary,
-    ...externals: LoadExternalPriceRepository[]
-  ) {
-    super(() => new ExternalPriceRegister(
-      new Functionalities(writer, dictionary, ...externals)
-    ));
   }
 }

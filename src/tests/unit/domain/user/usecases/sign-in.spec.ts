@@ -1,7 +1,8 @@
-import UserCreator from '@domain/user/usecases/user-creator';
 import UserLoader from '@domain/user/usecases/user-loader';
 import SignIn from '@domain/user/usecases/sign-in';
 import { InvalidUserPasswordError } from '@errors/invalid-user-password';
+import Encoder from '@domain/user/usecases/encoder';
+import { Role } from '@domain/user/entities/user';
 
 let createToken: (payload: object) => string;
 let loader: UserLoader;
@@ -11,16 +12,17 @@ let password: string;
 describe('SignIn', () => {
   beforeAll(async (done) => {
     createToken = user => JSON.stringify(user);
-    const save = async user => {};
-    const name = 'Rafael Arantes';
+    const encoder: Encoder = {
+      encode: plain => Promise.resolve(plain),
+      verify: (plain, encoded) => plain === encoded,
+    }
     password = 'password';
-    const user = await new UserCreator({save}).create(name, password);
     const getUser = async userName => ({
       userName,
-      role: user.role,
-      passHash: user.passHash,
+      role: 'USER' as Role,
+      passHash: password,
     });
-    loader = new UserLoader({getUser});
+    loader = new UserLoader({getUser}, encoder);
     useCase = new SignIn({createToken}, loader);
     done();
   });

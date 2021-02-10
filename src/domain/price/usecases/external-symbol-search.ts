@@ -29,12 +29,9 @@ export class ExternalSymbolSearch {
       throw new NoneExternalSymbolRepository();
     }
     const promises = this.worker.getExternalSymbols(ticker);
-    const { resolved, rejected } = await promise.all(promises);
+    const { resolved } = await promise.all(promises);
     if (resolved.length) {
       return resolved.reduce((result, item) => ({...result, ...item}), {});
-    }
-    if (rejected.length) {
-      throw new MultipleErrors(rejected);
     }
     return {};
   }
