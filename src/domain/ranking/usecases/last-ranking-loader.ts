@@ -10,7 +10,7 @@ export class LastRankingLoader {
     private readonly worker: RequiredFunctionalities,
   ) {}
 
-  load(): Promise<Ranking[]> {
+  async load(): Promise<Ranking[]> {
     if (new Date().getHours() > 21) {
       throw new RankingUnavailableError();
     }

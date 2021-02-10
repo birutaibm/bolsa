@@ -17,8 +17,8 @@ export class UserCreatorController implements Controller {
     const { userName, password, role } = params.body;
     try {
       const user = (role && role.toUpperCase() === 'ADMIN')
-        ? await this.userCreator.fromPlainPassword(userName, password, 'ADMIN')
-        : await this.userCreator.fromPlainPassword(userName, password);
+        ? await this.userCreator.create(userName, password, 'ADMIN')
+        : await this.userCreator.create(userName, password);
       return created(userTranslator.entityToView(user));
     } catch (error) {
       console.log(error);

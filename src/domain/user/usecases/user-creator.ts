@@ -12,12 +12,12 @@ export default class UserCreator {
     private readonly worker: RequiredFunctionalities,
   ) {}
 
-  async fromPlainPassword(
+  async create(
     userName: string, password: string, role: Role = 'USER'
   ): Promise<User> {
     const passHash = await encoder.encode(password);
     const user = new User(userName, passHash, role, encoder.verify);
-    await this.worker.save(user)
+    await this.worker.save(user);
     return user;
   }
 }

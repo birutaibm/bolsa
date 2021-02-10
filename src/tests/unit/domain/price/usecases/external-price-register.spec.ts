@@ -85,7 +85,7 @@ let price: PriceDTO;
 let func: Functionalities;
 let useCase: ExternalPriceRegister;
 
-describe('ExternalSymbolSearch', () => {
+describe('ExternalPriceRegister', () => {
   beforeAll(() => {
     price = {
       date: new Date(),

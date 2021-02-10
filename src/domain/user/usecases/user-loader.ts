@@ -1,4 +1,4 @@
-import User, { Role } from '@domain/user/entities/user';
+import User from '@domain/user/entities/user';
 
 import { encoder } from './encoder'
 import { UserData } from './dto';

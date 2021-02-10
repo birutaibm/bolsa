@@ -8,7 +8,7 @@ const reqFunValues = {
 };
 let symbolRegister: ExternalSymbolRegister;
 
-describe('ExternalSymbolSearch', () => {
+describe('ExternalSymbolRegister', () => {
   beforeAll(() => {
     const reqFun = {
       getKnownSources: () => Object.keys(reqFunValues),
