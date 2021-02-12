@@ -2,7 +2,7 @@ import { Ranking } from '@domain/ranking/entities';
 import { RankingUnavailableError } from '@errors/ranking-unavailable';
 
 export interface RequiredFunctionalities {
-  load(): Promise<Ranking[]>;
+  loadLastRanking(): Promise<Ranking[]>;
 }
 
 export class LastRankingLoader {
@@ -14,6 +14,6 @@ export class LastRankingLoader {
     if (new Date().getHours() > 21) {
       throw new RankingUnavailableError();
     }
-    return this.worker.load();
+    return this.worker.loadLastRanking();
   }
 }

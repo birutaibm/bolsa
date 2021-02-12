@@ -44,57 +44,50 @@ describe('LastPriceLoader', () => {
   });
 
   it('should reject with PriceUnavailableError if there is no load function', async (done) => {
-    const noLoadFunctions = { loadFunctions: [] };
     await expect(
-      new LastPriceLoader(noLoadFunctions).load(ticker)
+      new LastPriceLoader([]).load(ticker)
     ).rejects.toBeInstanceOf(PriceUnavailableError);
     done();
   });
 
   it('should reject with PriceUnavailableError if load function fails', async (done) => {
-    const loadFunctions = { loadFunctions: [ doNotLoad ] };
     await expect(
-      new LastPriceLoader(loadFunctions).load(ticker)
+      new LastPriceLoader([ doNotLoad ]).load(ticker)
     ).rejects.toBeInstanceOf(PriceUnavailableError);
     done();
   });
 
   it('should reject with PriceUnavailableError if load function returns nothing', async (done) => {
-    const loadFunctions = { loadFunctions: [ loadEmpty ] };
     await expect(
-      new LastPriceLoader(loadFunctions).load(ticker)
+      new LastPriceLoader([ loadEmpty ]).load(ticker)
     ).rejects.toBeInstanceOf(PriceUnavailableError);
     done();
   });
 
   it('should be able to load prices', async (done) => {
-    const loadFunctions = { loadFunctions: [ load1 ] };
     await expect(
-      new LastPriceLoader(loadFunctions).load(ticker)
+      new LastPriceLoader([ load1 ]).load(ticker)
     ).resolves.toEqual(older);
     done();
   });
 
   it('should be able to load prices even if some load function fails', async (done) => {
-    const loadFunctions = { loadFunctions: [ doNotLoad, load2 ] };
     await expect(
-      new LastPriceLoader(loadFunctions).load(ticker)
+      new LastPriceLoader([ doNotLoad, load2 ]).load(ticker)
     ).resolves.toEqual(newer);
     done();
   });
 
   it('should be able to load prices even if some load function returns nothing', async (done) => {
-    const loadFunctions = { loadFunctions: [ loadEmpty, load1 ] };
     await expect(
-      new LastPriceLoader(loadFunctions).load(ticker)
+      new LastPriceLoader([ loadEmpty, load1 ]).load(ticker)
     ).resolves.toEqual(older);
     done();
   });
 
   it('should be able to load the most recent price', async (done) => {
-    const loadFunctions = { loadFunctions: [ load1, load2 ] };
     await expect(
-      new LastPriceLoader(loadFunctions).load(ticker)
+      new LastPriceLoader([ load1, load2 ]).load(ticker)
     ).resolves.toEqual(newer);
     done();
   });

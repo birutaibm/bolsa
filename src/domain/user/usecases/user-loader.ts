@@ -4,7 +4,7 @@ import Encoder from './encoder'
 import { UserData } from './dto';
 
 export interface RequiredFunctionalities {
-  getUser(userName: string): Promise<UserData>;
+  getUserFromUsername(userName: string): Promise<UserData>;
 }
 
 export default class UserLoader {
@@ -14,7 +14,7 @@ export default class UserLoader {
   ) {}
 
   async load(userName: string): Promise<User> {
-    const { passHash, role } = await this.worker.getUser(userName);
+    const { passHash, role } = await this.worker.getUserFromUsername(userName);
     return new User(userName, passHash, role, this.encoder.verify);
   }
 }

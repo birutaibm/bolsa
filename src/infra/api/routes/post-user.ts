@@ -1,13 +1,12 @@
 import { Router } from 'express';
 
-import {
-  UserCreatorControllerFactory
-} from '@gateway/presentation/factories';
+import { Factory } from '@utils/factory';
+import { UserCreatorController } from '@gateway/presentation/controllers';
 import routeAdapter from '@infra/adapters/express-router-adapter';
 
 export default function (
   router: Router,
-  controllerFactory: UserCreatorControllerFactory
+  controllerFactory: Factory<UserCreatorController>,
 ): void {
   router.post(
     '/users',

@@ -4,19 +4,19 @@ import { promise } from '@utils/promise';
 
 type SymbolDictionary = SymbolDictionaryEntry[];
 
-interface InternalWorker {
+export interface Worker {
   getValidSymbols: (ticker: string) => Promise<string[]>;
   register: (info: SymbolDictionaryEntry) => Promise<SymbolDictionaryEntry>;
 }
 
-export interface RequiredFunctionalities<W extends InternalWorker> {
-  getInternalWorker(source: string): W;
+export interface WorkerProvider {
+  getWorker(source: string): Worker;
   getKnownSources(): string[];
 }
 
 export class ExternalSymbolRegister {
   constructor(
-    private readonly worker: RequiredFunctionalities<InternalWorker>,
+    private readonly workers: WorkerProvider,
   ) {}
 
   async registryAll(dictionary: SymbolDictionary): Promise<SymbolDictionary> {
@@ -26,22 +26,22 @@ export class ExternalSymbolRegister {
   }
 
   async registry(info: SymbolDictionaryEntry): Promise<SymbolDictionaryEntry> {
-    let internalWorker: InternalWorker;
+    let worker: Worker;
     try {
-      internalWorker = this.worker.getInternalWorker(info.source);
+      worker = this.workers.getWorker(info.source);
     } catch (error) {
       throw new InvalidSymbolDictionaryEntryError(info);
     }
-    await this.ensureValidSymbol(internalWorker, info);
-    return internalWorker.register(info);
+    await this.ensureValidSymbol(worker, info);
+    return worker.register(info);
   }
 
   getKnownSources(): string[] {
-    return this.worker.getKnownSources();
+    return this.workers.getKnownSources();
   }
 
   private async ensureValidSymbol(
-    { getValidSymbols }: InternalWorker,
+    { getValidSymbols }: Worker,
     info: SymbolDictionaryEntry,
   ): Promise<void> {
     const validSymbols = await getValidSymbols(info.ticker);

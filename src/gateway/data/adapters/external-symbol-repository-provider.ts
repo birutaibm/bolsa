@@ -1,29 +1,18 @@
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 import {
   ExternalSymbolRepositories,
-  ExternalSymbolRepository,
 } from '@gateway/data/contracts';
 import {
-  RequiredFunctionalities
+  WorkerProvider, Worker
 } from '@domain/price/usecases/external-symbol-register';
 import { SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 
-type TypeOfMember<T, M extends keyof T> = T[M];
-
-interface Worker {
-  register: TypeOfMember<
-    TypeOfMember<ExternalSymbolRepository, 'register'>,
-    'registryExternalSymbol'
-  >;
-  getValidSymbols: (ticker: string) => Promise<string[]>;
-};
-
-export class ExternalSymbolRegisterFunctionalities implements RequiredFunctionalities<Worker> {
+export class ExternalSymbolRepositoryProvider implements WorkerProvider {
   constructor(
     private readonly repositories: ExternalSymbolRepositories,
   ) {}
 
-  getInternalWorker(source: string): Worker {
+  getWorker(source: string): Worker {
     const repository = this.repositories[source];
     if (!repository) {
       throw new NoneExternalSymbolRepository();

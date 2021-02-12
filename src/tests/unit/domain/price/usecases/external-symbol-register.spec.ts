@@ -1,5 +1,5 @@
 import { SymbolDictionaryEntry } from '@domain/price/entities';
-import { ExternalSymbolRegister, RequiredFunctionalities } from '@domain/price/usecases/external-symbol-register';
+import { ExternalSymbolRegister } from '@domain/price/usecases/external-symbol-register';
 import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-symbol-dictionary-entry';
 
 const reqFunValues = {
@@ -12,7 +12,7 @@ describe('ExternalSymbolRegister', () => {
   beforeAll(() => {
     const reqFun = {
       getKnownSources: () => Object.keys(reqFunValues),
-      getInternalWorker: (source: string) => {
+      getWorker: (source: string) => {
         if (!reqFunValues[source])
           throw new Error();
         return {

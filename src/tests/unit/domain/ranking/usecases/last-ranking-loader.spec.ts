@@ -3,7 +3,7 @@ import { LastRankingLoader } from '@domain/ranking/usecases/last-ranking-loader'
 import { RankingUnavailableError } from '@errors/ranking-unavailable';
 
 let data: Ranking[]
-let load: () => Promise<Ranking[]>;
+let loadLastRanking: () => Promise<Ranking[]>;
 let useCase: LastRankingLoader;
 let validDate: Date;
 let invalidDate: Date;
@@ -32,8 +32,8 @@ describe('Ranking', () => {
       matchDate: new Date(),
       score: 455,
     }];
-    load = async (): Promise<Ranking[]> => data;
-    useCase = new LastRankingLoader({load});
+    loadLastRanking = async (): Promise<Ranking[]> => data;
+    useCase = new LastRankingLoader({loadLastRanking});
     jest.useFakeTimers('modern');
   });
 

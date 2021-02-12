@@ -17,7 +17,7 @@ type Compatible = {
   }
 };
 
-export class ExternalPriceRegisterFunctionalities implements RequiredFunctionalities {
+export class PriceRepositoriesIntegrator implements RequiredFunctionalities {
   private readonly externals: LoadExternalPriceRepository[];
 
   constructor(

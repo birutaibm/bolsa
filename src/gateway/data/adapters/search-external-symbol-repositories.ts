@@ -4,7 +4,7 @@ import {
   RequiredFunctionalities,
 } from '@domain/price/usecases/external-symbol-search';
 
-export class ExternalSymbolSearchFunctionalities implements RequiredFunctionalities {
+export class SearchExternalSymbolRepositories implements RequiredFunctionalities {
   constructor(
     private readonly repositories: SearchExternalSymbolRepository[],
   ) {}

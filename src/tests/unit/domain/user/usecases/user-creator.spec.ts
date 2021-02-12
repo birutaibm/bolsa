@@ -2,7 +2,7 @@ import UserCreator from '@domain/user/usecases/user-creator';
 import { UserData } from '@domain/user/usecases/dto';
 import Encoder from '@domain/user/usecases/encoder';
 
-let save: (user: UserData) => Promise<void>;
+let saveUser: (user: UserData) => Promise<void>;
 let useCase: UserCreator;
 
 describe('UserCreator', () => {
@@ -11,8 +11,8 @@ describe('UserCreator', () => {
       encode: plain => Promise.resolve(plain),
       verify: (plain, encoded) => plain === encoded,
     }
-    save = async user => {};
-    useCase = new UserCreator({save}, encoder);
+    saveUser = async user => {};
+    useCase = new UserCreator({saveUser}, encoder);
   });
 
   it('should be able create user from data', async done => {

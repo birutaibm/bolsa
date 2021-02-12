@@ -17,12 +17,12 @@ describe('SignIn', () => {
       verify: (plain, encoded) => plain === encoded,
     }
     password = 'password';
-    const getUser = async userName => ({
+    const getUserFromUsername = async userName => ({
       userName,
       role: 'USER' as Role,
       passHash: password,
     });
-    loader = new UserLoader({getUser}, encoder);
+    loader = new UserLoader({getUserFromUsername}, encoder);
     useCase = new SignIn({createToken}, loader);
     done();
   });

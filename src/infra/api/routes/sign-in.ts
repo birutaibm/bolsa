@@ -1,13 +1,12 @@
 import { Router } from 'express';
 
-import {
-  SignInControllerFactory
-} from '@gateway/presentation/factories';
+import { Factory } from '@utils/factory';
+import { SignInController } from '@gateway/presentation/controllers';
 import routeAdapter from '@infra/adapters/express-router-adapter';
 
 export default function (
   router: Router,
-  controllerFactory: SignInControllerFactory
+  controllerFactory: Factory<SignInController>
 ): void {
   router.post(
     '/sessions',

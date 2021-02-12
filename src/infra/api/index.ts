@@ -1,14 +1,15 @@
 import { Router, Express, json } from 'express';
 
+import { Factory } from '@utils/factory';
+import { ControllerFactory } from '@gateway/factories';
 import {
-  ControllerFactory,
-  ExternalSymbolRegisterControllerFactory,
-  ExternalSymbolSearchControllerFactory,
-  LoadLastPriceControllerFactory,
-  LoadLastRankingControllerFactory,
-  SignInControllerFactory,
-  UserCreatorControllerFactory,
-} from '@gateway/presentation/factories';
+  LoadLastPriceController,
+  LoadLastRankingController,
+  ExternalSymbolSearchController,
+  ExternalSymbolRegisterController,
+  UserCreatorController,
+  SignInController,
+} from '@gateway/presentation/controllers';
 
 import price from './routes/price';
 import getSymbol from './routes/get-symbol';
@@ -23,12 +24,12 @@ type setupExpressRoute = (
 ) => void;
 
 type ControllerFactories = {
-  price: LoadLastPriceControllerFactory;
-  ranking: LoadLastRankingControllerFactory;
-  symbolSearch: ExternalSymbolSearchControllerFactory;
-  symbolRegister: ExternalSymbolRegisterControllerFactory;
-  userCreator: UserCreatorControllerFactory;
-  signIn: SignInControllerFactory;
+  price: Factory<LoadLastPriceController>;
+  ranking: Factory<LoadLastRankingController>;
+  symbolSearch: Factory<ExternalSymbolSearchController>;
+  symbolRegister: Factory<ExternalSymbolRegisterController>;
+  userCreator: Factory<UserCreatorController>;
+  signIn: Factory<SignInController>;
 };
 
 export default class API {

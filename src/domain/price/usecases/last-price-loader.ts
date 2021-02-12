@@ -1,20 +1,17 @@
 import { Price } from '@domain/price/entities';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 
-export interface RequiredFunctionalities<T extends Price> {
-  readonly loadFunctions: Array<(ticker: string) => Promise<T[]>>
-}
+export type LoadFunctions<T> = Array<(ticker: string) => Promise<T[]>>;
 
 export class LastPriceLoader {
   constructor(
-    private readonly worker: RequiredFunctionalities<Price>,
+    private readonly loaders: LoadFunctions<Price>,
   ) {}
 
   async load(ticker: string): Promise<Price> {
-    const loaders = this.worker.loadFunctions;
     const allPrices: Price[] = [];
     const errors: Error[] = [];
-    for (const load of loaders) {
+    for (const load of this.loaders) {
       try {
         const prices = await load(ticker);
         if (prices && prices.length) {

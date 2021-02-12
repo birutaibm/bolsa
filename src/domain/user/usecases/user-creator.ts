@@ -4,7 +4,7 @@ import { UserData } from './dto';
 import Encoder from './encoder';
 
 export interface RequiredFunctionalities {
-  save(user: UserData): Promise<void>;
+  saveUser(user: UserData): Promise<void>;
 }
 
 export default class UserCreator {
@@ -18,7 +18,7 @@ export default class UserCreator {
   ): Promise<User> {
     const passHash = await this.encoder.encode(password);
     const user = new User(userName, passHash, role, this.encoder.verify);
-    await this.worker.save(user);
+    await this.worker.saveUser(user);
     return user;
   }
 }
