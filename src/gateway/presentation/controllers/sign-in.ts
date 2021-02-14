@@ -10,10 +10,10 @@ export class SignInController implements Controller {
   ) {}
 
   async handle(params: Params): Promise<Response> {
-    if (!params.body) {
+    const { userName, password } = params.body || {};
+    if (!userName || !password) {
       return clientError('Required parameters: userName, password');
     }
-    const { userName, password } = params.body;
     try {
       const token = await this.signIn.signIn(userName, password);
       return created({ token });

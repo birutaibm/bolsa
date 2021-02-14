@@ -32,8 +32,12 @@ export function notFoundError(message: string): Response {
 };
 
 export function serverError(error: Error): Response {
+  console.error(error);
   return {
     statusCode: 500,
-    data: error.stack
+    data: {
+      error: error.name,
+      message: error.message,
+    },
   };
 };

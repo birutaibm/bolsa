@@ -1,6 +1,6 @@
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 import {
-  ExternalSymbolRepositories,
+  RegistryExternalSymbolRepository, SearchExternalSymbolRepository,
 } from '@gateway/data/contracts';
 import {
   WorkerProvider, Worker
@@ -9,22 +9,23 @@ import { SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 
 export class ExternalSymbolRepositoryProvider implements WorkerProvider {
   constructor(
-    private readonly repositories: ExternalSymbolRepositories,
+    private readonly register: RegistryExternalSymbolRepository,
+    private readonly search: SearchExternalSymbolRepository[],
   ) {}
 
   getWorker(source: string): Worker {
-    const repository = this.repositories[source];
+    const repository = this.search.find(s => s.name === source);
     if (!repository) {
       throw new NoneExternalSymbolRepository();
     }
     const register = (entry: SymbolDictionaryEntryDTO) =>
-      repository.register.registryExternalSymbol(entry);
+      this.register.registryExternalSymbol(entry);
     const getValidSymbols = async (ticker: string) =>
-      Object.keys(await repository.search.getExternalSymbols(ticker));
+      Object.keys(await repository.getExternalSymbols(ticker));
     return { register, getValidSymbols };
   }
 
   getKnownSources(): string[] {
-    return Object.keys(this.repositories);
+    return this.search.map(s => s.name);
   }
 }

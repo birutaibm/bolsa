@@ -3,7 +3,7 @@ import { SingletonFactory } from '@utils/factory';
 import { RepositoryFactories } from '@gateway/factories/repositories';
 
 import { Mongo } from '@infra/data-source/database';
-import { FakeUserRepository } from '@infra/data-source/in-memory';
+import { FakeUserRepository } from '@infra/data-source/repositories';
 import { MongoUserRepository } from '@infra/data-source/repositories/mongo-user';
 
 import { PriceRepositories } from './price-repositories';

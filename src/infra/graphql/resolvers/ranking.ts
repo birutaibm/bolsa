@@ -1,7 +1,8 @@
+import { Factory } from '@utils/factory';
+import { LoadLastRankingController } from '@gateway/presentation/controllers';
 import { adaptResolver } from '@infra/adapters';
-import { LoadLastRankingControllerFactory } from '@gateway/presentation/factories';
 
-export default (controllerFactory: LoadLastRankingControllerFactory) => ({
+export default (controllerFactory: Factory<LoadLastRankingController>) => ({
   Query: {
     async lastRanking(): Promise<any> {
       return adaptResolver(controllerFactory.make());

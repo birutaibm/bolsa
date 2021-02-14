@@ -3,8 +3,8 @@ import {
 } from '@domain/price/usecases';
 import { ExternalSymbolRepositoryProvider, priceLoaderOf, PriceRepositoriesIntegrator, SearchExternalSymbolRepositories } from '@gateway/data/adapters';
 import {
-  ExternalSymbolRepositories,
-  PriceRepositoriesProvider
+  PriceRepositoriesProvider,
+  SearchExternalSymbolRepository
 } from '@gateway/data/contracts';
 import { SingletonFactory } from '@utils/factory';
 
@@ -41,17 +41,14 @@ export default class PriceUseCasesFactories {
   ofExternalSymbolRegister(): SingletonFactory<ExternalSymbolRegister> {
     if (!this.externalSymbolRegister) {
       const register = this.repositories.getInternal();
-      const repositories: ExternalSymbolRepositories =
-        this.repositories.getExternals().reduce(
-          (reduced, search) => ({
-            ...reduced,
-            [search.name]: { search, register },
-          }),
-          {},
-        );
+      const repositories: SearchExternalSymbolRepository[] =
+        this.repositories.getExternals();
       this.externalSymbolRegister = new SingletonFactory(
         () => new ExternalSymbolRegister(
-          new ExternalSymbolRepositoryProvider(repositories)
+          new ExternalSymbolRepositoryProvider(
+            register,
+            repositories,
+          )
         )
       );
     }

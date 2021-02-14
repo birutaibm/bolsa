@@ -8,6 +8,7 @@ export class FakeUserRepository implements UserRepository {
   async saveUser(user: UserDTO): Promise<void> {
     this.users.push(user);
   }
+
   async getUserFromUsername(userName: string): Promise<UserDTO> {
     const user = this.users.find((user: UserDTO) => user.userName === userName);
     if (user) {

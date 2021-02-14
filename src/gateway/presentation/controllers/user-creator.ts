@@ -11,10 +11,10 @@ export class UserCreatorController implements Controller {
   ) {}
 
   async handle(params: Params): Promise<Response> {
-    if (!params.body) {
-      return clientError('Required parameters: userName, password, role');
+    const { userName, password, role } = params.body || {};
+    if (!userName || !password) {
+      return clientError('Required parameters: userName, password');
     }
-    const { userName, password, role } = params.body;
     try {
       const user = (role && role.toUpperCase() === 'ADMIN')
         ? await this.userCreator.create(userName, password, 'ADMIN')

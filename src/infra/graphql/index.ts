@@ -1,13 +1,13 @@
 import { ApolloServer } from 'apollo-server-express';
 import { Express } from 'express';
 
-import { LoadLastRankingControllerFactory } from '@gateway/presentation/factories';
-
+import { Factory } from '@utils/factory';
+import { LoadLastRankingController } from '@gateway/presentation/controllers';
 import typeDefs from '@infra/graphql/type-defs';
 import rankingResolver from '@infra/graphql/resolvers/ranking';
 
 type ControllerFactories = {
-  ranking: LoadLastRankingControllerFactory;
+  ranking: Factory<LoadLastRankingController>;
 };
 
 export default class Graphql {

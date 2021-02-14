@@ -1,3 +1,3 @@
-import { UserData } from '@domain/user/usecases/user-creator';
+import { UserData } from '@domain/user/usecases/dto';
 
 export type UserDTO = UserData;
