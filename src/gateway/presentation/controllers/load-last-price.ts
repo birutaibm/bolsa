@@ -1,6 +1,6 @@
 import { LastPriceLoader } from '@domain/price/usecases';
 import {
-  Controller, Params, Response, ok, clientError, serverError
+  Controller, Params, Response, ok, clientError, serverError, notFoundError
 } from '@gateway/presentation/contracts';
 import { PriceEntity, priceTranslator, PriceView } from '@gateway/presentation/view';
 
@@ -19,7 +19,9 @@ export class LoadLastPriceController implements Controller {
       const data = priceTranslator.entityToView(price);
       return ok(data);
     } catch (error) {
-      console.log(error);
+      if (error.name === 'AssetNotFoundError') {
+        return notFoundError(error.message);
+      }
       return serverError(error);
     }
   }

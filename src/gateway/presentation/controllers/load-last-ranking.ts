@@ -17,7 +17,6 @@ export class LoadLastRankingController implements Controller {
       const data = rankingTranslator.entitiesToViews(ranking);
       return ok(data);
     } catch (error) {
-      console.log(error);
       return serverError(error);
     }
   }

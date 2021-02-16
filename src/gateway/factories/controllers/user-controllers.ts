@@ -1,28 +1,24 @@
 import { Factory } from '@utils/factory';
+import { SignIn, UserCreator } from '@domain/user/usecases';
 
-import { UserRepository } from '@gateway/data/contracts';
-import Security from '@gateway/security';
 import {
   SignInController, UserCreatorController
 } from '@gateway/presentation/controllers';
-import { ControllerFactory, UserUseCasesFactories } from '@gateway/factories';
+import { ControllerFactory } from '@gateway/factories';
 
 type UserControllers = {
   readonly userCreator: Factory<UserCreatorController>;
   readonly signIn: Factory<SignInController>;
 };
 
+type UserUseCasesFactories = {
+  userCreator: Factory<UserCreator>;
+  signIn: Factory<SignIn>;
+}
+
 export function createUserControllers(
-  repositoryFactory: Factory<UserRepository>,
-  securityFactory: Factory<Security>
+  { userCreator, signIn }: UserUseCasesFactories,
 ): UserControllers {
-  const security = securityFactory.make();
-  const repository = repositoryFactory.make();
-  const useCases = new UserUseCasesFactories(repository, security);
-  const {
-    userCreator,
-    signIn,
-  } = useCases.getAll();
 
   return {
     userCreator: new ControllerFactory(

@@ -1,5 +1,6 @@
 import { Price } from '@domain/price/entities';
 import { LastPriceLoader } from '@domain/price/usecases/last-price-loader';
+import { AssetNotFoundError } from '@errors/asset-not-found';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 
 type LoadFn = (ticker: string) => Promise<Price[]>;
@@ -57,10 +58,10 @@ describe('LastPriceLoader', () => {
     done();
   });
 
-  it('should reject with PriceUnavailableError if load function returns nothing', async (done) => {
+  it('should reject with AssetNotFoundError if load function returns nothing', async (done) => {
     await expect(
       new LastPriceLoader([ loadEmpty ]).load(ticker)
-    ).rejects.toBeInstanceOf(PriceUnavailableError);
+    ).rejects.toBeInstanceOf(AssetNotFoundError);
     done();
   });
 

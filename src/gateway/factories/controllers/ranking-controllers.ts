@@ -1,9 +1,9 @@
 import { Factory } from '@utils/factory';
+import { LastRankingLoader } from '@domain/ranking/usecases';
 
-import { LoadLastRankingRepository } from '@gateway/data/contracts';
 import { LoadLastRankingController } from '@gateway/presentation/controllers';
 import {
-  ControllerFactory, RankingUseCasesFactories
+  ControllerFactory
 } from '@gateway/factories';
 
 type RankingControllers = {
@@ -11,10 +11,8 @@ type RankingControllers = {
 }
 
 export function createRankingControllers(
-  repository: Factory<LoadLastRankingRepository>,
+  loader: Factory<LastRankingLoader>,
 ): RankingControllers {
-  const useCases = new RankingUseCasesFactories(repository.make());
-  const { loader } = useCases.getAll();
   return {
     load: new  ControllerFactory(
       () => new LoadLastRankingController(loader.make())

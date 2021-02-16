@@ -20,7 +20,6 @@ export class ExternalSymbolSearchController implements Controller {
       }
       return ok(results);
     } catch (error) {
-      console.log(error);
       return serverError(error);
     }
   }

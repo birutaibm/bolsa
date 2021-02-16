@@ -8,7 +8,7 @@ import { AssetPriceDTO, PriceDTO } from '@gateway/data/dto';
 import {
   RequiredFunctionalities,
 } from '@domain/price/usecases/external-price-register';
-import { AssetNotFoundError } from '@errors/asset-not-found';
+import { PriceUnavailableError } from '@errors/price-unavailable';
 
 type Compatible = {
   [source: string]: {
@@ -55,7 +55,7 @@ export class PriceRepositoriesIntegrator implements RequiredFunctionalities {
       return external.loadPriceBySymbol(symbol);
     });
     if (promises.length === 0) {
-      throw new AssetNotFoundError(ticker);
+      throw new PriceUnavailableError(ticker);
     }
     return Promise.race(promises);
   }

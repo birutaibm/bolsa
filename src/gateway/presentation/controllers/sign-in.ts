@@ -1,7 +1,7 @@
 import SignIn from '@domain/user/usecases/sign-in';
 
 import {
-  clientError, Controller, created, Params, Response, serverError
+  clientError, Controller, created, Params, Response, serverError, unauthorized
 } from '@gateway/presentation/contracts';
 
 export class SignInController implements Controller {
@@ -18,7 +18,9 @@ export class SignInController implements Controller {
       const token = await this.signIn.signIn(userName, password);
       return created({ token });
     } catch (error) {
-      console.log(error);
+      if (error.name === 'InvalidUserPasswordError') {
+        return unauthorized('Invalid user and/or password');
+      }
       return serverError(error);
     }
   }

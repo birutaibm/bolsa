@@ -1,6 +1,7 @@
 import { Price } from '@domain/price/entities'
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
+import { AssetNotFoundError } from '@errors/asset-not-found';
 
 type PriceDTO = Omit<Price, 'ticker' | 'name'>;
 
@@ -29,10 +30,14 @@ export class ExternalPriceRegister {
     try {
       prices = await this.worker.getExternalPrices(ticker);
     } catch (error) {
-      throw new PriceUnavailableError(ticker, error);
+      if (error.name === 'AssetNotFoundError') {
+        throw error
+      } else {
+        throw new PriceUnavailableError(ticker, error);
+      }
     }
     if (prices.length === 0) {
-      throw new PriceUnavailableError(ticker);
+      throw new AssetNotFoundError(ticker);
     }
     return prices;
   }

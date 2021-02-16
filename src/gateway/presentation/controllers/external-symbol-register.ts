@@ -30,7 +30,6 @@ export class ExternalSymbolRegisterController implements Controller {
         ? created(result)
         : clientError('Can not find any valid symbol at body');
     } catch (error) {
-      console.log(error);
       return serverError(error);
     }
   }

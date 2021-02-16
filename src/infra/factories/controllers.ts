@@ -1,4 +1,4 @@
-import { createControllerFactories } from '@gateway/factories';
+import { createControllerFactories, createUseCasesFactories } from '@gateway/factories';
 
 import { Mongo } from '@infra/data-source/database';
 import { env } from '@infra/environment';
@@ -10,8 +10,6 @@ const mongo = new Mongo(env.mongodb);
 
 const repositories = createRepositoryFactories(mongo);
 
+const useCases = createUseCasesFactories(repositories, securityFactory);
 
-export const controllerFactories = createControllerFactories(
-  repositories,
-  securityFactory,
-);
+export const controllerFactories = createControllerFactories(useCases);

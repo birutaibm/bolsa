@@ -49,5 +49,5 @@ describe('PriceRepositoriesIntegrator', () => {
     done();
   });
 
-  // TODO Test getExternalPrices function behaviors
+  //TODO:Test getExternalPrices function behaviors
 });

@@ -6,6 +6,7 @@ import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 import { assetAdapter } from '@infra/adapters';
 import Assets, { AssetDocument } from '@infra/data-source/model/asset';
 import { Mongo } from '@infra/data-source/database';
+import { PriceUnavailableError } from '@errors/price-unavailable';
 
 export class MongoPriceRepository implements InternalRepository {
   constructor(
@@ -75,7 +76,12 @@ export class MongoPriceRepository implements InternalRepository {
   }
 
   async loadPriceByTicker(ticker: string): Promise<AssetPriceDTO[]> {
-    const asset = await Assets.findOne({ ticker });
+    let asset: AssetDocument | null;
+    try {
+      asset = await Assets.findOne({ ticker });
+    } catch (error) {
+      throw new PriceUnavailableError(ticker, error);
+    }
     if (!asset) {
       throw new AssetNotFoundError(ticker);
     }

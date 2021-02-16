@@ -2,6 +2,7 @@ import { ExternalPriceRegister, RequiredFunctionalities } from '@domain/price/us
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 import { AssetPriceDTO, PriceDTO } from '@gateway/data/dto';
+import { AssetNotFoundError } from '@errors/asset-not-found';
 
 type Compatible = () => Promise<PriceDTO[]>;
 
@@ -125,10 +126,10 @@ describe('ExternalPriceRegister', () => {
     done();
   });
 
-  it('should throw price unavailable when there is no price for ticker', async (done) => {
+  it('should throw asset not found when there is no price for ticker', async (done) => {
     await expect(
       useCase.registry('PETR4')
-    ).rejects.toBeInstanceOf(PriceUnavailableError);
+    ).rejects.toBeInstanceOf(AssetNotFoundError);
     done();
   });
 });

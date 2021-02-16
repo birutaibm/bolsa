@@ -1,12 +1,14 @@
 import { Factory } from '@utils/factory';
+import {
+  ExternalSymbolRegister, ExternalSymbolSearch, LastPriceLoader
+} from '@domain/price/usecases';
 
-import { PriceRepositoriesProvider } from '@gateway/data/contracts';
 import {
   LoadLastPriceController,
   ExternalSymbolSearchController,
   ExternalSymbolRegisterController
 } from '@gateway/presentation/controllers';
-import { PriceUseCasesFactories, ControllerFactory } from '@gateway/factories';
+import { ControllerFactory } from '@gateway/factories';
 
 type PriceControllers = {
   readonly price: Factory<LoadLastPriceController>;
@@ -14,16 +16,17 @@ type PriceControllers = {
   readonly symbolRegister: Factory<ExternalSymbolRegisterController>;
 }
 
-export function createPriceControllers(
-  repositoryFactory: Factory<PriceRepositoriesProvider>,
-): PriceControllers {
-  const repositories = repositoryFactory.make();
-  const priceServiceFactories = new PriceUseCasesFactories(repositories);
-  const {
-    lastPriceLoader,
-    externalSymbolSearch,
-    externalSymbolRegister,
-  } = priceServiceFactories.getAll();
+type PriceUseCaseFactories = {
+  lastPriceLoader: Factory<LastPriceLoader>;
+  externalSymbolSearch: Factory<ExternalSymbolSearch>;
+  externalSymbolRegister: Factory<ExternalSymbolRegister>;
+};
+
+export function createPriceControllers({
+  lastPriceLoader,
+  externalSymbolSearch,
+  externalSymbolRegister,
+}: PriceUseCaseFactories): PriceControllers {
 
   return {
     price: new ControllerFactory(

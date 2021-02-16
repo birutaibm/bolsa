@@ -24,6 +24,13 @@ export function clientError(message: string): Response {
   };
 };
 
+export function unauthorized(message: string): Response {
+  return {
+    statusCode: 401,
+    data: { message },
+  };
+};
+
 export function notFoundError(message: string): Response {
   return {
     statusCode: 404,

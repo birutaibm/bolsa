@@ -21,7 +21,6 @@ export class UserCreatorController implements Controller {
         : await this.userCreator.create(userName, password);
       return created(userTranslator.entityToView(user));
     } catch (error) {
-      console.log(error);
       return serverError(error);
     }
   }

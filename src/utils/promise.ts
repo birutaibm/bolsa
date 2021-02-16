@@ -16,6 +16,9 @@ export const promise = {
   },
 
   async all<T>(promises: Array<Promise<T>>): Promise<Results<T>> {
+    if (promises.length === 0) {
+      return Promise.resolve({resolved: [], rejected: []});
+    };
     const resolved: {[key: number]: T} = {};
     const rejected: {[key: number]: Error} = {};
     return new Promise((resolve, reject) => {
