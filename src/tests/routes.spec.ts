@@ -73,6 +73,26 @@ describe('API', () => {
     done();
   });
 
+  it('should be able to search ITUB3 via graphQL route', async (done) => {
+    request(app)
+      .post('/graphql')
+      .send({
+        query: `{
+          symbolSearch(ticker: "ITUB3")
+        }`
+      })
+      .set("Accept", "application/json")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toBeInstanceOf(Object);
+        expect(res.body.data.symbolSearch).toBeInstanceOf(Object);
+        expect(res.body.data.symbolSearch['alphavantage']['ITUB3.SAO']).toBeInstanceOf(Object);
+        done();
+      });
+  });
+
   // it('should be able to access ITUB4 last price route', async (done) => {
   //   const res = await request(app).get('/api/price/last/ITUB4');
   //   expect(res.status).toEqual(200);

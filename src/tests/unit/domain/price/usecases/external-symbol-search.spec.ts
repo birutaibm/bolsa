@@ -1,5 +1,6 @@
 import { Price } from '@domain/price/entities';
 import { ExternalSymbolSearch, SearchResult, RequiredFunctionalities } from '@domain/price/usecases/external-symbol-search';
+import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 import { MultipleErrors } from '@errors/multiple-errors';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 
@@ -24,7 +25,7 @@ describe('ExternalSymbolSearch', () => {
       (resolve, reject) => resolve(optimisticResult)
     );
     const pessimisticPromise: Promise<SearchResult> = new Promise(
-      (resolve, reject) => reject(new Error("I am lazy"))
+      (resolve, reject) => reject(new ExternalSymbolNotFoundError('externalSource', ticker))
     );
     noExternals = {
       checkThereIsSomeExternal: () => false,

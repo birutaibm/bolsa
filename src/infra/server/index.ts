@@ -1,13 +1,13 @@
-import express from 'express';
+import express, { Express } from 'express';
 
-import API from '@infra/api';
-import ApolloServerSetup from '@infra/graphql';
+import RestAPI from '@infra/api';
+import GraphQL from '@infra/graphql';
 import { controllerFactories } from '@infra/factories'
 
-const app = express();
+const app: Express = express();
 
-const api = new API(app);
-const graphql = new ApolloServerSetup(app);
+const api = new RestAPI(app);
+const graphql = new GraphQL(app);
 
 api.setup(controllerFactories);
 graphql.setup(controllerFactories);

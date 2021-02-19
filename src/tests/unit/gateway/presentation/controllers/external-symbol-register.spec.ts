@@ -37,10 +37,8 @@ describe('External symbol register controller', () => {
 
   it('should be able to registry external symbol', async done => {
     const params = {
-      route: { ticker },
-      body: {
-        banks: 'ITUB3.SAO',
-      },
+      ticker,
+      banks: 'ITUB3.SAO',
     };
     const result = [{source: 'banks', ticker, externalSymbol: 'ITUB3.SAO'}];
     await expect(
@@ -51,24 +49,20 @@ describe('External symbol register controller', () => {
 
   it('should be able to recognize empty result', async done => {
     const params = {
-      route: { ticker },
-      body: {
-        source: 'ITUB3.SAO',
-      },
+      ticker,
+      source: 'ITUB3.SAO',
     };
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 400, data: {
-      message: 'Can not find any valid symbol at body',
+      message: 'Can not find any valid symbol',
     }});
     done();
   });
 
   it('should be able to report wrong route parameters', async done => {
     const params = {
-      body: {
-        banks: 'ITUB3.SAO',
-      },
+      banks: 'ITUB3.SAO',
     };
     await expect(
       controller.handle(params)
@@ -79,25 +73,10 @@ describe('External symbol register controller', () => {
     done();
   });
 
-  it('should be able to report body parameter absence', async done => {
-    const params = {
-      route: { ticker },
-    };
-    await expect(
-      controller.handle(params)
-    ).resolves.toEqual(expect.objectContaining({
-      statusCode: 400,
-      data: { message: 'Can not find any symbol at body' }
-    }));
-    done();
-  });
-
   it('should be able to repass error', async done => {
     const params = {
-      route: { ticker },
-      body: {
-        commodities: 'ITUB3.SAO',
-      },
+      ticker,
+      commodities: 'ITUB3.SAO',
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});
     await expect(

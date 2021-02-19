@@ -11,7 +11,7 @@ export class Mongo {
     this.connect();
   }
 
-  connect() {
-    mongoose.connect(this.config.uri, this.config.connectionOptions);
+  async connect() {
+    await mongoose.connect(this.config.uri, this.config.connectionOptions);
   }
 }

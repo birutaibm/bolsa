@@ -25,7 +25,7 @@ describe('Load last ranking controller', () => {
     const useCase = new LastRankingLoader(worker);
     const controller = new LoadLastRankingController(useCase);
     await expect(
-      controller.handle({})
+      controller.handle()
     ).resolves.toEqual({statusCode: 200, data: [view]});
     done();
   });
@@ -38,7 +38,7 @@ describe('Load last ranking controller', () => {
     const controller = new LoadLastRankingController(useCase);
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});
     await expect(
-      controller.handle({})
+      controller.handle()
     ).resolves.toEqual(expect.objectContaining({statusCode: 500}));
     done();
   });

@@ -1,6 +1,6 @@
 import { LastRankingLoader } from '@domain/ranking/usecases';
 import {
-  Controller, Params, Response, ok, serverError
+  Controller, Response, ok, serverError
 } from '@gateway/presentation/contracts';
 import {
   RankingEntity, RankingView, rankingTranslator
@@ -11,7 +11,7 @@ export class LoadLastRankingController implements Controller {
     private readonly lastRankingLoader: LastRankingLoader
   ) {}
 
-  async handle(_: Params): Promise<Response<RankingView[]>> {
+  async handle(): Promise<Response<RankingView[]>> {
     try {
       const ranking: RankingEntity[] = await this.lastRankingLoader.load();
       const data = rankingTranslator.entitiesToViews(ranking);

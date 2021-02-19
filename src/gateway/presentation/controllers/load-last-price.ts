@@ -9,8 +9,7 @@ export class LoadLastPriceController implements Controller {
     private readonly lastPriceLoader: LastPriceLoader
   ) {}
 
-  async handle({route}: Params): Promise<Response<PriceView>> {
-    const ticker = route?.ticker;
+  async handle({ticker}: Params): Promise<Response<PriceView>> {
     if (!ticker) {
       return clientError('Can not find ticker at route');
     }

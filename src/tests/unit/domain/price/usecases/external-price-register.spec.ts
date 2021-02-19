@@ -1,15 +1,16 @@
 import { ExternalPriceRegister, RequiredFunctionalities } from '@domain/price/usecases/external-price-register';
-import { PriceUnavailableError } from '@errors/price-unavailable';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 import { AssetPriceDTO, PriceDTO } from '@gateway/data/dto';
 import { AssetNotFoundError } from '@errors/asset-not-found';
+import { ExternalPriceLoaderError } from '@errors/external-price-loader';
+import { PriceUnavailableError } from '@errors/price-unavailable';
 
 type Compatible = () => Promise<PriceDTO[]>;
 
 type Data = {
   [ticker: string]: {
     symbol: string;
-    price: PriceDTO[]
+    price?: PriceDTO[]
   };
 }
 
@@ -25,10 +26,10 @@ class External {
 
   async loadPriceBySymbol(symbol: string): Promise<PriceDTO[]> {
     const prices = Object.values(this.data).find(value => value.symbol === symbol);
-    if (prices) {
+    if (prices?.price) {
       return prices.price;
     }
-    throw new Error();
+    throw new ExternalPriceLoaderError(this.name, 'Some generic external message');
   }
 }
 
@@ -72,7 +73,7 @@ class Functionalities implements RequiredFunctionalities {
   async getExternalPrices(ticker: string): Promise<PriceDTO[]> {
     const promises = this.getCompatibleExternals(ticker).map(load => load());
     if (promises.length === 0) {
-      return [];
+      throw new AssetNotFoundError(ticker);
     }
     return await Promise.race(promises);
   }
@@ -105,6 +106,13 @@ describe('ExternalPriceRegister', () => {
           symbol: 'BBAS3.SAO',
           price: [price]
         },
+        BBDC3: {
+          symbol: 'BBDC3.SAO',
+          price: []
+        },
+        SAMB11: {
+          symbol: 'SAMB11.SAO',
+        }
       },
     };
     func = new Functionalities(externals);
@@ -128,8 +136,22 @@ describe('ExternalPriceRegister', () => {
 
   it('should throw asset not found when there is no price for ticker', async (done) => {
     await expect(
+      useCase.registry('BBDC3')
+    ).rejects.toBeInstanceOf(AssetNotFoundError);
+    done();
+  });
+
+  it('should throw asset not found when there is no source for ticker', async (done) => {
+    await expect(
       useCase.registry('PETR4')
     ).rejects.toBeInstanceOf(AssetNotFoundError);
+    done();
+  });
+
+  it('should throw price unavailable when price loader fails', async (done) => {
+    await expect(
+      useCase.registry('SAMB11')
+    ).rejects.toBeInstanceOf(PriceUnavailableError);
     done();
   });
 });

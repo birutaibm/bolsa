@@ -32,10 +32,10 @@ describe('Sign-in controller', () => {
     const brokenLoader = new UserLoader(brokenWorker, encoder);
     const brokenUseCase = new SignIn(tokenGenerator, brokenLoader);
     brokenController = new SignInController(brokenUseCase);
-    params = { body: {
+    params = {
       userName: 'Rafael',
       password: '123456',
-    }};
+    };
   });
 
   it('should be able to obtain token data', async done => {
@@ -65,10 +65,10 @@ describe('Sign-in controller', () => {
 
   it('should be able to report invalid credentials', async done => {
     await expect(
-      workingController.handle({body: {
+      workingController.handle({
         userName: 'Rafael',
         password: '654321',
-      }})
+      })
     ).resolves.toEqual(expect.objectContaining({
       statusCode: 401,
       data: { message: 'Invalid user and/or password' }

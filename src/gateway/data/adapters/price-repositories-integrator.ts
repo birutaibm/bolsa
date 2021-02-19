@@ -1,3 +1,4 @@
+import { promise } from '@utils/promise';
 import {
   ExternalSymbolDictionary,
   LoadExternalPriceRepository,
@@ -32,24 +33,24 @@ export class PriceRepositoriesIntegrator implements RequiredFunctionalities {
     return this.externals.length > 0;
   }
 
-  private getCompatibleExternals(ticker: string): Compatible {
-    const compatible = {} as Compatible;
-    this.externals.forEach(async (external) => {
+  private async getCompatibleExternals(ticker: string): Promise<Compatible> {
+    const promises: Promise<Compatible>[] = this.externals.map(async (external) => {
       const { name } = external;
-      try {
-        const symbol = await this.dictionary.getExternalSymbol(ticker, name);
-        compatible[name] = {
+      const symbol = await this.dictionary.getExternalSymbol(ticker, name);
+      return {
+        [name]: {
           external,
           symbol,
-        };
-      } catch (error) {
-      }
+        }
+      };
     });
+    const { resolved } = await promise.all(promises);
+    const compatible = resolved.reduce((acc, item) => ({...acc, ...item}), {});
     return compatible;
   }
 
-  getExternalPrices(ticker: string): Promise<PriceDTO[]> {
-    const compatible: Compatible = this.getCompatibleExternals(ticker);
+  async getExternalPrices(ticker: string): Promise<PriceDTO[]> {
+    const compatible: Compatible = await this.getCompatibleExternals(ticker);
     const promises = Object.keys(compatible).map(source => {
       const { external, symbol } = compatible[source];
       return external.loadPriceBySymbol(symbol);

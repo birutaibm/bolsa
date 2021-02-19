@@ -1,4 +1,4 @@
-export type Params = Partial<AllParams>;
+export type Params = StringMap;
 
 type AllParams = {
   header: StringMap;

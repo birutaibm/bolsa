@@ -3,8 +3,7 @@ import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 
-import { assetAdapter } from '@infra/adapters';
-import { Asset } from '@infra/data-source/model/asset';
+import { Asset, adapter } from '@infra/data-source/model/asset';
 
 export class FakePriceRepository implements InternalRepository {
   private readonly assets: Asset[] = [
@@ -97,10 +96,10 @@ export class FakePriceRepository implements InternalRepository {
         ticker,
         name: ticker,
       }));
-      asset = assetAdapter.fromPriceDTOs(assetPrices)[0];
+      asset = adapter.fromPriceDTOs(assetPrices)[0];
       this.assets.push(asset);
     }
-    return assetAdapter.toPriceDTOs(asset);
+    return adapter.toPriceDTOs(asset);
   }
 
   async loadPriceByTicker(ticker: string): Promise<AssetPriceDTO[]> {
@@ -108,6 +107,6 @@ export class FakePriceRepository implements InternalRepository {
     if (!asset) {
       throw new AssetNotFoundError(ticker);
     }
-    return assetAdapter.toPriceDTOs(asset);
+    return adapter.toPriceDTOs(asset);
   }
 }

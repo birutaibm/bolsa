@@ -32,7 +32,7 @@ describe('Load last price controller', () => {
     const brokenLoader = async () => {throw new Error();};
     const brokenUseCase = new LastPriceLoader([brokenLoader]);
     brokenController = new LoadLastPriceController(brokenUseCase);
-    params = { route: { ticker } };
+    params = { ticker };
   });
 
   it('should be able to obtain price data', async done => {
@@ -55,7 +55,7 @@ describe('Load last price controller', () => {
   it('should be able to report error when asset not found', async done => {
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});
     await expect(
-      workingController.handle({route: {ticker: 'ITUB4'}})
+      workingController.handle({ticker: 'ITUB4'})
     ).resolves.toEqual(expect.objectContaining({
       statusCode: 404,
       data: {

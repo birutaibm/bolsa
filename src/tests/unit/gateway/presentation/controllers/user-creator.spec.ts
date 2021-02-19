@@ -22,10 +22,10 @@ describe('User creator controller', () => {
     }
     const brokenUseCase = new UserCreator(brokenWorker, encoder);
     brokenController = new UserCreatorController(brokenUseCase);
-    params = { body: {
+    params = {
       userName: 'Rafael',
       password: '123456',
-    }};
+    };
   });
 
   it('should be able to obtain user data', async done => {

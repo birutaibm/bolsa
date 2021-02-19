@@ -8,27 +8,23 @@ export class ExternalSymbolRegisterController implements Controller {
     private readonly useCase: ExternalSymbolRegister,
   ) {}
 
-  async handle({ route, body }: Params): Promise<Response> {
-    const ticker = route?.ticker;
+  async handle({ ticker, ...rest }: Params): Promise<Response> {
     if (!ticker) {
       return clientError('Can not find ticker at route');
     }
-    if (!body) {
-      return clientError('Can not find any symbol at body');
-    }
     const knownSources = this.useCase.getKnownSources();
     const dictionary = knownSources
-      .filter(source => body[source])
+      .filter(source => rest[source])
       .map(source => ({
         ticker,
         source,
-        externalSymbol: body[source],
+        externalSymbol: rest[source],
       }));
     try {
       const result = await this.useCase.registryAll(dictionary);
       return result.length
         ? created(result)
-        : clientError('Can not find any valid symbol at body');
+        : clientError('Can not find any valid symbol');
     } catch (error) {
       return serverError(error);
     }

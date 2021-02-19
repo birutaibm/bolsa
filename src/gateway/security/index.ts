@@ -33,16 +33,13 @@ export default class Security implements Encoder {
   }
 
   verifyToken(token: string): object {
-    let value: object | string;
+    let value: object;
     try {
       value = jwt.verify(
         token,
         this.jwtConfig.publicKey,
-      );
+      ) as object;
     } catch (error) {
-      throw new InvalidTokenFormatError();
-    }
-    if (typeof value === 'string') {
       throw new InvalidTokenFormatError();
     }
     return value;

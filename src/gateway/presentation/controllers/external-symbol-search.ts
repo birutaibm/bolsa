@@ -8,8 +8,7 @@ export class ExternalSymbolSearchController implements Controller {
     private readonly useCase: ExternalSymbolSearch,
   ) {}
 
-  async handle({route}: Params): Promise<Response<SearchResult>> {
-    const ticker = route?.ticker;
+  async handle({ticker}: Params): Promise<Response<SearchResult>> {
     if (!ticker) {
       return clientError('Can not find ticker at route');
     }

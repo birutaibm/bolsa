@@ -5,22 +5,22 @@ import {
 } from '@gateway/factories';
 import Security from '@gateway/security';
 
-import RankingUseCasesFactories from './ranking';
-import PriceUseCasesFactories from './price';
-import UserUseCasesFactories from './user';
+import createRankingUseCasesFactories from './ranking';
+import createPriceUseCasesFactories from './price';
+import createUserUseCasesFactories from './user';
 
 export function createUseCasesFactories(
   { ranking, prices, user }: RepositoryFactories,
   security: Factory<Security>,
 ) {
-  const rankingUseCases = new RankingUseCasesFactories(ranking.make());
-  const priceUseCases = new PriceUseCasesFactories(prices.make());
-  const userUseCases = new UserUseCasesFactories(user.make(), security.make());
+  const rankingUseCases = createRankingUseCasesFactories(ranking.make());
+  const priceUseCases = createPriceUseCasesFactories(prices.make());
+  const userUseCases = createUserUseCasesFactories(user.make(), security.make());
 
   return {
-    price: priceUseCases.getAll(),
-    user : userUseCases.getAll(),
-    ranking: rankingUseCases.getAll().loader,
+    price: priceUseCases,
+    user : userUseCases,
+    ranking: rankingUseCases.loader,
   };
 }
 

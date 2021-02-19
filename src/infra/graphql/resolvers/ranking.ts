@@ -1,6 +1,7 @@
 import { Factory } from '@utils/factory';
 import { LoadLastRankingController } from '@gateway/presentation/controllers';
-import { adaptResolver } from '@infra/adapters';
+
+import { adaptResolver } from './adapter';
 
 export default (controllerFactory: Factory<LoadLastRankingController>) => ({
   Query: {

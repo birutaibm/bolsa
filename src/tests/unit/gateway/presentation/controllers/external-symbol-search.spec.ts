@@ -33,7 +33,7 @@ describe('Load last price controller', () => {
     };
     const brokenUseCase = new ExternalSymbolSearch(brokenLoader);
     brokenController = new ExternalSymbolSearchController(brokenUseCase);
-    params = { route: { ticker } };
+    params = { ticker };
   });
 
   it('should be able to obtain search result', async done => {

@@ -1,26 +1,18 @@
 import { ApolloServer } from 'apollo-server-express';
 import { Express } from 'express';
 
-import { Factory } from '@utils/factory';
-import { LoadLastRankingController } from '@gateway/presentation/controllers';
-import typeDefs from '@infra/graphql/type-defs';
-import rankingResolver from '@infra/graphql/resolvers/ranking';
+import typeDefs from './type-defs';
+import createResolvers from './resolvers';
 
-type ControllerFactories = {
-  ranking: Factory<LoadLastRankingController>;
-};
-
-export default class Graphql {
+export default class GraphQL {
   constructor(
     private readonly app: Express
   ) {}
 
   setup(
-    controllerFactories: ControllerFactories,
+    controllerFactories: Parameters<typeof createResolvers>[0],
   ): void {
-    const resolvers = [
-      rankingResolver(controllerFactories.ranking),
-    ];
+    const resolvers = createResolvers(controllerFactories);
     const server = new ApolloServer({
       resolvers,
       typeDefs,

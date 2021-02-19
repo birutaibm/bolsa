@@ -2,7 +2,8 @@ import { Router } from 'express';
 
 import { Factory } from '@utils/factory';
 import { LoadLastPriceController } from '@gateway/presentation/controllers';
-import routeAdapter from '@infra/adapters/express-router-adapter';
+
+import routeAdapter from './adapter';
 
 export default function (
   router: Router,

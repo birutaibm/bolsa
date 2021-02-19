@@ -10,8 +10,7 @@ export class UserCreatorController implements Controller {
     private readonly userCreator: UserCreator,
   ) {}
 
-  async handle(params: Params): Promise<Response> {
-    const { userName, password, role } = params.body || {};
+  async handle({ userName, password, role }: Params): Promise<Response> {
     if (!userName || !password) {
       return clientError('Required parameters: userName, password');
     }

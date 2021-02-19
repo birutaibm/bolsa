@@ -9,8 +9,7 @@ export class SignInController implements Controller {
     private readonly signIn: SignIn,
   ) {}
 
-  async handle(params: Params): Promise<Response> {
-    const { userName, password } = params.body || {};
+  async handle({ userName, password }: Params): Promise<Response> {
     if (!userName || !password) {
       return clientError('Required parameters: userName, password');
     }

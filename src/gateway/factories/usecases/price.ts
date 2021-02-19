@@ -4,80 +4,46 @@ import {
 import { ExternalSymbolRepositoryProvider, priceLoaderOf, PriceRepositoriesIntegrator, SearchExternalSymbolRepositories } from '@gateway/data/adapters';
 import {
   PriceRepositoriesProvider,
-  SearchExternalSymbolRepository
 } from '@gateway/data/contracts';
 import { SingletonFactory } from '@utils/factory';
 
-export default class PriceUseCasesFactories {
-  private externalSymbolSearch: SingletonFactory<ExternalSymbolSearch>;
-  private externalSymbolRegister: SingletonFactory<ExternalSymbolRegister>;
-  private lastPriceLoader: SingletonFactory<LastPriceLoader>;
-
-  constructor(
-    private readonly repositories: PriceRepositoriesProvider,
-  ) {}
-
-  getAll() {
-    return {
-      externalSymbolSearch: this.ofExternalSymbolSearch(),
-      externalSymbolRegister: this.ofExternalSymbolRegister(),
-      lastPriceLoader: this.ofLastPriceLoader(),
-    };
-  }
-
-  ofExternalSymbolSearch(): SingletonFactory<ExternalSymbolSearch> {
-    if (!this.externalSymbolSearch) {
-      this.externalSymbolSearch = new SingletonFactory(
-        () => new ExternalSymbolSearch(
-          new SearchExternalSymbolRepositories(
-            this.repositories.getExternals()
-          )
-        )
-      );
-    }
-    return this.externalSymbolSearch;
-  }
-
-  ofExternalSymbolRegister(): SingletonFactory<ExternalSymbolRegister> {
-    if (!this.externalSymbolRegister) {
-      const register = this.repositories.getInternal();
-      const repositories: SearchExternalSymbolRepository[] =
-        this.repositories.getExternals();
-      this.externalSymbolRegister = new SingletonFactory(
-        () => new ExternalSymbolRegister(
-          new ExternalSymbolRepositoryProvider(
-            register,
-            repositories,
-          )
-        )
-      );
-    }
-    return this.externalSymbolRegister;
-  }
-
-  private ofExternalPriceRegister(): SingletonFactory<ExternalPriceRegister> {
-    const internal = this.repositories.getInternal();
-    const externals = this.repositories.getExternals();
-    return new SingletonFactory(
-      () => new ExternalPriceRegister(
-        new PriceRepositoriesIntegrator(internal, internal, ...externals)
+export default function createPriceUseCasesFactories(
+  repositories: PriceRepositoriesProvider,
+  ) {
+  const internal = repositories.getInternal();
+  const externals = repositories.getExternals();
+  const externalSymbolSearch = new SingletonFactory(
+    () => new ExternalSymbolSearch(
+      new SearchExternalSymbolRepositories(
+        externals
       )
-    );
-  }
+    )
+  );
+  const externalSymbolRegister = new SingletonFactory(
+    () => new ExternalSymbolRegister(
+      new ExternalSymbolRepositoryProvider(
+        internal,
+        externals,
+      )
+    )
+  );
+  const externalPriceRegister = new SingletonFactory(
+    () => new ExternalPriceRegister(
+      new PriceRepositoriesIntegrator(internal, internal, ...externals)
+    )
+  );
+  const lastPriceLoader = new SingletonFactory(
+    () => new LastPriceLoader(
+      priceLoaderOf(
+        internal,
+        externalPriceRegister.make(),
+      )
+    )
+  );
 
-  ofLastPriceLoader(): SingletonFactory<LastPriceLoader> {
-    if (!this.lastPriceLoader) {
-      const internal = this.repositories.getInternal();
-      const externalPriceRegisterFactory = this.ofExternalPriceRegister();
-      this.lastPriceLoader = new SingletonFactory(
-        () => new LastPriceLoader(
-          priceLoaderOf(
-            internal,
-            externalPriceRegisterFactory.make(),
-          )
-        )
-      );
-    }
-    return this.lastPriceLoader;
-  }
+  return {
+    externalSymbolSearch,
+    externalSymbolRegister,
+    lastPriceLoader,
+  };
 }

@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 
 import { Controller, Params } from '@gateway/presentation/contracts';
 
-function adaptInputField(field: {[key: string]: any}): {[key: string]: string} {
+type Field = { [key: string]: undefined | string | string[] | Field | Field[] };
+
+function adaptInputField(field: Field): {[key: string]: string} {
   return Object.keys(field).reduce((reduced, key) => {
     const value = field[key];
     const parsed = (typeof value === 'string') ? value : JSON.stringify(value);
@@ -18,10 +20,10 @@ function adaptInput(req: Request): Params {
   const header = adaptInputField(headers);
   const query = adaptInputField(req.query);
   return {
-    body,
-    route: params,
-    header,
-    query,
+    ...body,
+    ...query,
+    ...params,
+    ...header,
   };
 }
 

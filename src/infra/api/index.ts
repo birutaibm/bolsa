@@ -41,10 +41,6 @@ export default class API {
     app.use('/api', this.router);
   }
 
-  use(setup: setupExpressRoute, factory: ControllerFactory<any>) {
-    setup(this.router, factory);
-  }
-
   setup(
     controllerFactories: ControllerFactories,
   ): void {
