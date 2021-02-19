@@ -1,17 +1,21 @@
 import {
-  ExternalSymbolSearch, ExternalSymbolRegister, LastPriceLoader, ExternalPriceRegister
+  ExternalSymbolSearch,
+  ExternalSymbolRegister,
+  LastPriceLoader,
+  ExternalPriceRegister,
 } from '@domain/price/usecases';
-import { ExternalSymbolRepositoryProvider, priceLoaderOf, PriceRepositoriesIntegrator, SearchExternalSymbolRepositories } from '@gateway/data/adapters';
 import {
-  PriceRepositoriesProvider,
-} from '@gateway/data/contracts';
+  ExternalSymbolRepositoryProvider,
+  priceLoaderOf,
+  PriceRepositoriesIntegrator,
+  SearchExternalSymbolRepositories,
+} from '@gateway/data/adapters';
+import { PriceRepositoriesProvider } from '@gateway/data/contracts';
 import { SingletonFactory } from '@utils/factory';
 
 export default function createPriceUseCasesFactories(
-  repositories: PriceRepositoriesProvider,
-  ) {
-  const internal = repositories.getInternal();
-  const externals = repositories.getExternals();
+  { internal, externals }: PriceRepositoriesProvider,
+) {
   const externalSymbolSearch = new SingletonFactory(
     () => new ExternalSymbolSearch(
       new SearchExternalSymbolRepositories(

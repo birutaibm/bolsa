@@ -10,7 +10,7 @@ export class FakePriceRepository implements InternalRepository {
     {
       ticker: 'BBAS3',
       name: 'Banco do Brasil',
-      externals: {},
+      externals: new Map(),
       prices: [{
         date: 869769877606969,
         open: 23.52,
@@ -27,7 +27,7 @@ export class FakePriceRepository implements InternalRepository {
     }, {
       ticker: 'ITUB4',
       name: 'Itaú Unibanco',
-      externals: {},
+      externals: new Map(),
       prices: [{
         date: 869769877606969,
         open: 23.52,
@@ -55,7 +55,7 @@ export class FakePriceRepository implements InternalRepository {
       asset = {
         ticker,
         name: ticker,
-        externals: {},
+        externals: new Map(),
         prices: [],
       };
       this.assets.push(asset);

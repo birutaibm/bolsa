@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 import { ExternalRepository } from '@gateway/data/contracts';
 import { ExternalSymbolsDTO, AssetPriceDTO } from '@gateway/data/dto';
@@ -9,9 +9,12 @@ type Prices = Promise<Array<Omit<AssetPriceDTO, 'ticker' | 'name'>>>;
 
 export class AlphavantagePriceRepository implements ExternalRepository {
   public readonly name = 'alphavantage';
-  private readonly api = axios.create({
-    baseURL: 'https://www.alphavantage.co/query?apikey=TBKVBVUN7P8KMWT0',
-  });
+  private readonly api: AxiosInstance;
+
+  constructor(apiKey: string) {
+    const baseURL = `https://www.alphavantage.co/query?apikey=${apiKey}`;
+    this.api = axios.create({ baseURL });
+  }
 
   async getExternalSymbols(ticker: string): Promise<ExternalSymbolsDTO> {
     const response = await this.api.get(

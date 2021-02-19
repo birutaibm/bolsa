@@ -1,6 +1,15 @@
-export * from './fake-ranking';
-export * from './fake-price';
-export * from './fake-user';
-export * from './alphavantage-price';
-export * from './mongo-price';
-export * from './mongo-user';
+import { SingletonFactory } from '@utils/factory';
+
+import { RepositoryFactories } from '@gateway/factories/repositories';
+
+import { Mongo } from '@infra/data-source/database';
+
+import { createPriceRepositories } from './price-repositories';
+import { MongoUserRepository } from './mongo';
+
+export function createRepositoryFactories(mongo: Mongo): RepositoryFactories {
+  return {
+    prices: new SingletonFactory(() => createPriceRepositories(mongo)),
+    user:  new SingletonFactory(() => new MongoUserRepository(mongo)),
+  };
+}

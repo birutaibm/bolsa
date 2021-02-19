@@ -1,6 +1,6 @@
 import { InternalRepository, ExternalRepository } from '.';
 
 export interface PriceRepositoriesProvider {
-  getInternal: () => InternalRepository,
-  getExternals: () => ExternalRepository[],
+  readonly internal: InternalRepository,
+  readonly externals: ExternalRepository[],
 }

@@ -6,7 +6,7 @@ type MongoConfig = {
   connectionOptions: ConnectOptions;
 };
 
-export class Mongo {
+export default class Mongo {
   constructor(private readonly config: MongoConfig) {
     this.connect();
   }

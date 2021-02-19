@@ -22,4 +22,7 @@ export const env = {
     privateKey: process.env.JWT_PRIVATE_KEY || 'chave? que chave?',
     publicKey: process.env.JWT_PUBLIC_KEY || 'se a chave é pública, melhor nem trancar',
   },
+  externalPrices: {
+    alphavantageKey: process.env.ALPHAVANTAGE_API_KEY || '',
+  }
 };
