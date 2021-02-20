@@ -25,7 +25,6 @@ export class MongoPriceRepository implements InternalRepository {
       asset = await Assets.create({
         ticker,
         name: ticker,
-        externals: {},
         prices: [],
       });
     }
@@ -69,7 +68,6 @@ export class MongoPriceRepository implements InternalRepository {
       }));
       asset = await Assets.create(adapter.fromPriceDTOs(assetPrices)[0]);
     }
-
     return adapter.toPriceDTOs(await asset.save());
   }
 
