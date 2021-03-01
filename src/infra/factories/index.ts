@@ -1,22 +1,48 @@
 import {
-  createControllerFactories, createUseCasesFactories
+  createControllerFactories, createUseCasesFactories, RepositoryFactories
 } from '@gateway/factories';
 
 import { env } from '@infra/environment';
-import { Mongo } from '@infra/data-source/database';
-import { createRepositoryFactories } from '@infra/data-source/repositories';
+import { RepositoryFactoriesBuilder } from '@infra/data-source';
 
 import securityFactory from './security';
 
-const mongo = new Mongo(env.mongodb);
+class Factories {
+  private readonly security = securityFactory;
+  private repositories: RepositoryFactories;
+  private useCases: ReturnType<typeof createUseCasesFactories>;
+  private controllers: ReturnType<typeof createControllerFactories>;
 
-export { securityFactory };
+  async ofRepositories() {
+    if (!this.repositories) {
+      this.repositories = await new RepositoryFactoriesBuilder()
+        .withMongo(env.mongodb)
+        .withAlphavantage(env.externalPrices.alphavantageKey)
+        .build();
+    }
+    return this.repositories;
+  }
 
-export const repositoryFactories =
-  createRepositoryFactories(mongo);
+  async ofSecurity() {
+    return this.security;
+  }
 
-export const useCasesFactories =
-  createUseCasesFactories(repositoryFactories, securityFactory);
+  async ofUseCases() {
+    if (!this.useCases) {
+      this.useCases = createUseCasesFactories(
+        await this.ofRepositories(),
+        await this.ofSecurity(),
+      );
+    }
+    return this.useCases;
+  }
 
-export const controllerFactories =
-  createControllerFactories(useCasesFactories);
+  async ofControllers() {
+    if (!this.controllers) {
+      this.controllers = createControllerFactories(await this.ofUseCases());
+    }
+    return this.controllers;
+  }
+}
+
+export default new Factories();

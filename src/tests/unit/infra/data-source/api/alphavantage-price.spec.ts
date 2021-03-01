@@ -1,5 +1,5 @@
 import { env } from '@infra/environment';
-import { AlphavantagePriceRepository } from '@infra/data-source/repositories/alphavantage-price';
+import { AlphavantagePriceRepository } from '@infra/data-source/api';
 
 const key = env.externalPrices.alphavantageKey;
 

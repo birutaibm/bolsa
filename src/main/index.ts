@@ -1,9 +1,5 @@
-import app from '@infra/server';
-import { env } from '@infra/environment';
+import { ServerBuilder } from '@infra/server';
 
-app.listen(
-  env.port,
-  () => console.log(`Server running at http://localhost:${env.port}`)
+new ServerBuilder().withRestAPI().withGraphQL().build().then(server =>
+  server.start()
 );
-
-export default app;

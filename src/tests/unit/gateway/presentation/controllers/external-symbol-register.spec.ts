@@ -1,9 +1,12 @@
 import { ExternalSymbolRegister } from '@domain/price/usecases';
+import { Authorization } from '@domain/user/usecases';
+import { InvalidTokenFormatError } from '@errors/invalid-token-format';
 import { SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 import { ExternalSymbolRegisterController } from '@gateway/presentation/controllers';
 
 let controller: ExternalSymbolRegisterController;
 let ticker: string;
+let authorization: string;
 
 describe('External symbol register controller', () => {
   beforeAll(() => {
@@ -32,13 +35,17 @@ describe('External symbol register controller', () => {
       },
     };
     const workingUseCase = new ExternalSymbolRegister(workingLoader);
-    controller = new ExternalSymbolRegisterController(workingUseCase);
+    authorization = 'Token ',
+    controller = new ExternalSymbolRegisterController(
+      workingUseCase, new Authorization(() => ({ role: 'ADMIN' })),
+    );
   });
 
   it('should be able to registry external symbol', async done => {
     const params = {
       ticker,
       banks: 'ITUB3.SAO',
+      authorization,
     };
     const result = [{source: 'banks', ticker, externalSymbol: 'ITUB3.SAO'}];
     await expect(
@@ -51,11 +58,12 @@ describe('External symbol register controller', () => {
     const params = {
       ticker,
       source: 'ITUB3.SAO',
+      authorization,
     };
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 400, data: {
-      message: 'Can not find any valid symbol',
+      message: 'Your request has no valid symbol.',
     }});
     done();
   });
@@ -63,6 +71,7 @@ describe('External symbol register controller', () => {
   it('should be able to report wrong route parameters', async done => {
     const params = {
       banks: 'ITUB3.SAO',
+      authorization,
     };
     await expect(
       controller.handle(params)
@@ -73,10 +82,24 @@ describe('External symbol register controller', () => {
     done();
   });
 
+  it('should be able to report wrong authorization', async done => {
+    const params = {
+      banks: 'ITUB3.SAO',
+    };
+    await expect(
+      controller.handle(params)
+    ).resolves.toEqual(expect.objectContaining({
+      statusCode: 401,
+      data: { message: 'Admin privilegies required to this action!' }
+    }));
+    done();
+  });
+
   it('should be able to repass error', async done => {
     const params = {
       ticker,
       commodities: 'ITUB3.SAO',
+      authorization,
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});
     await expect(

@@ -1,7 +1,8 @@
 import { SingletonFactory } from '@utils/factory';
-import { UserLoader, UserCreator, SignIn } from '@domain/user/usecases';
+import { Authorization, UserLoader, UserCreator, SignIn } from '@domain/user/usecases';
 import { UserRepository } from '@gateway/data/contracts';
 import Security from '@gateway/security';
+import { createVerifyToken } from '@gateway/data/adapters';
 
 export default function createUserUseCasesFactories(
   repository: UserRepository,
@@ -16,10 +17,14 @@ export default function createUserUseCasesFactories(
   const signIn = new SingletonFactory(
     () => new SignIn(security, userLoader.make())
   );
+  const authorization = new SingletonFactory(
+    () => new Authorization(createVerifyToken(security))
+  );
 
   return {
     userCreator,
     signIn,
     userLoader,
+    authorization,
   };
 }

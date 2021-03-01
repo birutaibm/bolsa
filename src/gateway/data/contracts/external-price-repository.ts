@@ -2,12 +2,12 @@ import { ExternalSymbolsDTO, PriceDTO } from '@gateway/data/dto';
 
 export interface LoadExternalPriceRepository {
   readonly name: string;
-  loadPriceBySymbol: (symbol: string) => Promise<PriceDTO[]>;
+  loadPriceBySymbol(symbol: string): Promise<PriceDTO[]>;
 }
 
 export interface SearchExternalSymbolRepository {
   readonly name: string;
-  getExternalSymbols: (ticker: string) => Promise<ExternalSymbolsDTO>;
+  getExternalSymbols(ticker: string): Promise<ExternalSymbolsDTO>;
 }
 
 export interface ExternalRepository extends LoadExternalPriceRepository, SearchExternalSymbolRepository {}

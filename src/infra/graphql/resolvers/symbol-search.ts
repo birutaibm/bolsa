@@ -10,7 +10,7 @@ type Params = {
 
 export default (controllerFactory: Factory<ExternalSymbolSearchController>) => ({
   Query: {
-    async symbolSearch(_: any, args: Params): Promise<any> {
+    symbolSearch(_: any, args: Params): Promise<any> {
       return adaptResolver(controllerFactory.make(), args);
     }
   },

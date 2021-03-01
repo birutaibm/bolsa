@@ -1,8 +1,9 @@
-import { env } from '@infra/environment';
-import { Mongo } from '@infra/data-source/database';
-import { MongoUserRepository } from '@infra/data-source/repositories/mongo';
-import { Users } from '@infra/data-source/model';
 import { UserNotFoundError } from '@errors/user-not-found';
+
+import { env } from '@infra/environment';
+import { Users } from '@infra/data-source/model';
+import { Mongo } from '@infra/data-source/database';
+import { MongoUserRepository } from '@infra/data-source/database/mongo/repositories/user';
 
 let repo: MongoUserRepository;
 let userName: string;
@@ -12,7 +13,8 @@ describe('Mongo user repository', () => {
     userName = 'Rafael Arantes';
     async function createRepo(): Promise<MongoUserRepository> {
       try {
-        return new MongoUserRepository(new Mongo(env.mongodb));
+        const mongo = new Mongo(env.mongodb);
+        return (await mongo.createRepositoryFactories()).users.make();
       } catch (error) {
         throw error;
       }

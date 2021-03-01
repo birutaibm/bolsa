@@ -1,15 +1,65 @@
 import express, { Express } from 'express';
+import { Server as HTTPServer } from 'http';
 
 import RestAPI from '@infra/api';
 import GraphQL from '@infra/graphql';
-import { controllerFactories } from '@infra/factories'
+import factories from '@infra/factories'
+import { env } from '@infra/environment';
 
-const app: Express = express();
+export class Server {
+  private running: HTTPServer;
+  private port: number;
+  readonly url: string;
 
-const api = new RestAPI(app);
-const graphql = new GraphQL(app);
+  constructor(
+    private readonly app: Express,
+  ) {
+    this.port = Number(env.port);
+    this.url = `http://localhost:${this.port}`;
+  }
 
-api.setup(controllerFactories);
-graphql.setup(controllerFactories);
+  start() {
+    this.running = this.app.listen(
+      this.port,
+      () => console.log(`Server running at ${this.url}`)
+    );
+  }
 
-export default app;
+  stop() {
+    this.running.close();
+  }
+}
+
+export class ServerBuilder {
+  readonly app: Express;
+  private rest: () => Promise<void>;
+  private graphql: () => Promise<void>;
+
+  constructor() {
+    this.app = express();
+    this.rest = async () => {};
+    this.graphql = async () => {};
+  }
+
+  private getControllerFactories() {
+    return factories.ofControllers();
+  }
+
+  withRestAPI() {
+    this.rest = async () =>
+      new RestAPI(this.app).setup(await this.getControllerFactories());
+    return this;
+  }
+
+  withGraphQL() {
+    this.graphql = async () =>
+      new GraphQL(this.app).setup(await this.getControllerFactories());
+    return this;
+  }
+
+  async build() {
+    await this.rest();
+    await this.graphql();
+    return new Server(this.app);
+  }
+}

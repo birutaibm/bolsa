@@ -1,4 +1,6 @@
 import { InvalidUserPasswordError } from '@errors/invalid-user-password';
+import { UserNotFoundError } from '@errors/user-not-found';
+import User from '../entities/user';
 
 import UserLoader from './user-loader';
 
@@ -13,16 +15,20 @@ export default class SignIn {
   ) {}
 
   async signIn(userName: string, password: string): Promise<string> {
+    let user: User;
     try {
-      const user = await this.loader.load(userName);
-      if (user.checkPassword(password)) {
-        return this.worker.createToken({userName, role: user.role});
-      }
+      user = await this.loader.load(userName);
     } catch (error) {
-      if (error.name !== 'UserNotFoundError') {
-        throw error
+      if (error instanceof UserNotFoundError) {
+        throw new InvalidUserPasswordError();
+      } else {
+        throw error;
       }
     }
-    throw new InvalidUserPasswordError();
+    if (user.checkPassword(password)) {
+      return this.worker.createToken({userName, role: user.role});
+    } else {
+      throw new InvalidUserPasswordError();
+    }
   }
 }

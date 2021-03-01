@@ -3,15 +3,8 @@ import { UserDTO } from '@gateway/data/dto';
 import { UserNotFoundError } from '@errors/user-not-found';
 
 import Users from '@infra/data-source/model/user';
-import { Mongo } from '@infra/data-source/database';
 
 export class MongoUserRepository implements UserRepository {
-  constructor(
-    mongo: Mongo,
-  ) {
-    mongo.connect();
-  }
-
   async getUserFromUsername(userName: string): Promise<UserDTO> {
     const user = await Users.findOne({ userName });
     if (user) {

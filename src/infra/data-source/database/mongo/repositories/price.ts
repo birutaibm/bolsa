@@ -4,16 +4,9 @@ import { AssetNotFoundError } from '@errors/asset-not-found';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 
 import Assets, { AssetDocument, adapter } from '@infra/data-source/model/asset';
-import { Mongo } from '@infra/data-source/database';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 
 export class MongoPriceRepository implements InternalRepository {
-  constructor(
-    mongo: Mongo,
-  ) {
-    mongo.connect();
-  }
-
   async registryExternalSymbol(
     { ticker, source, externalSymbol }: SymbolDictionaryEntryDTO
   ): Promise<SymbolDictionaryEntryDTO> {
@@ -37,7 +30,7 @@ export class MongoPriceRepository implements InternalRepository {
     ticker: string, externalLibrary: string
   ): Promise<string> {
     const asset = await Assets.findOne({ ticker });
-    if (asset && asset.externals) {
+    if (asset) {
       const symbol = asset.externals.get(externalLibrary);
       if (symbol) {
         return symbol;
@@ -51,22 +44,14 @@ export class MongoPriceRepository implements InternalRepository {
     let asset: AssetDocument;
     if (existent) {
       asset = existent;
-      asset.prices.push(
-        ...prices.map(p => ({
-          date: p.date.getTime(),
-          open: p.open,
-          close: p.close,
-          min: p.min,
-          max: p.max,
-        }))
-      );
+      asset.prices.push(...adapter.priceDTOToPriceField(prices));
     } else {
-      const assetPrices: AssetPriceDTO[] = prices.map(price => ({
-        ...price,
+      const assetPrices = {
         ticker,
         name: ticker,
-      }));
-      asset = await Assets.create(adapter.fromPriceDTOs(assetPrices)[0]);
+        prices: adapter.priceDTOToPriceField(prices),
+      };
+      asset = await Assets.create(assetPrices);
     }
     return adapter.toPriceDTOs(await asset.save());
   }

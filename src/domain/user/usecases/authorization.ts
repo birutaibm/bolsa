@@ -1,0 +1,29 @@
+import { Role } from "../entities/user";
+
+type VerifyToken = (token: string) => { role: Role };
+
+export default class Authorization {
+  constructor(
+    private readonly verifyToken: VerifyToken,
+  ) {}
+
+  private extractRole(authorization: string | undefined): Role | undefined {
+    try {
+      if (authorization?.startsWith('Token ')) {
+        const token = authorization.substring(6);
+        return this.verifyToken(token).role;
+      }
+      return undefined;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  checkUser(authorization?: string): boolean {
+    return this.extractRole(authorization) === 'USER';
+  }
+
+  checkAdmin(authorization?: string): boolean {
+    return this.extractRole(authorization) === 'ADMIN';
+  }
+}

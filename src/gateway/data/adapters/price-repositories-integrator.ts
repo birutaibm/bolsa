@@ -44,9 +44,12 @@ export class PriceRepositoriesIntegrator implements RequiredFunctionalities {
         }
       };
     });
-    const { resolved } = await promise.all(promises);
-    const compatible = resolved.reduce((acc, item) => ({...acc, ...item}), {});
-    return compatible;
+    try {
+      const { resolved } = await promise.all(promises);
+      return resolved.reduce((acc, item) => ({...acc, ...item}), {});
+    } catch (error) {
+      return {};
+    }
   }
 
   async getExternalPrices(ticker: string): Promise<PriceDTO[]> {

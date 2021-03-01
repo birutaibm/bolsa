@@ -9,6 +9,7 @@ import {
   ExternalSymbolRegisterController
 } from '@gateway/presentation/controllers';
 import { ControllerFactory } from '@gateway/factories';
+import { Authorization } from '@domain/user/usecases';
 
 type PriceControllers = {
   readonly price: Factory<LoadLastPriceController>;
@@ -26,7 +27,7 @@ export function createPriceControllers({
   lastPriceLoader,
   externalSymbolSearch,
   externalSymbolRegister,
-}: PriceUseCaseFactories): PriceControllers {
+}: PriceUseCaseFactories, authorization: Factory<Authorization>): PriceControllers {
 
   return {
     price: new ControllerFactory(
@@ -38,7 +39,9 @@ export function createPriceControllers({
     ),
 
     symbolRegister: new ControllerFactory(() =>
-      new ExternalSymbolRegisterController(externalSymbolRegister.make())
+      new ExternalSymbolRegisterController(
+        externalSymbolRegister.make(), authorization.make()
+      )
     ),
   };
 }

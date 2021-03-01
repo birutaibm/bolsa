@@ -9,15 +9,15 @@ import createPriceUseCasesFactories from './price';
 import createUserUseCasesFactories from './user';
 
 export function createUseCasesFactories(
-  { prices, user }: RepositoryFactories,
+  { prices, users }: RepositoryFactories,
   security: Factory<Security>,
 ) {
   const priceUseCases = createPriceUseCasesFactories(prices.make());
-  const userUseCases = createUserUseCasesFactories(user.make(), security.make());
+  const userUseCases = createUserUseCasesFactories(users.make(), security.make());
 
   return {
     price: priceUseCases,
-    user : userUseCases,
+    user: userUseCases,
   };
 }
 

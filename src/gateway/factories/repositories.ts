@@ -6,5 +6,5 @@ import {
 
 export type RepositoryFactories = {
   readonly prices: Factory<PriceRepositoriesProvider>;
-  readonly user: Factory<UserRepository>;
+  readonly users: Factory<UserRepository>;
 }

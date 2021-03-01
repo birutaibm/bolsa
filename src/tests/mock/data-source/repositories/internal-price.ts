@@ -27,7 +27,7 @@ export class FakePriceRepository implements InternalRepository {
     }, {
       ticker: 'ITUB4',
       name: 'Itaú Unibanco',
-      externals: new Map(),
+      externals: new Map().set('external source', 'ITUB4.SAO'),
       prices: [{
         date: 869769877606969,
         open: 23.52,
@@ -60,7 +60,7 @@ export class FakePriceRepository implements InternalRepository {
       };
       this.assets.push(asset);
     }
-    asset.externals[source] = externalSymbol;
+    asset.externals.set(source, externalSymbol);
     return { ticker, source, externalSymbol };
   }
 
@@ -69,7 +69,7 @@ export class FakePriceRepository implements InternalRepository {
   ): Promise<string> {
     const asset = this.assets.find(asset => asset.ticker === ticker);
     if (asset) {
-      const symbol = asset.externals[externalLibrary];
+      const symbol = asset.externals.get(externalLibrary);
       if (symbol) {
         return symbol;
       }
@@ -82,21 +82,16 @@ export class FakePriceRepository implements InternalRepository {
     let asset: Asset;
     if (existent) {
       asset = existent;
-      asset.prices.push(...prices.map(p => ({
-          date: p.date.getTime(),
-          open: p.open,
-          close: p.close,
-          min: p.min,
-          max: p.max,
-        }))
-      );
+      asset.prices.push(...adapter.priceDTOToPriceField(prices));
+    } else if (prices.length === 0) {
+      return [];
     } else {
-      const assetPrices: AssetPriceDTO[] = prices.map(price => ({
-        ...price,
+      asset = {
         ticker,
         name: ticker,
-      }));
-      asset = adapter.fromPriceDTOs(assetPrices)[0];
+        externals: new Map(),
+        prices: adapter.priceDTOToPriceField(prices),
+      };
       this.assets.push(asset);
     }
     return adapter.toPriceDTOs(asset);

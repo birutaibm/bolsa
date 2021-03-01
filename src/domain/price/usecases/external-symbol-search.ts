@@ -1,4 +1,3 @@
-import { MultipleErrors } from '@errors/multiple-errors';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 import { promise } from '@utils/promise';
 

@@ -1,7 +1,6 @@
 import { Router, Express, json } from 'express';
 
 import { Factory } from '@utils/factory';
-import { ControllerFactory } from '@gateway/factories';
 import {
   LoadLastPriceController,
   ExternalSymbolSearchController,
@@ -10,16 +9,7 @@ import {
   SignInController,
 } from '@gateway/presentation/controllers';
 
-import price from './routes/price';
-import getSymbol from './routes/get-symbol';
-import postSymbol from './routes/post-symbol';
-import postUser from './routes/post-user';
-import signIn from './routes/sign-in';
-
-type setupExpressRoute = (
-  router: Router,
-  controllerFactory: ControllerFactory<any>
-) => void;
+import routes from './routes';
 
 type ControllerFactories = {
   price: Factory<LoadLastPriceController>;
@@ -41,10 +31,10 @@ export default class API {
   setup(
     controllerFactories: ControllerFactories,
   ): void {
-    price(this.router, controllerFactories.price);
-    getSymbol(this.router, controllerFactories.symbolSearch);
-    postSymbol(this.router, controllerFactories.symbolRegister);
-    postUser(this.router, controllerFactories.userCreator);
-    signIn(this.router, controllerFactories.signIn);
+    routes.price(this.router, controllerFactories.price);
+    routes.getSymbol(this.router, controllerFactories.symbolSearch);
+    routes.postSymbol(this.router, controllerFactories.symbolRegister);
+    routes.postUser(this.router, controllerFactories.userCreator);
+    routes.signIn(this.router, controllerFactories.signIn);
   }
 }

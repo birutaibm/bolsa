@@ -20,3 +20,11 @@ export class SingletonFactory<T> extends Factory<T> {
     });
   }
 }
+
+export abstract class Builder<T> {
+  abstract build(): T;
+
+  asSingletonFactory() {
+    return new SingletonFactory(() => this.build());
+  }
+}

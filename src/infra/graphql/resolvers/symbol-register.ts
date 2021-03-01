@@ -15,10 +15,11 @@ type Params = {
 
 export default (controllerFactory: Factory<ExternalSymbolRegisterController>) => ({
   Mutation: {
-    async symbolRegister(_: any, {ticker, symbols}: Params): Promise<any> {
+    symbolRegister(_: any, {ticker, symbols}: Params, {authorization}): Promise<any> {
       const params: {[key: string]: string} = {};
       symbols.forEach(({source, symbol}) => params[source] = symbol);
       params.ticker = ticker;
+      params.authorization = authorization;
       return adaptResolver(controllerFactory.make(), params);
     }
   },

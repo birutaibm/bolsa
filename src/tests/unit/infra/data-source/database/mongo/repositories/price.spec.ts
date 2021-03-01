@@ -1,11 +1,11 @@
-import { env } from '@infra/environment';
-import { Mongo } from '@infra/data-source/database';
-import { MongoPriceRepository } from '@infra/data-source/repositories/mongo';
-import { Assets } from '@infra/data-source/model';
-import { UserNotFoundError } from '@errors/user-not-found';
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
+
+import { env } from '@infra/environment';
+import { Assets } from '@infra/data-source/model';
+import { Mongo } from '@infra/data-source/database';
+import { MongoPriceRepository } from '@infra/data-source/database/mongo/repositories/price';
 
 let repo: MongoPriceRepository;
 let ticker: string;
@@ -13,9 +13,10 @@ let ticker: string;
 describe('Mongo price repository', () => {
   beforeAll(async done => {
     ticker = 'ITUB3';
-    async function createRepo(): Promise<MongoPriceRepository> {
+    async function createRepo() {
       try {
-        return new MongoPriceRepository(new Mongo(env.mongodb));
+        const mongo = new Mongo(env.mongodb);
+        return (await mongo.createRepositoryFactories()).prices.make();
       } catch (error) {
         throw error;
       }
@@ -38,7 +39,22 @@ describe('Mongo price repository', () => {
     }
   });
 
+  // registryExternalSymbol
   it('should be able to registry external symbol', async done => {
+    const external = {
+      source: 'external source',
+      externalSymbol: 'external symbol',
+      ticker,
+    };
+    await expect(
+      repo.registryExternalSymbol(external)
+    ).resolves.toEqual(external);
+    const asset = await Assets.findOne({ ticker });
+    expect(asset?.externals.get('external source')).toEqual('external symbol');
+    done();
+  });
+
+  it('should be able to registry external symbol for existent asset', async done => {
     await Assets.create({
       ticker,
       prices: [],
@@ -56,6 +72,7 @@ describe('Mongo price repository', () => {
     done();
   });
 
+  //getExternalSymbol
   it('should be able to get external symbol', async done => {
     const externals = new Map();
     externals.set('external source', 'external symbol');
@@ -67,21 +84,6 @@ describe('Mongo price repository', () => {
     await expect(
       repo.getExternalSymbol(ticker, 'external source')
     ).resolves.toEqual('external symbol');
-    done();
-  });
-
-  it('should be able to save prices', async done => {
-    const price = {
-      date: new Date(),
-      open: 32.23,
-      close: 32.23,
-      min: 32.23,
-      max: 32.23,
-    };
-    const response = await repo.save(ticker, [price]);
-    expect(response).toBeInstanceOf(Array);
-    expect(response.length).toBeGreaterThan(0);
-    expect(response[0]).toEqual(expect.objectContaining(price));
     done();
   });
 
@@ -98,6 +100,49 @@ describe('Mongo price repository', () => {
     done();
   });
 
+  it('should not be able to get external symbol of inexistent asset', async done => {
+    await expect(
+      repo.getExternalSymbol(ticker, 'external source')
+    ).rejects.toBeInstanceOf(ExternalSymbolNotFoundError);
+    done();
+  });
+
+  //save
+  it('should be able to save prices', async done => {
+    const price = {
+      date: new Date(),
+      open: 32.23,
+      close: 32.23,
+      min: 32.23,
+      max: 32.23,
+    };
+    const response = await repo.save(ticker, [price]);
+    expect(response).toBeInstanceOf(Array);
+    expect(response.length).toBeGreaterThan(0);
+    expect(response[0]).toEqual(expect.objectContaining(price));
+    done();
+  });
+
+  it('should be able to save prices at existent asset', async done => {
+    await Assets.create({
+      ticker,
+      prices: [],
+    });
+    const price = {
+      date: new Date(),
+      open: 32.23,
+      close: 32.23,
+      min: 32.23,
+      max: 32.23,
+    };
+    const response = await repo.save(ticker, [price]);
+    expect(response).toBeInstanceOf(Array);
+    expect(response.length).toBeGreaterThan(0);
+    expect(response[0]).toEqual(expect.objectContaining(price));
+    done();
+  });
+
+  //loadPriceByTicker
   it('should be able to get price from ticker', async done => {
     await Assets.create({
       ticker,
@@ -123,7 +168,7 @@ describe('Mongo price repository', () => {
     done();
   });
 
-  it('should be able to get encapsulate any mongo error at PriceUnavailableError', async done => {
+  it('should be able to encapsulate any mongo error at PriceUnavailableError', async done => {
     jest.spyOn(Assets, 'findOne').mockImplementationOnce(() => {
       throw new Error("");
     });

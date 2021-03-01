@@ -28,12 +28,22 @@ describe('User creator controller', () => {
     };
   });
 
-  it('should be able to obtain user data', async done => {
+  it('should be able to create user', async done => {
     await expect(
       workingController.handle(params)
     ).resolves.toEqual({statusCode: 201, data: {
       userName: 'Rafael',
       role: 'USER'
+    }});
+    done();
+  });
+
+  it('should be able to create admin', async done => {
+    await expect(
+      workingController.handle({...params, role: 'ADMIN'})
+    ).resolves.toEqual({statusCode: 201, data: {
+      userName: 'Rafael',
+      role: 'ADMIN'
     }});
     done();
   });

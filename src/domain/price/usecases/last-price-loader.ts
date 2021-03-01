@@ -22,7 +22,7 @@ export class LastPriceLoader {
           allPrices.push(...prices);
         }
       } catch (error) {
-        if (error.name !== 'AssetNotFound') {
+        if (error.name !== 'AssetNotFoundError') {
           errors.push(error);
         }
       }

@@ -14,6 +14,7 @@ export default class GraphQL {
   ): void {
     const resolvers = createResolvers(controllerFactories);
     const server = new ApolloServer({
+      context: async ({req}) => ({authorization: req.headers.authorization}),
       resolvers,
       typeDefs,
     });

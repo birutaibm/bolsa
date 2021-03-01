@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "module": "commonjs",
+    "module": "system",
+    "moduleResolution": "node",
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": false,
@@ -37,6 +38,7 @@
       "@errors/*": ["errors/*"],
       "@utils/*": ["utils/*"],
       "@main/*": ["main/*"],
+      "@mock/*": ["tests/mock/*"],
       "@gateway/*": ["gateway/*"],
       "@infra/*": ["infra/*"]
     }

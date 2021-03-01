@@ -1,10 +1,12 @@
+import { PriceUnavailableError } from '@errors/price-unavailable';
 import { PriceRepositoriesIntegrator } from '@gateway/data/adapters';
 import {
   SavePricesRepository,
   ExternalSymbolDictionary,
   LoadExternalPriceRepository,
 } from '@gateway/data/contracts';
-import { PriceDTO } from '@gateway/data/dto';
+
+import { FakeExternalPriceRepository, FakePriceRepository } from '@mock/data-source/repositories';
 
 let saver: SavePricesRepository;
 let dictionary: ExternalSymbolDictionary;
@@ -13,22 +15,13 @@ let adapter: PriceRepositoriesIntegrator;
 
 describe('PriceRepositoriesIntegrator', () => {
   beforeAll(() => {
-    saver = {
-      save: async (ticker: string, price: PriceDTO[]) => {
-        return price.map(p => ({
-          ...p,
-          ticker,
-          name: ticker,
-        }));
-      }
-    };
-    dictionary = {
-      getExternalSymbol: async () => 'symbol'
-    };
-    loader = [{
-      name: 'source',
-      loadPriceBySymbol: async (symbol: string) => []
-    }];
+    const internalPrices = new FakePriceRepository();
+    const externalPrices = new FakeExternalPriceRepository();
+
+    saver = internalPrices;
+    dictionary = internalPrices;
+    loader = [externalPrices];
+
     adapter = new PriceRepositoriesIntegrator(saver, dictionary, ...loader);
   });
 
@@ -41,7 +34,7 @@ describe('PriceRepositoriesIntegrator', () => {
     expect(adapter.checkThereIsSomeExternal()).toBeFalsy();
   });
 
-  it('should be able to obtain the appropriate bridge function', async done => {
+  it('should be able to delegate putPrice to saver', async done => {
     const sFunction = jest.spyOn(saver, 'save');
     expect(sFunction).toHaveBeenCalledTimes(0);
     await adapter.putPrices('ticker', []);
@@ -49,5 +42,17 @@ describe('PriceRepositoriesIntegrator', () => {
     done();
   });
 
-  //TODO:Test getExternalPrices function behaviors
+  it('should be able to get external prices', async done => {
+    await expect(
+      adapter.getExternalPrices('ITUB4')
+    ).resolves.toEqual([]);
+    done();
+  });
+
+  it('should not be able to get external prices from ticker that has no registered symbol', async done => {
+    await expect(
+      adapter.getExternalPrices('ticker')
+    ).rejects.toBeInstanceOf(PriceUnavailableError);
+    done();
+  });
 });
