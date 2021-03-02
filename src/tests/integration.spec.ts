@@ -35,7 +35,7 @@ describe('Server', () => {
     expect(data.role).toBe('USER');
     expect(Object.keys(data).length).toBe(2);
     //CLEAR:
-    Users.deleteOne({ userName: 'meu usuário' });
+    await Users.deleteOne({ userName: 'meu usuário' });
     done();
   });
 });

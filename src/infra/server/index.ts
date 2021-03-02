@@ -26,6 +26,7 @@ export class Server {
   }
 
   stop() {
+    console.log(`Finishing server ${this.url}`);
     this.running.close();
   }
 }

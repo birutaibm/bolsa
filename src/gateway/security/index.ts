@@ -16,8 +16,9 @@ export default class Security implements Encoder {
     private readonly jwtConfig: JwtConfig,
   ) {}
 
-  encode(plain: string): Promise<string> {
-    return hash(plain, this.salt);
+  async encode(plain: string): Promise<string> {
+    const encoded = await hash(plain, this.salt);
+    return encoded;
   }
 
   verify(plain: string, encoded: string): boolean {
