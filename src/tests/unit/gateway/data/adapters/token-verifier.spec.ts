@@ -8,14 +8,15 @@ let verifyUserToken: (token: string) => { role: 'USER' | 'ADMIN' };
 
 describe('Returned function of createVerifyToken', () => {
   beforeAll(() => {
+    const userName = 'myName';
     adminToken = 'admin';
     userToken = 'user';
     verifyToken = (token) => {
       switch (token) {
         case adminToken:
-          return { role: 'ADMIN' };
+          return { userName, role: 'ADMIN' };
         case userToken:
-          return { role: 'USER' };
+          return { userName, role: 'USER' };
         default:
           return {};
       }
@@ -24,11 +25,15 @@ describe('Returned function of createVerifyToken', () => {
   });
 
   it('should be able to recognize admin token', () => {
-    expect(verifyUserToken(adminToken)).toEqual({ role: 'ADMIN' });
+    expect(verifyUserToken(adminToken)).toEqual(expect.objectContaining(
+      { role: 'ADMIN' }
+    ));
   });
 
   it('should be able to recognize user token', () => {
-    expect(verifyUserToken(userToken)).toEqual({ role: 'USER' });
+    expect(verifyUserToken(userToken)).toEqual(expect.objectContaining(
+      { role: 'USER' }
+    ));
   });
 
   it('should be able to recognize invalid token', () => {

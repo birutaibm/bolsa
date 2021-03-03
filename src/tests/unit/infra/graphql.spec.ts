@@ -33,6 +33,7 @@ describe('GraphQL', () => {
     jest.spyOn(security, 'verifyToken').mockImplementationOnce(token => {
       if (token === 'validToken')
         return {
+          userName: 'anyone',
           role: 'ADMIN',
         };
       return {};

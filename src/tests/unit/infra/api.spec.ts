@@ -81,6 +81,7 @@ describe('API', () => {
     jest.spyOn(security, 'verifyToken').mockImplementationOnce(token => {
       if (token === 'validToken')
         return {
+          userName: 'anyone',
           role: 'ADMIN',
         };
       return {};
