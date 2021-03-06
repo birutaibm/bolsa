@@ -6,3 +6,10 @@ export function isValidISODate(date: string) {
   var matcher = new RegExp(isoformat);
   return matcher.test(date) && !isNaN(Date.parse(date));
 }
+
+export function notNull<T>(param: T | null): T {
+  if (param === null) {
+    throw new Error("Unexpected null value");
+  }
+  return param;
+}

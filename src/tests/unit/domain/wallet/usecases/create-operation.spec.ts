@@ -4,14 +4,14 @@ import Creator, {
 } from '@domain/wallet/usecases/create-operation';
 
 let wallets: {[name: string]: WalletData}
-let owner: { name: string };
+let owner: { id: string; name: string };
 let asset: { ticker: string; name: string; };
 let load: LoadWalletData;
 let persist: PersistWalletData;
 
 describe('Create operation use case', () => {
   beforeAll(() => {
-    owner = { name: 'Rafael Arantes' };
+    owner = { id: '0', name: 'Rafael Arantes' };
     asset = {
       ticker: 'ITUB3',
       name: 'Itaú Unibanco Holding',
@@ -38,7 +38,8 @@ describe('Create operation use case', () => {
     const creator = new Creator(load, persist);
     const wallet = await creator.create({
       wallet: 'new wallet',
-      owner: owner.name,
+      ownerName: owner.name,
+      ownerId: owner.id,
       asset,
       operationType: 'BUY',
       quantity: 100,
@@ -62,7 +63,8 @@ describe('Create operation use case', () => {
     const creator = new Creator(load, persist);
     const wallet = await creator.create({
       wallet: 'old wallet',
-      owner: owner.name,
+      ownerName: owner.name,
+      ownerId: owner.id,
       asset,
       operationType: 'SELL',
       quantity: 100,
@@ -89,7 +91,8 @@ describe('Create operation use case', () => {
     await expect(
       creator.create({
         wallet: 'old wallet',
-        owner: owner.name,
+        ownerName: owner.name,
+        ownerId: owner.id,
         asset,
         operationType: 'SELL',
         quantity: 100,

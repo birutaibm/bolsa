@@ -9,10 +9,12 @@ export class FakeUserRepository implements UserRepository {
     this.users.push(user);
   }
 
-  async getUserFromUsername(userName: string): Promise<UserDTO> {
-    const user = this.users.find((user: UserDTO) => user.userName === userName);
-    if (user) {
-      return user;
+  async getUserFromUsername(userName: string): Promise<UserDTO & {id: any}> {
+    const index = this.users.findIndex((user: UserDTO) =>
+      user.userName === userName
+    );
+    if (index !== -1) {
+      return {...this.users[index], id: index};
     }
     throw new UserNotFoundError(userName);
   }

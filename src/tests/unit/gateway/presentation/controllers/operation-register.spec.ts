@@ -6,7 +6,7 @@ import { OperationRegisterController } from '@gateway/presentation/controllers/o
 
 let walletName: string;
 let wallet: WalletData;
-let owner: { name: string };
+let owner: { id: string; name: string };
 let asset: { ticker: string; name: string; };
 let load: LoadWalletData;
 let persist: PersistWalletData;
@@ -17,7 +17,7 @@ let controller: OperationRegisterController;
 describe('Operation register controller', () => {
   beforeAll(() => {
     walletName = 'old wallet'
-    owner = { name: 'Rafael Arantes' };
+    owner = { id:'', name: 'Rafael Arantes' };
     asset = {
       ticker: 'ITUB3',
       name: 'Itaú Unibanco Holding',
@@ -33,7 +33,7 @@ describe('Operation register controller', () => {
     load = (name) => wallet;
     persist = data => data;
     creator = new Creator(load, persist);
-    auth = new Authorization(() => ({ userName: owner.name, role: 'ADMIN' }));
+    auth = new Authorization(() => ({ id: owner.id, userName: owner.name, role: 'ADMIN' }));
     controller = new OperationRegisterController(creator, auth);
   });
 

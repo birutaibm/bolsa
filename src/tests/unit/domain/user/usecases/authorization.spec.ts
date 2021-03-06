@@ -9,15 +9,20 @@ describe('Authorization', () => {
   beforeAll(() => {
     adminToken = 'klnoovfiosvrvromlnaoinvr';
     userToken = 'lkbvirhlzcuraygvionlnviaruhuçk';
+    const userName = 'Rafael Arantes';
     useCase = new Authorization(token => {
       if (token === adminToken) {
         return {
+          id: '',
           role: 'ADMIN',
+          userName,
         };
       }
       if (token === userToken) {
         return {
+          id: '',
           role: 'USER',
+          userName,
         };
       }
       throw new InvalidTokenFormatError();

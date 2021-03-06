@@ -21,7 +21,7 @@ describe('Sign-in controller', () => {
       role: 'USER'
     };
     const workingWorker = {
-      getUserFromUsername: async (userName: string) => ({...userData, userName})
+      getUserFromUsername: async (userName: string) => ({...userData, id:'', userName})
     };
     const workingLoader = new UserLoader(workingWorker, encoder);
     const workingUseCase = new SignIn(tokenGenerator, workingLoader);

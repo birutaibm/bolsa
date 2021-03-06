@@ -7,6 +7,7 @@ import { Assets } from '@infra/data-source/model';
 import { Mongo } from '@infra/data-source/database';
 import { MongoPriceRepository } from '@infra/data-source/database/mongo/repositories/price';
 
+let mongo: Mongo;
 let repo: MongoPriceRepository;
 let ticker: string;
 
@@ -15,7 +16,7 @@ describe('Mongo price repository', () => {
     ticker = 'ITUB3';
     async function createRepo() {
       try {
-        const mongo = new Mongo(env.mongodb);
+        mongo = new Mongo(env.mongodb);
         return (await mongo.createRepositoryFactories()).prices.make();
       } catch (error) {
         throw error;
@@ -37,6 +38,10 @@ describe('Mongo price repository', () => {
     } catch (error) {
       done(error);
     }
+  });
+
+  afterAll(async done => {
+    mongo.disconnect().then(() => done(), done);
   });
 
   // registryExternalSymbol

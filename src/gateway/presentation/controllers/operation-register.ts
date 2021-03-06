@@ -12,7 +12,7 @@ export class OperationRegisterController implements Controller {
   ) {}
 
   async handle({ authorization, walletName: wallet, assetName, ticker, operationType, quantity, value, date }: Params): Promise<Response> {
-    const owner = this.auth.getUserName(authorization);
+    const owner = this.auth.getInfo(authorization);
     if (!owner) {
       return unauthorized('Login required to this action!');
     }
@@ -40,7 +40,8 @@ export class OperationRegisterController implements Controller {
     try {
       const data = await this.useCase.create({
         wallet,
-        owner,
+        ownerId: owner.id,
+        ownerName: owner.userName,
         operationType,
         quantity: Number(quantity),
         value: Number(value),

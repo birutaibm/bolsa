@@ -1,13 +1,14 @@
 import Position from '@domain/wallet/entities/position';
-import Wallet, { User } from '@domain/wallet/entities/wallet';
+import Wallet, { Investor } from '@domain/wallet/entities/wallet';
 
 let name: string;
-let owner: User
+let owner: Investor;
 
 describe('Wallet', () => {
   beforeAll(() => {
     name = 'Ações de crescimento',
     owner = {
+      id: '0',
       name: 'Rafael Arantes',
     };
   });

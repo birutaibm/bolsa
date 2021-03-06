@@ -5,7 +5,7 @@ import Encoder from '@domain/user/usecases/encoder';
 import { UserNotFoundError } from '@errors/user-not-found';
 
 let validUserName: string;
-let getUserFromUsername: (userName: string) => Promise<UserData>;
+let getUserFromUsername: (userName: string) => Promise<UserData & {id: string}>;
 let useCase: UserLoader;
 
 describe('UserLoader', () => {
@@ -20,6 +20,7 @@ describe('UserLoader', () => {
         throw new UserNotFoundError(userName);
       }
       return {
+        id: '',
         userName,
         role: 'ADMIN',
         passHash: 'password',
@@ -31,7 +32,7 @@ describe('UserLoader', () => {
   it('should be able load existent user', async done => {
     await expect(
       useCase.load(validUserName)
-    ).resolves.toBeInstanceOf(User)
+    ).resolves.toBeInstanceOf(Object);
     done();
   });
 

@@ -1,10 +1,10 @@
 import User from '@domain/user/entities/user';
 
 import Encoder from './encoder'
-import { UserData } from './dto';
+import { PersistedUser, PersistedUserData } from './dto';
 
 export interface RequiredFunctionalities {
-  getUserFromUsername(userName: string): Promise<UserData>;
+  getUserFromUsername(userName: string): Promise<PersistedUserData>;
 }
 
 export default class UserLoader {
@@ -13,8 +13,12 @@ export default class UserLoader {
     private readonly encoder: Encoder,
   ) {}
 
-  async load(userName: string): Promise<User> {
-    const { passHash, role } = await this.worker.getUserFromUsername(userName);
-    return new User(userName, passHash, role, this.encoder.verify);
+  async load(userName: string): Promise<PersistedUser> {
+    const { id, passHash, role } = await this.worker.getUserFromUsername(userName);
+    const user = new User(userName, passHash, role, this.encoder.verify);
+    return {
+      ...user,
+      id,
+    };
   }
 }

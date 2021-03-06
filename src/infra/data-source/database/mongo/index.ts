@@ -1,26 +1,25 @@
 import { DatabaseConnectionError } from '@errors/database-connection';
-import mongoose, { ConnectOptions } from 'mongoose';
+import mongoose, { Connection, ConnectOptions } from 'mongoose';
 
 import createMongoRepositoryFactories from './repositories';
 
 export type MongoConfig = {
   uri: string;
-  database?: string;
   connectionOptions: ConnectOptions;
 };
 
 export default class Mongo {
-  private connection: typeof mongoose;
+  private connection: Connection | undefined;
 
   constructor(private readonly config: MongoConfig) {}
 
   async connect() {
     if (!this.connection) {
       try {
-        this.connection = await mongoose.connect(
+        await mongoose.connect(
           this.config.uri,
           this.config.connectionOptions,
-        );
+        ).then(connected => this.connection = connected.connection);
       } catch (error) {
         throw new DatabaseConnectionError('mongodb');
       }
@@ -28,8 +27,15 @@ export default class Mongo {
     return this.connection;
   }
 
+  async disconnect() {
+    if (this.connection) {
+      await this.connection.close();
+      this.connection = undefined;
+    }
+  }
+
   isConnected() {
-    return this.connection !== undefined;
+    return this.connection && this.connection.readyState !== 1;
   }
 
   async createRepositoryFactories() {

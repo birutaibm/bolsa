@@ -1,7 +1,7 @@
 import { UserDTO } from '@gateway/data/dto';
 
 export interface LoadUserRepository {
-  getUserFromUsername(userName: string): Promise<UserDTO>;
+  getUserFromUsername(userName: string): Promise<UserDTO & {id: string}>;
 }
 
 export interface CreateUserRepository {

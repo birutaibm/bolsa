@@ -5,6 +5,7 @@ import { Users } from '@infra/data-source/model';
 import { Mongo } from '@infra/data-source/database';
 import { MongoUserRepository } from '@infra/data-source/database/mongo/repositories/user';
 
+let mongo: Mongo;
 let repo: MongoUserRepository;
 let userName: string;
 
@@ -13,7 +14,7 @@ describe('Mongo user repository', () => {
     userName = 'Rafael Arantes';
     async function createRepo(): Promise<MongoUserRepository> {
       try {
-        const mongo = new Mongo(env.mongodb);
+        mongo = new Mongo(env.mongodb);
         return (await mongo.createRepositoryFactories()).users.make();
       } catch (error) {
         throw error;
@@ -35,6 +36,10 @@ describe('Mongo user repository', () => {
     } catch (error) {
       done(error);
     }
+  });
+
+  afterAll(async done => {
+    mongo.disconnect().then(() => done(), done);
   });
 
   it('should be able to get user from username', async done => {

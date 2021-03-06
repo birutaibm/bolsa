@@ -1,5 +1,5 @@
 import Position from '@domain/wallet/entities/position';
-import Wallet from '@domain/wallet/entities/wallet';
+import Wallet, { Investor } from '@domain/wallet/entities/wallet';
 import { WalletNotFoundError } from '@errors/wallet-not-found';
 
 type AssetData = {
@@ -15,7 +15,8 @@ type OperationData = {
 
 type OperationCreationData = {
   wallet: string;
-  owner: string;
+  ownerId: string;
+  ownerName: string;
   asset: AssetData;
   operationType: 'BUY' | 'SELL';
   date?: Date;
@@ -23,13 +24,17 @@ type OperationCreationData = {
   value: number;
 };
 
+export type PositionData = {
+  asset: AssetData;
+  operations: Array<OperationData>
+};
+
+export type InvestorData = Investor;
+
 export type WalletData = {
   name: string;
-  owner: { name: string };
-  positions: Array<{
-    asset: AssetData;
-    operations: Array<OperationData>
-  }>;
+  owner: InvestorData;
+  positions: PositionData[];
 };
 
 export type LoadWalletData =
@@ -46,15 +51,15 @@ export default class CreateOperation {
 
   async create(
     {
-      wallet: walletName, owner, asset, operationType, quantity, value, date
+      wallet: walletName, ownerName, ownerId, asset, operationType, quantity, value, date
     }: OperationCreationData
   ): Promise<WalletData> {
     let walletData: WalletData;
     try {
-      walletData = await this.loadWalletData(walletName, owner);
+      walletData = await this.loadWalletData(walletName, ownerName);
     } catch (error) {
       if (error instanceof WalletNotFoundError) {
-        walletData = { name: walletName, owner: { name: owner }, positions: [] };
+        walletData = { name: walletName, owner: { name: ownerName, id: ownerId }, positions: [] };
       } else
         throw error;
     }
@@ -77,7 +82,10 @@ export default class CreateOperation {
     else position.sell(quantity, value, date);
     return await this.persistWalletData({
       name: wallet.name,
-      owner: wallet.owner,
+      owner: {
+        id: ownerId,
+        name: wallet.owner.name
+      },
       positions: wallet.getPositions().map(position => ({
         asset: position.asset,
         operations: position.getOperations(),

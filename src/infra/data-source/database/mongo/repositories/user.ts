@@ -5,7 +5,7 @@ import { UserNotFoundError } from '@errors/user-not-found';
 import Users from '@infra/data-source/model/user';
 
 export class MongoUserRepository implements UserRepository {
-  async getUserFromUsername(userName: string): Promise<UserDTO> {
+  async getUserFromUsername(userName: string): Promise<UserDTO & {id: any}> {
     const user = await Users.findOne({ userName });
     if (user) {
       return user;

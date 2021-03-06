@@ -14,9 +14,9 @@ describe('Returned function of createVerifyToken', () => {
     verifyToken = (token) => {
       switch (token) {
         case adminToken:
-          return { userName, role: 'ADMIN' };
+          return { id: '0', userName, role: 'ADMIN' };
         case userToken:
-          return { userName, role: 'USER' };
+          return { id: '0', userName, role: 'USER' };
         default:
           return {};
       }

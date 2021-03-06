@@ -10,9 +10,10 @@ describe('Repository factories builder', () => {
       .withAlphavantage(env.externalPrices.alphavantageKey)
       .build();
     expect(factories).toBeInstanceOf(Object);
-    expect(Object.keys(factories).length).toBe(2);
+    expect(Object.keys(factories).length).toBe(3);
     expect(factories.prices).toBeInstanceOf(Factory);
     expect(factories.users).toBeInstanceOf(Factory);
+    expect(factories.wallets).toBeInstanceOf(Factory);
     done();
   });
 
@@ -21,9 +22,10 @@ describe('Repository factories builder', () => {
       .withMongo(env.mongodb)
       .build();
     expect(factories).toBeInstanceOf(Object);
-    expect(Object.keys(factories).length).toBe(2);
+    expect(Object.keys(factories).length).toBe(3);
     expect(factories.prices).toBeInstanceOf(Factory);
     expect(factories.users).toBeInstanceOf(Factory);
+    expect(factories.wallets).toBeInstanceOf(Factory);
     done();
   });
 

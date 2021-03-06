@@ -1,13 +1,15 @@
 import Position from './position';
 
-export type User = {
+export type Investor = {
+  id: any;
   name: string;
+  wallets?: Wallet[];
 };
 
 export default class Wallet {
   constructor (
     readonly name: string,
-    readonly owner: User,
+    readonly owner: Investor,
     private readonly positions: Position[] = [],
   ) {}
 
