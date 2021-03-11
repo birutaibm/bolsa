@@ -1,8 +1,9 @@
 import { Schema, Document, model } from 'mongoose';
 
-import { UserDTO, OwnerDTO } from '@gateway/data/dto';
+import { UserDTO } from '@gateway/data/dto';
+import { InvestorDTO } from '@gateway/data/contracts';
 
-export type User = UserDTO & OwnerDTO;
+export type User = UserDTO & InvestorDTO;
 
 export type UserDocument = Document & User;
 
@@ -20,7 +21,7 @@ const userSchema = new Schema({
     required: true,
     default: 'USER',
   },
-  wallets: [{
+  walletIds: [{
     type: Schema.Types.ObjectId,
     ref: 'Wallet'
   }],

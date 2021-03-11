@@ -1,58 +1,61 @@
-import { Types } from 'mongoose';
-
 import { notNull } from '@utils/validators';
+import { DatabaseOperationError } from '@errors/database-operation';
+import { PositionNotFoundError } from '@errors/position-not-found';
 
-import Operations, { OperationDTO, OperationDocument } from '@infra/data-source/model/operation';
+import Operations, { OperationDocument } from '@infra/data-source/model/operation';
+import { OperationData, OperationRepository } from '@gateway/data/contracts';
+import { Positions } from '@infra/data-source/model';
 
-export class OperationRepository {
-  async create(
-    operation: OperationDTO, positionId: Types.ObjectId
-  ): Promise<OperationDocument> {
-    const registry = await Operations.create({
-      position: positionId,
-      date: operation.date.getTime(),
-      quantity: operation.quantity,
-      value: operation.value,
-    });
-    return await registry.save();
-  }
+import Mongo from '..';
 
-  async load(id: Types.ObjectId): Promise<OperationDTO> {
+export class MongoOperationRepository implements OperationRepository {
+  constructor(
+    private readonly mongo: Mongo,
+  ) {}
+
+  async loadOperationDataById(id: string): Promise<OperationData> {
     const model = notNull(await Operations.findById(id));
-    return {
-      date: new Date(model.date),
-      id: model.id,
-      quantity: model.quantity,
-      value: model.value,
-    };
+    return this.documentToData(model);
   }
 
-  static categorize(operations: OperationDTO[]) {
-    const categorized: {
-      existents: Array<OperationDTO & {id: Types.ObjectId;}>;
-      nonExistents: OperationDTO[];
-    } = { existents: [], nonExistents: [], };
-    operations.forEach(operation => {
-      if (operation.id) {
-        categorized.existents.push({...operation, id: Types.ObjectId(operation.id)});
-      } else {
-        categorized.nonExistents.push({...operation});
+  async loadOperationsDataByIds(ids: string[]): Promise<OperationData[]> {
+    const models = await Operations.find({ _id: { $in: ids }});
+    return models.map(this.documentToData);
+  }
+
+  async saveNewOperation(
+    data: Omit<OperationData, 'id'>
+  ): Promise<OperationData> {
+    const session = await this.mongo.startSession();
+    try {
+      session.startTransaction()
+      const position = await Positions.findById(data.positionId).session(session);
+      if (!position) {
+        throw new PositionNotFoundError(data.positionId);
       }
-    });
-    return categorized;
+      const [operation] = await Operations.create([data], {session});
+      if (!operation.id) {
+        throw new DatabaseOperationError('create operation');
+      }
+      position.operationIds.push(operation.id);
+      await position.save();
+      await session.commitTransaction();
+      session.endSession();
+      return this.documentToData(operation);
+    } catch (error) {
+      return session.abortTransaction().then(() => {
+        session.endSession();
+        throw error;
+      });
+    }
   }
 
-  async update(newOp: OperationDTO & {id: Types.ObjectId}) {
-    const oldOp = notNull(await Operations.findById(newOp.id));
-    if (oldOp.date !== newOp.date.getTime()) {
-      oldOp.date = newOp.date.getTime();
-    }
-    if (oldOp.quantity !== newOp.quantity) {
-      oldOp.quantity = newOp.quantity;
-    }
-    if (oldOp.value !== newOp.value) {
-      oldOp.value = newOp.value;
-    }
-    await oldOp.save();
+  private documentToData(
+    { date, id, quantity, value, positionId }: OperationDocument
+  ): OperationData {
+    return {
+      date, id, quantity, value,
+      positionId: positionId.toHexString(),
+    };
   }
 }

@@ -1,6 +1,27 @@
-import { WalletDTO } from '@gateway/data/dto';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
+
+export type WalletData = {
+  id: string;
+  name: string;
+  ownerId: string;
+  positionIds: string[];
+};
+
+export type PersistedWalletData = {
+  id: string;
+  name: string;
+  owner: {
+    id: string;
+    name: string;
+  }
+};
 
 export interface WalletRepository {
-  getWalletFromNameAndOwner(wallet: string, owner: string): Promise<WalletDTO> | WalletDTO;
-  save(wallet: WalletDTO): Promise<WalletDTO> | WalletDTO;
+  loadWalletsDataByIds(ids: string[]): MayBePromise<WalletData[]>;
+
+  loadWalletDataById(id: string): MayBePromise<WalletData>;
+
+  saveNewWallet(
+    walletName: string, investorId: string
+  ): MayBePromise<PersistedWalletData>;
 }

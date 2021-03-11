@@ -1,16 +1,5 @@
-import { InvestorData, PositionData } from "@domain/wallet/usecases/create-operation";
+import { PopulatedInvestorData, PopulatedPositionData, PopulatedWalletData } from "@domain/wallet/usecases/dtos";
 
-type ID = any;
+export type PositionDTO = PopulatedPositionData;
 
-export type OwnerDTO = InvestorData;
-
-export type PositionDTO = PositionData & {
-  id?: ID;
-};
-
-export type WalletDTO = {
-  id?: ID;
-  name: string;
-  owner: OwnerDTO;
-  positions: PositionDTO[];
-};
+export type WalletDTO = PopulatedWalletData;

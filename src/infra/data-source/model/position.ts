@@ -1,19 +1,17 @@
 import { Schema, Document, model, Types } from 'mongoose';
+import { AssetData } from '@gateway/data/contracts/position-repository';
 
 type PositionModel = {
   id: Types.ObjectId;
-  wallet: Types.ObjectId;
-  asset: {
-    ticker: string;
-    name: string;
-  };
-  operations: Types.ObjectId[];
+  walletId: Types.ObjectId;
+  asset: AssetData;
+  operationIds: Types.ObjectId[];
 };
 
 export type PositionDocument = Document & PositionModel;
 
 const positionSchema = new Schema({
-  wallet: {
+  walletId: {
     type: Schema.Types.ObjectId,
     ref: 'Wallet',
     require: true,
@@ -28,7 +26,7 @@ const positionSchema = new Schema({
       require: true,
     }
   },
-  operations: [{
+  operationIds: [{
     type: Schema.Types.ObjectId,
     ref: 'Operation'
   }]

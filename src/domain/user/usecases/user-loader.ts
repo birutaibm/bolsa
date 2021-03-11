@@ -3,8 +3,11 @@ import User from '@domain/user/entities/user';
 import Encoder from './encoder'
 import { PersistedUser, PersistedUserData } from './dto';
 
+export type GetPersistedUserDataFromUsername =
+  (userName: string) => Promise<PersistedUserData>;
+
 export interface RequiredFunctionalities {
-  getUserFromUsername(userName: string): Promise<PersistedUserData>;
+  getUserFromUsername: GetPersistedUserDataFromUsername;
 }
 
 export default class UserLoader {

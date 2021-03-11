@@ -11,10 +11,10 @@ services:
       - "3000:3000"
       - "9229:9229"
     volumes:
-      - ./:/app
+      - ~/docker-volumes/bolsa/server:/app
     working_dir: /app
     networks:
-      - rs_ws_env_nw
+      - bolsa-net
 
   mongodb:
     image: mongo:latest
@@ -23,7 +23,8 @@ services:
     ports:
       - "27017:27017"
     networks:
-      - rs_ws_env_nw
+      - bolsa-net
 
 networks:
-  rs_ws_env_nw:
+  bolsa-net:
+    driver: bridge

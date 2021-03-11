@@ -36,6 +36,9 @@ export class RepositoryFactoriesBuilder extends Builder<Promise<RepositoryFactor
       prices: prices.asSingletonFactory(),
       users: mongoRepo.users,
       wallets: mongoRepo.wallets,
+      investors: mongoRepo.users,
+      positions: mongoRepo.positions,
+      operations: mongoRepo.operations,
     };
   }
 }

@@ -9,7 +9,7 @@ export type OperationDTO = {
 
 type OperationModel = {
   id: Types.ObjectId;
-  position: Types.ObjectId;
+  positionId: Types.ObjectId;
   date: number;
   quantity: number;
   value: number;
@@ -18,7 +18,7 @@ type OperationModel = {
 export type OperationDocument = Document & OperationModel;
 
 const operationSchema = new Schema({
-  position: {
+  positionId: {
     type: Schema.Types.ObjectId,
     ref: 'Position',
     require: true,

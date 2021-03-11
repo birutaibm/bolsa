@@ -6,7 +6,7 @@ import { ServerBuilder } from '@infra/server';
 
 import {
   FakeExternalPriceRepository,
-  FakePriceRepository, FakeUserRepository, FakeWalletRepository
+  FakePriceRepository, FakeUserRepository, FakeWalletRepository, FakeInvestorRepository, FakePositionRepository, FakeOperationRepository
 } from '@mock/data-source/repositories';
 
 let app: ServerBuilder['app'];
@@ -20,7 +20,10 @@ describe('API', () => {
         externals: [new FakeExternalPriceRepository()],
       })),
       users: new SingletonFactory(() => new FakeUserRepository()),
+      investors: new SingletonFactory(() => new FakeInvestorRepository()),
       wallets: new SingletonFactory(() => new FakeWalletRepository()),
+      positions: new SingletonFactory(() => new FakePositionRepository()),
+      operations: new SingletonFactory(() => new FakeOperationRepository()),
     };
     jest.spyOn(factories, 'ofRepositories')
       .mockReturnValue(Promise.resolve(repositories));

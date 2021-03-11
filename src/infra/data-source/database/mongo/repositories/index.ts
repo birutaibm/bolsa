@@ -3,18 +3,21 @@ import { SingletonFactory } from '@utils/factory';
 import { MongoPriceRepository } from './price';
 import { MongoUserRepository } from './user';
 import { MongoWalletRepository } from './wallet';
-import { PositionRepository } from './position';
-import { OperationRepository } from './operation';
+import { MongoPositionRepository } from './position';
+import { MongoOperationRepository } from './operation';
+import Mongo from '..';
 
-export default function createFactories() {
+export default function createFactories(mongo: Mongo) {
   const prices = new SingletonFactory(() => new MongoPriceRepository());
-  const users =  new SingletonFactory(() => new MongoUserRepository());
-  const operations = new SingletonFactory(() => new OperationRepository());
+  const operations = new SingletonFactory(() => new MongoOperationRepository(mongo));
   const positions = new SingletonFactory(
-    () => new PositionRepository(operations.make())
+    () => new MongoPositionRepository(mongo)
   );
   const wallets = new SingletonFactory(
-    () => new MongoWalletRepository(positions.make())
+    () => new MongoWalletRepository(mongo)
+  );
+  const users =  new SingletonFactory(
+    () => new MongoUserRepository()
   );
 
   return {

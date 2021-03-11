@@ -1,20 +1,23 @@
+import Operation from './operation';
+import Wallet from './wallet';
+
 export type Asset = {
   readonly ticker: string;
   readonly name: string;
 };
 
-type Operation = {
-  date: Date;
-  quantity: number;
-  value: number;
-};
-
 export default class Position {
-
   constructor(
     readonly asset: Asset,
+    readonly wallet: Wallet,
     private readonly operations: Operation[] = [],
-  ) {}
+  ) {
+    wallet.addPosition(this);
+  }
+
+  addOperation(operation: Operation) {
+    this.operations.push(operation);
+  }
 
   buy(quantity: number, value: number, date?: Date) {
     if (!date) {
@@ -26,7 +29,7 @@ export default class Position {
     if (value > 0) {
       value = -value;
     }
-    this.operations.push({ date, quantity, value });
+    new Operation(date, quantity, value, this);
   }
 
   sell(quantity: number, value: number, date?: Date) {
@@ -39,8 +42,7 @@ export default class Position {
     if (value < 0) {
       value = -value;
     }
-    this.operations.push({ date, quantity, value });
-    return this;
+    new Operation(date, quantity, value, this);
   }
 
   getOperations(): Operation[] {
