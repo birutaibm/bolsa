@@ -1,6 +1,6 @@
 import { AssetData as AssetDTO, MayBePromise } from '@domain/wallet/usecases/dtos';
 
-export type AssetData = AssetDTO;
+export type AssetData = AssetDTO & {id: string;};
 
 export type PositionData = {
   id: string;
@@ -20,8 +20,10 @@ export type PositionWithWalletData = {
 };
 
 export interface PositionRepository {
+  loadPositionsDataByWalletId(id: string): MayBePromise<PositionData[]>;
+
   saveNewPosition(
-    asset: AssetData, walletId: string
+    assetId: string, walletId: string
   ): MayBePromise<PositionWithWalletData>;
 
   loadPositionDataById(positionId: string): MayBePromise<PositionData>;

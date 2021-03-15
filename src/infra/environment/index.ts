@@ -1,3 +1,4 @@
+import { PostgreConfig } from '@infra/data-source/database/postgresql';
 import 'dotenv/config';
 import { test } from './test';
 
@@ -14,9 +15,20 @@ const mongodb = (process.env.NODE_ENV === 'test')
     },
   };
 
+const postgre: PostgreConfig = (process.env.NODE_ENV === 'test')
+  ? test.postgre
+  : {
+    user: process.env.POSTGRE_USER || 'dev',
+    host: process.env.POSTGRE_HOST || 'postgre',
+    database: process.env.POSTGRE_DATABASE || 'dev',
+    password: process.env.POSTGRE_PASSWORD || 'my password',
+    port: Number(process.env.POSTGRE_PORT || '5432'),
+  };
+
 export const env = {
   port: process.env.PORT || 3000,
   mongodb,
+  postgre,
   jwt: {
     secret: process.env.JWT_SECRET || 'não tenho segredo',
     duration: process.env.JWT_DURATION || '1h',

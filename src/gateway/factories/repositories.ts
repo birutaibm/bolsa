@@ -8,6 +8,7 @@ import {
 import { PositionRepository } from '@gateway/data/contracts/position-repository';
 
 export type RepositoryFactories = {
+  disconnectAll(): Promise<void>;
   readonly prices: Factory<PriceRepositoriesProvider>;
   readonly users: Factory<UserRepository>;
   readonly investors: Factory<InvestorRepository>;

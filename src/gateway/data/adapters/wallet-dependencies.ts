@@ -1,17 +1,15 @@
 import {
-  MayBePromise, Persisted, PopulatedWalletData, PopulatedInvestorData,
+  Persisted, PopulatedWalletData, PopulatedInvestorData,
   OperationData, AssetData, PopulatedPositionData, WalletData, PositionData,
-  InvestorData as InvestorCreationDTO
-} from "@domain/wallet/usecases/dtos";
-import { InvestorPersistedData } from "@domain/wallet/usecases/investor-creator";
-import { SignInRequiredError } from "@errors/sign-in-required";
-import { WalletNotFoundError } from "@errors/wallet-not-found";
+} from '@domain/wallet/usecases/dtos';
+import { SignInRequiredError } from '@errors/sign-in-required';
+import { WalletNotFoundError } from '@errors/not-found';
 import {
   InvestorRepository, InvestorData,
   OperationRepository,
-  WalletRepository, WalletData as PersistedWalletData,
-} from "../contracts";
-import { PositionRepository, PositionData as PersistedPositionData } from "../contracts/position-repository";
+  WalletRepository
+} from '../contracts';
+import { PositionRepository, PositionData as PersistedPositionData } from '../contracts/position-repository';
 
 export default class WalletDependencies {
   constructor(
@@ -141,7 +139,7 @@ export default class WalletDependencies {
     if (loggedUserId !== ownerId) {
       throw new SignInRequiredError();
     }
-    const { id } = await this.operations.saveNewOperation({positionId, quantity, value, date: date.getTime()});
+    const { id } = await this.operations.saveNewOperation({positionId, quantity, value, date});
     const owner = await this.investors.loadInvestorDataById(ownerId);
     return {
       id, date, quantity, value, position: {
@@ -169,12 +167,12 @@ export default class WalletDependencies {
     };
   }
 
-  async positionCreator(asset: AssetData, walletId: string, loggedUserId: string): Promise<Persisted<PositionData>> {
+  async positionCreator(assetId: string, walletId: string, loggedUserId: string): Promise<Persisted<PositionData>> {
     const owner = await this.wallets.loadWalletDataById(walletId);
     if (loggedUserId !== owner.id) {
       throw new SignInRequiredError();
     }
-    const { id, wallet } = await this.positions.saveNewPosition(asset, walletId);
+    const { id, wallet, asset } = await this.positions.saveNewPosition(assetId, walletId);
     return {id, asset, wallet: { name: wallet.name, owner }};
   }
 

@@ -19,6 +19,7 @@ export function createUseCasesFactories(
   const userUseCases = createUserUseCasesFactories(users.make(), security.make());
   const walletUseCases = createWalletUseCasesFactories(
     investors.make(), wallets.make(), positions.make(), operations.make(),
+    prices.make().internal,
   );
 
   return {

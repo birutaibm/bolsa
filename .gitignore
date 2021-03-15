@@ -5,6 +5,7 @@ dist/
 temp/
 coverage
 .env
+.postgres-pwd
 ormconfig.json
 yarn.lock
 

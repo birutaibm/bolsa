@@ -1,8 +1,14 @@
-import { InvestorNotFoundError } from '@errors/investor-not-found';
+import { InvestorNotFoundError } from '@errors/not-found';
+
 import { PersistedWalletData, WalletData, WalletRepository } from '@gateway/data/contracts';
+
 import { investors, wallets } from './wallet-module-data';
 
 export class FakeWalletRepository implements WalletRepository {
+  loadWalletsDataByOwnerId(id: string): WalletData[] {
+    return wallets.filter(wallet => wallet.ownerId === id);
+  }
+
   loadWalletsDataByIds(ids: string[]): WalletData[] {
     return ids.map(this.loadWalletDataById);
   }

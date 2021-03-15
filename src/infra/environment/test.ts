@@ -1,3 +1,5 @@
+import { PostgreConfig } from "@infra/data-source/database/postgresql";
+
 export const test = {
   port: 5000,
   mongodb: {
@@ -8,5 +10,12 @@ export const test = {
       useUnifiedTopology: true,
       poolSize: 1,
     },
+  },
+  postgre: {
+    user: 'test',
+    host: 'localhost',
+    database: 'test',
+    password: 'testPassword',
+    port: Number('5432'),
   },
 };

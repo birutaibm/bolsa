@@ -1,8 +1,14 @@
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 import { OperationData, OperationRepository } from '@gateway/data/contracts';
 
 import { operations, positions } from './wallet-module-data';
 
 export class FakeOperationRepository implements OperationRepository {
+  loadOperationsDataByPositionId(id: string): MayBePromise<OperationData[]> {
+    return this.loadOperationsDataByIds(
+      positions.find(position => position.id === id)?.operationIds || []
+    );
+  }
   saveNewOperation(data: Omit<OperationData, "id">): OperationData {
     const id = String(operations.length);
     const operation = { ...data, id };

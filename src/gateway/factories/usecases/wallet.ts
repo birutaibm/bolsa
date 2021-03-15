@@ -6,7 +6,7 @@ import {
 } from '@domain/wallet/usecases';
 
 import {
-  InvestorRepository, OperationRepository, WalletRepository, PositionRepository
+  InvestorRepository, OperationRepository, WalletRepository, PositionRepository, InternalRepository
 } from '@gateway/data/contracts';
 import WalletDependencies from '@gateway/data/adapters/wallet-dependencies';
 
@@ -15,6 +15,7 @@ export default function createWalletUseCasesFactories(
   wallets: WalletRepository,
   positions: PositionRepository,
   operations: OperationRepository,
+  assets: InternalRepository,
 ) {
   const adapter = new WalletDependencies(
     investors, wallets, positions, operations
@@ -47,9 +48,10 @@ export default function createWalletUseCasesFactories(
     () => new PositionLoader((id, loggedUserId) => adapter.positionLoader(id, loggedUserId)),
   );
   const positionCreator = new SingletonFactory(
-    () => new PositionCreator((asset, walletId, loggedUserId) =>
-        adapter.positionCreator(asset, walletId, loggedUserId),
+    () => new PositionCreator((assetId, walletId, loggedUserId) =>
+        adapter.positionCreator(assetId, walletId, loggedUserId),
       walletLoader.make(),
+      assets,
     ),
   );
 

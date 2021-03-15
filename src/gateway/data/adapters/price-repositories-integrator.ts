@@ -64,7 +64,7 @@ export class PriceRepositoriesIntegrator implements RequiredFunctionalities {
     return Promise.race(promises);
   }
 
-  putPrices(ticker: string, prices: PriceDTO[]): Promise<AssetPriceDTO[]> {
-    return this.writer.save(ticker, prices);
+  async putPrices(ticker: string, prices: PriceDTO[]): Promise<AssetPriceDTO[]> {
+    return await this.writer.save(ticker, prices);
   }
 }

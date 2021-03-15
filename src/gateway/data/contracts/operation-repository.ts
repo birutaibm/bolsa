@@ -3,7 +3,7 @@ import { AssetData, MayBePromise, Persisted, WalletData } from "@domain/wallet/u
 export type OperationData = {
   id: string;
   positionId: string;
-  date: number;
+  date: Date;
   quantity: number;
   value: number;
 };
@@ -21,6 +21,8 @@ export type PopulatedOperationData = {
 };
 
 export interface OperationRepository {
+  loadOperationsDataByPositionId(id: string): MayBePromise<OperationData[]>;
+
   saveNewOperation(
     data: Omit<OperationData, 'id'>
   ): MayBePromise<OperationData>;

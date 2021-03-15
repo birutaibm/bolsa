@@ -17,6 +17,8 @@ export type PersistedWalletData = {
 };
 
 export interface WalletRepository {
+  loadWalletsDataByOwnerId(id: string): MayBePromise<WalletData[]>;
+
   loadWalletsDataByIds(ids: string[]): MayBePromise<WalletData[]>;
 
   loadWalletDataById(id: string): MayBePromise<WalletData>;

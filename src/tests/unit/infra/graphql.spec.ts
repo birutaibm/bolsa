@@ -17,6 +17,7 @@ describe('GraphQL', () => {
   beforeAll(async done => {
     const builder = new ServerBuilder().withGraphQL();
     const repositories = {
+      disconnectAll: async () => {},
       prices: new SingletonFactory(() => ({
         internal: new FakePriceRepository(),
         externals: [new FakeExternalPriceRepository()],
@@ -24,7 +25,9 @@ describe('GraphQL', () => {
       users: new SingletonFactory(() => new FakeUserRepository()),
       investors: new SingletonFactory(() => new FakeInvestorRepository()),
       wallets: new SingletonFactory(() => new FakeWalletRepository()),
-      positions: new SingletonFactory(() => new FakePositionRepository()),
+      positions: new SingletonFactory(() => new FakePositionRepository(
+        repositories.prices.make().internal
+      )),
       operations: new SingletonFactory(() => new FakeOperationRepository()),
     };
     jest.spyOn(factories, 'ofRepositories')
