@@ -1,11 +1,10 @@
 import { Schema, Document, model } from 'mongoose';
 
+import { Persisted } from '@domain/wallet/usecases/dtos';
+
 import { UserDTO } from '@gateway/data/dto';
-import { InvestorDTO } from '@gateway/data/contracts';
 
-export type User = UserDTO & InvestorDTO;
-
-export type UserDocument = Document & User;
+export type UserDocument = Document & Persisted<UserDTO>;
 
 const userSchema = new Schema({
   userName: {
@@ -21,11 +20,6 @@ const userSchema = new Schema({
     required: true,
     default: 'USER',
   },
-  walletIds: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Wallet'
-  }],
-  name: String,
 });
 
 export default model<UserDocument>('User', userSchema);

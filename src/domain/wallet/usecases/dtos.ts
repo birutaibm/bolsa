@@ -1,6 +1,6 @@
 import { Position, Wallet, Operation } from '@domain/wallet/entities';
 
-export type Persisted<T> = T & { id: any };
+export type Persisted<T> = T & { id: string };
 export type MayBePromise<T> = T | Promise<T>;
 
 export type InvestorData = {id: string, name: string};
@@ -34,5 +34,5 @@ export type PopulatedPositionData = Persisted<PositionData> & {
 };
 
 export type OperationData = {
-  date: Date; quantity: number; value: number; position: PositionData
+  date: Date; quantity: number; value: number; position: Persisted<PositionData>
 }

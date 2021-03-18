@@ -5,6 +5,7 @@ import { Factory } from '@utils/factory';
 import { OperationRepository, OperationData, PositionRepository } from '@gateway/data/contracts';
 
 import PostgreSQL from '..';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 type OperationModel = {
   id: number;
@@ -20,23 +21,22 @@ export class PostgreOperationRepository implements OperationRepository {
 
   constructor(
     private readonly db: PostgreSQL,
-    private positions: PositionRepository | Factory<PositionRepository>,
   ) {}
 
-  async loadOperationsDataByPositionId(id: string): Promise<OperationData[]> {
+  async loadOperationIdsByPositionId(id: string): Promise<string[]> {
     if (isNaN(Number(id))) {
-      throw new InvalidParameterValueError('Position id can not be cast to number');
+      return [];
     }
     const models = await this.db.query<OperationModel>({
       text: `${this.selectAllWhere} position_id = $1`,
       values: [id],
     });
-    return Promise.all(models.map(this.modelToData));
+    return models.map(model => String(model.id));
   }
 
   async loadOperationDataById(id: string): Promise<OperationData> {
     if (isNaN(Number(id))) {
-      throw new InvalidParameterValueError('Id can not be cast to number');
+      throw new OperationNotFoundError(id);
     }
     const [ model ] = await this.db.query<OperationModel>({
       text: `${this.selectAllWhere} id = $1`,
@@ -49,29 +49,18 @@ export class PostgreOperationRepository implements OperationRepository {
   }
 
   async loadOperationsDataByIds(ids: string[]): Promise<OperationData[]> {
-    const params = ids.map((id, i) => {
-      if (isNaN(Number(id))) {
-        throw new InvalidParameterValueError('Id can not be cast to number');
-      }
-      return `$${i+1}`;
-    }).join(',');
+    ids = ids.filter(id => !isNaN(Number(id)));
+    const params = ids.map((_, i) => `$${i+1}`).join(',');
     const models = await this.db.query<OperationModel>({
       text: `${this.selectAllWhere} id IN (${params})`,
       values: ids,
     });
-    return Promise.all(models.map(this.modelToData));
+    return Promise.all(models.map(model => this.modelToData(model)));
   }
 
   async saveNewOperation(
     data: Omit<OperationData, 'id'>
   ): Promise<OperationData> {
-    if (this.positions instanceof Factory) {
-      this.positions = this.positions.make();
-    }
-    const position = await this.positions.loadPositionDataById(data.positionId);
-    if (!position) {
-      throw new PositionNotFoundError(data.positionId);
-    }
     const [ model ] = await this.db.query<OperationModel>({
       text: `INSERT INTO
         operations(date, quantity, value, position_id, created_on)

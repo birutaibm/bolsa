@@ -53,11 +53,11 @@ export class PostgreInvestorRepository implements InvestorRepository {
     if (this.wallets instanceof Factory) {
       this.wallets = this.wallets.make();
     }
-    const wallets = await this.wallets.loadWalletsDataByOwnerId(String(id));
+    const walletIds = await this.wallets.loadWalletIdsByOwnerId(String(id));
     return {
       id: String(id),
       name,
-      walletIds: wallets.map(wallet => wallet.id),
+      walletIds,
     };
   }
 }

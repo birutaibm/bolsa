@@ -1,17 +1,20 @@
-import { WalletNotFoundError } from '@errors/not-found';
+import { PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
 
 import { PositionData, PositionRepository, PositionWithWalletData } from '@gateway/data/contracts';
 
 import { positions, wallets } from './wallet-module-data';
 import { FakePriceRepository } from './internal-price';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 export class FakePositionRepository implements PositionRepository {
   constructor(
     private readonly assets: FakePriceRepository,
   ) {}
 
-  loadPositionsDataByWalletId(id: string): PositionData[] {
-    return positions.filter(position => position.walletId === id);
+  loadPositionIdsByWalletId(id: string): MayBePromise<string[]> {
+    return positions
+      .filter(position => position.walletId === id)
+      .map(position => position.id);
   }
 
   saveNewPosition(assetId: string, walletId: string): PositionWithWalletData {
@@ -29,6 +32,9 @@ export class FakePositionRepository implements PositionRepository {
 
   loadPositionDataById(id: string): PositionData {
     const index = Number(id);
+    if (isNaN(index)) {
+      throw new PositionNotFoundError(id);
+    }
     return positions[index];
   }
 

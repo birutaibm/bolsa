@@ -28,11 +28,11 @@ describe('Postgre operation repository', () => {
       db = new PostgreSQL(env.postgre);
       [ investor ] = await db.query<Data>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['111111111111111111111111', 'Rafael Arantes', new Date()],
+        values: ['operationTest_investorId', 'Rafael Arantes', new Date()],
       });
       [ wallet ] = await db.query<Data>({
         text: 'INSERT INTO wallets(name, owner_id, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['my wallet', investor.id, new Date()],
+        values: ['Wallet for operation tests', investor.id, new Date()],
       });
       asset = {
         id: 'ITUB3ITUB3ITUB3ITUB3ITUB',
@@ -125,10 +125,52 @@ describe('Postgre operation repository', () => {
     done();
   });
 
+  it('should be able to load existents operations by ids', async done => {
+    const [ { id } ] = await db.query<Data>({
+      text: `INSERT INTO operations(date, quantity, value, position_id, created_on)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      values: [dto.date, dto.quantity, dto.value, position.id, new Date()],
+    });
+    operations.push(id);
+    await expect(
+      repo.loadOperationsDataByIds([id, '6543', 'oId'])
+    ).resolves.toEqual([expect.objectContaining(dto)]);
+    done();
+  });
+
   it('should not be able to load inexistent operation', async done => {
     await expect(
       repo.loadOperationDataById('6543')
     ).rejects.toBeInstanceOf(OperationNotFoundError);
+    await expect(
+      repo.loadOperationDataById('oId')
+    ).rejects.toBeInstanceOf(OperationNotFoundError);
+    done();
+  });
+
+  it('should be able to load operation ids by positionId', async done => {
+    const [ { id } ] = await db.query<Data>({
+      text: `INSERT INTO operations(date, quantity, value, position_id, created_on)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      values: [dto.date, dto.quantity, dto.value, position.id, new Date()],
+    });
+    operations.push(id);
+    await expect(
+      repo.loadOperationIdsByPositionId(position.id)
+    ).resolves.toEqual(expect.arrayContaining([String(id)]));
+    done();
+  });
+
+  it('should be able to return empty position ids list by invalid walletId', async done => {
+    const [ { id } ] = await db.query<Data>({
+      text: `INSERT INTO operations(date, quantity, value, position_id, created_on)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      values: [dto.date, dto.quantity, dto.value, position.id, new Date()],
+    });
+    operations.push(id);
+    await expect(
+      repo.loadOperationIdsByPositionId('pId')
+    ).resolves.toEqual([]);
     done();
   });
 

@@ -5,7 +5,7 @@ import { MayBePromise, Persisted, PopulatedPositionData } from './dtos';
 export type PositionDataLoader =
   (id: string, loggedUserId: string) => MayBePromise<Persisted<PopulatedPositionData>>;
 
-export default class WalletLoader {
+export default class PositionLoader {
   constructor(
     private readonly loadData: PositionDataLoader,
   ) {}

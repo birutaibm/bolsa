@@ -1,12 +1,15 @@
-import { InvestorNotFoundError } from '@errors/not-found';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
+import { InvestorNotFoundError, WalletNotFoundError } from '@errors/not-found';
 
 import { PersistedWalletData, WalletData, WalletRepository } from '@gateway/data/contracts';
 
 import { investors, wallets } from './wallet-module-data';
 
 export class FakeWalletRepository implements WalletRepository {
-  loadWalletsDataByOwnerId(id: string): WalletData[] {
-    return wallets.filter(wallet => wallet.ownerId === id);
+  loadWalletIdsByOwnerId(id: string): MayBePromise<string[]> {
+    return wallets
+      .filter(wallet => wallet.ownerId === id)
+      .map(wallet => wallet.id);
   }
 
   loadWalletsDataByIds(ids: string[]): WalletData[] {
@@ -15,6 +18,9 @@ export class FakeWalletRepository implements WalletRepository {
 
   loadWalletDataById(id: string): WalletData {
     const index = Number(id);
+    if (isNaN(index)) {
+      throw new WalletNotFoundError(id);
+    }
     return wallets[index];
   }
 

@@ -1,5 +1,4 @@
 import { WalletNotFoundError } from '@errors/not-found';
-import { AssetNotFoundError } from '@errors/asset-not-found';
 import { SingletonFactory } from '@utils/factory';
 
 import { InvestorData, WalletData } from '@gateway/data/contracts';
@@ -23,7 +22,7 @@ describe('Postgre wallet repository', () => {
       db = new PostgreSQL(env.postgre);
       [ investor ] = await db.query<InvestorData>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['1234567890acbdeffedcba98', 'Rafael Arantes', new Date()],
+        values: ['walletTest_investorId123', 'Rafael Arantes', new Date()],
       });
       dto = {
         name: 'my wallet',
@@ -31,7 +30,7 @@ describe('Postgre wallet repository', () => {
       };
       const factories = await db.createRepositoryFactories(
         new SingletonFactory(() => ({
-          loadAssetDataById: (id) => {throw new AssetNotFoundError(id);}
+          loadAssetDataById: (id) => ({id, ticker: 'asset', name: 'asset'})
         })),
       );
       repo = factories.wallets.make();
@@ -83,6 +82,7 @@ describe('Postgre wallet repository', () => {
 
   it('should be able to load existent wallet', async done => {
     expect(investor.id.length).toBe(24);
+    dto.name = 'load existent';
     const [ { id } ] = await db.query<WalletData>({
       text: `INSERT INTO wallets(name, owner_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
@@ -95,15 +95,71 @@ describe('Postgre wallet repository', () => {
     done();
   });
 
+  it('should be able to load wallet with position', async done => {
+    dto.name = 'load with positions';
+    const [ { id } ] = await db.query<WalletData>({
+      text: `INSERT INTO wallets(name, owner_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: [dto.name, dto.ownerId, new Date()],
+    });
+    wallets.push(id);
+    const [ { id: positionId } ] = await db.query<{id: string;}>({
+      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: ['assetId', id, new Date()],
+    });
+    await expect(
+      repo.loadWalletDataById(id)
+    ).resolves.toEqual(expect.objectContaining({
+      positionIds: [String(positionId)]
+    }));
+    await db.query({
+      text: 'DELETE FROM positions WHERE id = $1',
+      values: [positionId],
+    })
+    done();
+  });
+
   it('should not be able to load inexistent wallet', async done => {
     await expect(
       repo.loadWalletDataById('987')
     ).rejects.toBeInstanceOf(WalletNotFoundError);
+    await expect(
+      repo.loadWalletDataById('wId')
+    ).rejects.toBeInstanceOf(WalletNotFoundError);
+    done();
+  });
+
+  it('should be able to load wallet ids by ownerId', async done => {
+    dto.name = 'load by owner';
+    const [ { id } ] = await db.query<WalletData>({
+      text: `INSERT INTO wallets(name, owner_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: [dto.name, dto.ownerId, new Date()],
+    });
+    wallets.push(id);
+    await expect(
+      repo.loadWalletIdsByOwnerId(dto.ownerId)
+    ).resolves.toEqual(expect.arrayContaining([String(id)]));
+    done();
+  });
+
+  it('should be able to load existents wallets by ids', async done => {
+    dto.name = 'load existents';
+    const [ { id } ] = await db.query<WalletData>({
+      text: `INSERT INTO wallets(name, owner_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: [dto.name, dto.ownerId, new Date()],
+    });
+    wallets.push(id);
+    await expect(
+      repo.loadWalletsDataByIds([id, '987', 'wId'])
+    ).resolves.toEqual([expect.objectContaining(dto)]);
     done();
   });
 
   it('should be able to create wallet', async done => {
-    const wallet = await repo.saveNewWallet(dto.name, dto.ownerId);
+    const wallet = await repo.saveNewWallet('saved', dto.ownerId);
     const createdId = wallet.id;
     wallets.push(createdId);
     await expect(
@@ -111,7 +167,7 @@ describe('Postgre wallet repository', () => {
         text: 'SELECT * FROM wallets WHERE id = $1', values: [createdId],
       })
     ).resolves.toEqual([
-      expect.objectContaining({name: dto.name, owner_id: dto.ownerId})
+      expect.objectContaining({name: 'saved', owner_id: dto.ownerId})
     ]);
     done();
   });

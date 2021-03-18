@@ -1,5 +1,6 @@
-import { Position, Wallet, Investor, Operation } from '@domain/wallet/entities';
 import { SignInRequiredError } from '@errors/sign-in-required';
+
+import { Position, Wallet, Investor, Operation } from '@domain/wallet/entities';
 
 import { MayBePromise, Persisted, PopulatedInvestorData } from './dtos';
 

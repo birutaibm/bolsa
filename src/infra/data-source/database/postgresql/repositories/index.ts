@@ -53,17 +53,17 @@ export default async function createFactories(
   }
 
 
-  const investors =  new SingletonFactory(
-    () => new PostgreInvestorRepository(db, wallets)
-  );
-  const wallets = new SingletonFactory(
-    () => new PostgreWalletRepository(db, investors, positions)
+  const operations = new SingletonFactory(
+    () => new PostgreOperationRepository(db)
   );
   const positions = new SingletonFactory(
-    () => new PostgrePositionRepository(db, wallets, operations, assets)
+    () => new PostgrePositionRepository(db, operations, assets)
   );
-  const operations = new SingletonFactory(
-    () => new PostgreOperationRepository(db, positions)
+  const wallets = new SingletonFactory(
+    () => new PostgreWalletRepository(db, positions)
+  );
+  const investors =  new SingletonFactory(
+    () => new PostgreInvestorRepository(db, wallets)
   );
 
   return {

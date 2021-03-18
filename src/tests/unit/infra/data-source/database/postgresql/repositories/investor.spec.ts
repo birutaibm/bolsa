@@ -2,7 +2,7 @@ import { AssetNotFoundError } from '@errors/asset-not-found';
 import { InvestorNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
-import { InvestorData } from '@gateway/data/contracts';
+import { InvestorData, WalletData } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -21,7 +21,7 @@ describe('Postgre investor repository', () => {
     try {
       db = new PostgreSQL(env.postgre);
       dto = {
-        id: '1234567890acbdef12345678',
+        id: 'investorTest_investorId1',
         name: 'Rafael Arantes',
       };
       const factories = await db.createRepositoryFactories(
@@ -104,6 +104,43 @@ describe('Postgre investor repository', () => {
     ).resolves.toEqual([
       expect.objectContaining(dto)
     ]);
+    done();
+  });
+
+  it('should be able to load investor when trying to save as new with existent id', async done => {
+    const [ {id} ] = await db.query<InvestorData>({
+      text: `INSERT INTO investors(id, name, created_on)
+      VALUES ($1, $2, $3) RETURNING *`,
+      values: [dto.id, dto.name, new Date()],
+    });
+    investors.push(id);
+    await expect(
+      repo.saveNewInvestor({ ...dto, id })
+    ).resolves.toEqual(expect.objectContaining({ id }));
+    done();
+  });
+
+  it('should be able to load investor with wallets', async done => {
+    const [ {id} ] = await db.query<InvestorData>({
+      text: `INSERT INTO investors(id, name, created_on)
+      VALUES ($1, $2, $3) RETURNING *`,
+      values: [dto.id, dto.name, new Date()],
+    });
+    const [ {id: walletId} ] = await db.query<WalletData>({
+      text: `INSERT INTO wallets(name, owner_id, created_on)
+      VALUES ($1, $2, $3) RETURNING *`,
+      values: ['Wallet of investor test', id, new Date()],
+    });
+    investors.push(id);
+    await expect(
+      repo.loadInvestorDataById(id)
+    ).resolves.toEqual(expect.objectContaining({
+      walletIds: [String(walletId)]
+    }));
+    await db.query({
+      text: 'DELETE FROM wallets WHERE id = $1',
+      values: [walletId],
+    })
     done();
   });
 });

@@ -52,4 +52,13 @@ describe('Repository factories builder', () => {
     ).rejects.toBeInstanceOf(DatabaseConnectionError);
     done();
   });
+
+  it('should not be able to create factories without any database', async done => {
+    await expect(
+      new RepositoryFactoriesBuilder()
+        .withAlphavantage(env.externalPrices.alphavantageKey)
+        .build()
+    ).rejects.toBeInstanceOf(DatabaseConnectionError);
+    done();
+  });
 });

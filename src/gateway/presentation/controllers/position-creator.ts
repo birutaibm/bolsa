@@ -1,9 +1,11 @@
 import { Authorization } from '@domain/user/usecases';
 import { PositionCreator } from '@domain/wallet/usecases';
+import { SignInRequiredError } from '@errors/sign-in-required';
 
 import {
   clientError, Controller, created, Params, Response, serverError, unauthorized
 } from '@gateway/presentation/contracts';
+import { positionView } from '../view/position';
 
 export class PositionCreatorController implements Controller {
   constructor(
@@ -11,20 +13,23 @@ export class PositionCreatorController implements Controller {
     private readonly auth: Authorization,
   ) {}
 
-  async handle({ticker, assetName, walletId, authorization}: Params): Promise<Response> {
+  async handle({assetId, walletId, authorization}: Params): Promise<Response> {
     const loggedUserId = this.auth.getInfo(authorization)?.id;
     if (!loggedUserId) {
       return unauthorized('Login required to this action!');
     }
-    if (!ticker || !assetName || !walletId) {
-      return clientError('Required parameters: ticker, assetName, walletId');
+    if (!assetId || !walletId) {
+      return clientError('Required parameters: assetId, walletId');
     }
     try {
       const position = await this.positionCreator.create(
-        {name: assetName, ticker}, walletId, loggedUserId
+        assetId, walletId, loggedUserId
       );
-      return created(position);
+      return created(positionView(position));
     } catch (error) {
+      if (error instanceof SignInRequiredError) {
+        return unauthorized('Login required to this action!');
+      }
       return serverError(error);
     }
   }

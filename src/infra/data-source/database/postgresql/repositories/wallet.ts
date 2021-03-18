@@ -8,6 +8,7 @@ import {
 } from '@gateway/data/contracts';
 
 import PostgreSQL from '..';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 type WalletModel = {
   created_on: Date;
@@ -21,21 +22,20 @@ export class PostgreWalletRepository implements WalletRepository {
 
   constructor(
     private readonly db: PostgreSQL,
-    private investors: InvestorRepository | Factory<InvestorRepository>,
     private positions: PositionRepository | Factory<PositionRepository>,
   ) {}
 
-  async loadWalletsDataByOwnerId(ownerId: string): Promise<WalletData[]> {
+  async loadWalletIdsByOwnerId(ownerId: string): Promise<string[]> {
     const models = await this.db.query<WalletModel>({
       text: `${this.selectAllWhere} owner_id = $1`,
       values: [ownerId],
     });
-    return Promise.all(models.map(this.modelToData));
+    return models.map(model => String(model.id));
   }
 
   async loadWalletDataById(id: string): Promise<WalletData> {
     if (isNaN(Number(id))) {
-      throw new InvalidParameterValueError('Id can not be cast to number');
+      throw new WalletNotFoundError(id);
     }
     const [ model ] = await this.db.query<WalletModel>({
       text: `${this.selectAllWhere} id = $1`,
@@ -48,38 +48,28 @@ export class PostgreWalletRepository implements WalletRepository {
   }
 
   async loadWalletsDataByIds(ids: string[]): Promise<WalletData[]> {
-    const params = ids.map((id, i) => {
-      if (isNaN(Number(id))) {
-        throw new InvalidParameterValueError('Id can not be cast to number');
-      }
-      return `$${i+1}`;
-    }).join(',');
+    ids = ids.filter(id => !isNaN(Number(id)));
+    const params = ids.map((_, i) => `$${i+1}`).join(',');
     const models = await this.db.query<WalletModel>({
       text: `${this.selectAllWhere} id IN (${params})`,
       values: ids,
     });
-    return Promise.all(models.map(this.modelToData));
+    return Promise.all(models.map(model => this.modelToData(model)));
   }
 
   async saveNewWallet(
     walletName: string, investorId: string
-  ): Promise<PersistedWalletData> {
-    if (this.investors instanceof Factory) {
-      this.investors = this.investors.make();
-    }
-    const investor = await this.investors.loadInvestorDataById(investorId);
-    if (!investor) {
-      throw new InvestorNotFoundError(investorId);
-    }
-    const [ data ] = await this.db.query<WalletData>({
+  ): Promise<WalletData> {
+    const [ data ] = await this.db.query<WalletModel>({
       text: `INSERT INTO wallets(name, owner_id, created_on)
       VALUES ($1, $2, $3) RETURNING *`,
-      values: [walletName, investor.id, new Date()],
+      values: [walletName, investorId, new Date()],
     });
     return {
-      id: data.id,
+      id: String(data.id),
       name: data.name,
-      owner: investor,
+      ownerId: data.owner_id,
+      positionIds: [],
     };
   }
 
@@ -89,12 +79,12 @@ export class PostgreWalletRepository implements WalletRepository {
     if (this.positions instanceof Factory) {
       this.positions = this.positions.make();
     }
-    const positions = await this.positions.loadPositionsDataByWalletId(String(id));
+    const positionIds = await this.positions.loadPositionIdsByWalletId(String(id));
     return {
       id: String(id),
       name,
       ownerId: owner_id,
-      positionIds: positions.map(({id}) => String(id)),
+      positionIds,
     };
   }
 }

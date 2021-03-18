@@ -71,7 +71,7 @@ rafael in bolsa on  feature/wallet [✘!?]
 rafael in bolsa on  feature/wallet [✘!?]
 ✦ ❯ docker-compose run postgre bash
 Creating bolsa_postgre_run ... done
-root@5729f9d30410:/# psql -h 172.25.0.2 -U test -d test
+root@5729f9d30410:/# psql -h bolsa_postgre_1 -U test -d test
 Password for user test:
 psql (13.2 (Debian 13.2-1.pgdg100+1))
 Type "help" for help.

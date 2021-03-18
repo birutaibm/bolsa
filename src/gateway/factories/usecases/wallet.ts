@@ -38,8 +38,8 @@ export default function createWalletUseCasesFactories(
     ),
   );
   const walletCreator = new SingletonFactory(() =>
-    new WalletCreator((walletName, investorId, loggedUserId) =>
-        adapter.walletCreator(walletName, investorId, loggedUserId),
+    new WalletCreator(async (walletName, investorId) =>
+        (await wallets.saveNewWallet(walletName, investorId)).id,
       investorLoader.make(),
     ),
   );
@@ -48,8 +48,8 @@ export default function createWalletUseCasesFactories(
     () => new PositionLoader((id, loggedUserId) => adapter.positionLoader(id, loggedUserId)),
   );
   const positionCreator = new SingletonFactory(
-    () => new PositionCreator((assetId, walletId, loggedUserId) =>
-        adapter.positionCreator(assetId, walletId, loggedUserId),
+    () => new PositionCreator(async (assetId, walletId) =>
+        (await positions.saveNewPosition(assetId, walletId)).id,
       walletLoader.make(),
       assets,
     ),
@@ -62,8 +62,9 @@ export default function createWalletUseCasesFactories(
   );
   const operationCreator = new SingletonFactory(
     () => new OperationCreator(
-      (date, quantity, value, positionId, loggedUserId) =>
-        adapter.operationCreator(date, quantity, value, positionId, loggedUserId),
+      async (date, quantity, value, positionId) =>
+        (await operations.saveNewOperation({date, quantity, value, positionId}))
+          .id,
       positionLoader.make()
     ),
   );

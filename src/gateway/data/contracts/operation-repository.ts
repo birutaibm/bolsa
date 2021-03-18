@@ -21,7 +21,7 @@ export type PopulatedOperationData = {
 };
 
 export interface OperationRepository {
-  loadOperationsDataByPositionId(id: string): MayBePromise<OperationData[]>;
+  loadOperationIdsByPositionId(id: string): MayBePromise<string[]>;
 
   saveNewOperation(
     data: Omit<OperationData, 'id'>

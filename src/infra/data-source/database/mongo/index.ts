@@ -35,15 +35,7 @@ export default class Mongo {
   }
 
   isConnected() {
-    return this.connection && this.connection.readyState !== 1;
-  }
-
-  async startSession() {
-    //TODO: check this: https://stackoverflow.com/questions/53435616/how-to-use-mongodb-transaction-using-mongoose
-    if (!this.connection) {
-      throw new DatabaseConnectionError('mongodb');
-    }
-    return await this.connection.startSession();
+    return this.connection && this.connection.readyState === 1;
   }
 
   async createRepositoryFactories() {

@@ -29,11 +29,11 @@ describe('Postgre position repository', () => {
       db = new PostgreSQL(env.postgre);
       [ investor ] = await db.query<InvestorData>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['111111111111111111111111', 'Rafael Arantes', new Date()],
+        values: ['positionTest_investorId1', 'Rafael Arantes', new Date()],
       });
       [ wallet ] = await db.query<WalletData>({
         text: 'INSERT INTO wallets(name, owner_id, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['my wallet', investor.id, new Date()],
+        values: ['Wallet for position tests', investor.id, new Date()],
       });
       asset = {
         id: 'ITUB3ITUB3ITUB3ITUB3ITUB',
@@ -121,10 +121,81 @@ describe('Postgre position repository', () => {
     done();
   });
 
+  it('should be able to load position with operation', async done => {
+    const [ { id } ] = await db.query<{id: string;}>({
+      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: [asset.id, wallet.id, new Date()],
+    });
+    positions.push(id);
+    const opData = {
+      date: new Date(),
+      quantity: 100,
+      value: -2345,
+    };
+    const [ { id: operationId } ] = await db.query<{id: string}>({
+      text: `INSERT INTO operations(date, quantity, value, position_id, created_on)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      values: [opData.date, opData.quantity, opData.value, id, new Date()],
+    });
+    await expect(
+      repo.loadPositionDataById(id)
+    ).resolves.toEqual(expect.objectContaining({
+      operationIds: [String(operationId)]
+    }));
+    await db.query({
+      text: 'DELETE FROM operations WHERE id = $1',
+      values: [operationId],
+    })
+    done();
+  });
+
   it('should not be able to load inexistent position', async done => {
     await expect(
       repo.loadPositionDataById('987')
     ).rejects.toBeInstanceOf(PositionNotFoundError);
+    await expect(
+      repo.loadPositionDataById('pId')
+    ).rejects.toBeInstanceOf(PositionNotFoundError);
+    done();
+  });
+
+  it('should be able to load position ids by walletId', async done => {
+    const [ { id } ] = await db.query<{id: string;}>({
+      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: [asset.id, wallet.id, new Date()],
+    });
+    positions.push(id);
+    await expect(
+      repo.loadPositionIdsByWalletId(wallet.id)
+    ).resolves.toEqual(expect.arrayContaining([String(id)]));
+    done();
+  });
+
+  it('should be able to return empty position ids list by invalid walletId', async done => {
+    const [ { id } ] = await db.query<{id: string;}>({
+      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: [asset.id, wallet.id, new Date()],
+    });
+    positions.push(id);
+    await expect(
+      repo.loadPositionIdsByWalletId('wId')
+    ).resolves.toEqual([]);
+    done();
+  });
+
+  it('should be able to load existents positions by ids', async done => {
+    const [ { id } ] = await db.query<{id: string;}>({
+      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      VALUES ($1, $2, $3) RETURNING id`,
+      values: [asset.id, wallet.id, new Date()],
+    });
+    positions.push(id);
+    await expect(
+      repo.loadPositionsDataByIds([id, '987', 'pId'])
+    ).resolves.toEqual([expect.objectContaining(dto)]);
     done();
   });
 

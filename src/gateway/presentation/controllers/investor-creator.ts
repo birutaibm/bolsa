@@ -1,5 +1,6 @@
 import { Authorization } from '@domain/user/usecases';
 import { InvestorCreator } from '@domain/wallet/usecases';
+import { SignInRequiredError } from '@errors/sign-in-required';
 
 import {
   clientError, Controller, created, Params, Response, serverError, unauthorized
@@ -23,6 +24,9 @@ export class InvestorCreatorController implements Controller {
       const investor = await this.investorCreator.create({id, name}, loggedUserId);
       return created(investor);
     } catch (error) {
+      if (error instanceof SignInRequiredError) {
+        return unauthorized('Login required to this action!');
+      }
       return serverError(error);
     }
   }

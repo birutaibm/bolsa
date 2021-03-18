@@ -1,11 +1,9 @@
-import { AssetNotFoundError } from '@errors/asset-not-found';
-import { PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
-import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
+import { PositionNotFoundError } from '@errors/not-found';
 import { Factory } from '@utils/factory';
 
 import {
-  PositionRepository, PositionData, PositionWithWalletData,
-  AssetRepository, WalletRepository, OperationRepository
+  PositionRepository, PositionData,
+  AssetRepository, OperationRepository
 } from '@gateway/data/contracts';
 
 import PostgreSQL from '..';
@@ -22,25 +20,24 @@ export class PostgrePositionRepository implements PositionRepository {
 
   constructor(
     private readonly db: PostgreSQL,
-    private wallets: WalletRepository | Factory<WalletRepository>,
     private operations: OperationRepository | Factory<OperationRepository>,
     private assets: AssetRepository | Factory<AssetRepository>,
   ) {}
 
-  async loadPositionsDataByWalletId(id: string): Promise<PositionData[]> {
+  async loadPositionIdsByWalletId(id: string): Promise<string[]> {
     if (isNaN(Number(id))) {
-      throw new InvalidParameterValueError('Wallet id can not be cast to number');
+      return [];
     }
     const models = await this.db.query<PositionModel>({
       text: `${this.selectAllWhere} wallet_id = $1`,
       values: [id],
     });
-    return Promise.all(models.map(this.modelToData));
+    return models.map(model => (String(model.id)));
   }
 
   async loadPositionDataById(id: string): Promise<PositionData> {
     if (isNaN(Number(id))) {
-      throw new InvalidParameterValueError('Id can not be cast to number');
+      throw new PositionNotFoundError(id);
     }
     const [ model ] = await this.db.query<PositionModel>({
       text: `${this.selectAllWhere} id = $1`,
@@ -53,45 +50,24 @@ export class PostgrePositionRepository implements PositionRepository {
   }
 
   async loadPositionsDataByIds(ids: string[]): Promise<PositionData[]> {
-    const params = ids.map((id, i) => {
-      if (isNaN(Number(id))) {
-        throw new InvalidParameterValueError('Id can not be cast to number');
-      }
-      return `$${i+1}`;
-    }).join(',');
+    ids = ids.filter(id => !isNaN(Number(id)));
+    const params = ids.map((_, i) => `$${i+1}`).join(',');
     const models = await this.db.query<PositionModel>({
       text: `${this.selectAllWhere} id IN (${params})`,
       values: ids,
     });
-    return Promise.all(models.map(this.modelToData));
+    return Promise.all(models.map(model => this.modelToData(model)));
   }
 
-  async saveNewPosition(assetId: string, walletId: string): Promise<PositionWithWalletData> {
-    if (this.wallets instanceof Factory) {
-      this.wallets = this.wallets.make();
-    }
-    const wallet = await this.wallets.loadWalletDataById(walletId);
-    if (!wallet) {
-      throw new WalletNotFoundError(walletId);
-    }
-
-    if (this.assets instanceof Factory) {
-      this.assets = this.assets.make();
-    }
-    const asset = await this.assets.loadAssetDataById(assetId);
-    if (!asset) {
-      throw new AssetNotFoundError(assetId);
-    }
-
+  async saveNewPosition(assetId: string, walletId: string): Promise<PositionData> {
     const [ model ] = await this.db.query<PositionModel>({
       text: `INSERT INTO positions(asset, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING *`,
-      values: [asset.id, wallet.id, new Date()],
+      values: [assetId, walletId, new Date()],
     });
     const position = await this.modelToData(model);
     return {
       ...position,
-      wallet,
     };
   }
 
@@ -104,12 +80,12 @@ export class PostgrePositionRepository implements PositionRepository {
     if (this.operations instanceof Factory) {
       this.operations = this.operations.make();
     }
-    const operations = await this.operations.loadOperationsDataByPositionId(String(id));
+    const operationIds = await this.operations.loadOperationIdsByPositionId(String(id));
     return {
       id: String(id),
       asset: await this.assets.loadAssetDataById(asset),
       walletId: String(wallet_id),
-      operationIds: operations.map(operation => String(operation.id)),
+      operationIds,
     };
   }
 }

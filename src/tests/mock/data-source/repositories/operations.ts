@@ -1,14 +1,16 @@
 import { MayBePromise } from '@domain/wallet/usecases/dtos';
+import { OperationNotFoundError } from '@errors/not-found';
 import { OperationData, OperationRepository } from '@gateway/data/contracts';
 
 import { operations, positions } from './wallet-module-data';
 
 export class FakeOperationRepository implements OperationRepository {
-  loadOperationsDataByPositionId(id: string): MayBePromise<OperationData[]> {
-    return this.loadOperationsDataByIds(
-      positions.find(position => position.id === id)?.operationIds || []
-    );
+  loadOperationIdsByPositionId(id: string): MayBePromise<string[]> {
+    return operations
+      .filter(operation => operation.positionId === id)
+      .map(operation => operation.id);
   }
+
   saveNewOperation(data: Omit<OperationData, "id">): OperationData {
     const id = String(operations.length);
     const operation = { ...data, id };
@@ -20,6 +22,9 @@ export class FakeOperationRepository implements OperationRepository {
 
   loadOperationDataById(id: string): OperationData {
     const index = Number(id);
+    if (isNaN(index)) {
+      throw new OperationNotFoundError(id);
+    }
     return operations[index];
   }
 

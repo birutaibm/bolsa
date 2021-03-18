@@ -20,11 +20,11 @@ export type PositionWithWalletData = {
 };
 
 export interface PositionRepository {
-  loadPositionsDataByWalletId(id: string): MayBePromise<PositionData[]>;
+  loadPositionIdsByWalletId(id: string): MayBePromise<Array<string>>;
 
   saveNewPosition(
     assetId: string, walletId: string
-  ): MayBePromise<PositionWithWalletData>;
+  ): MayBePromise<{id: string;}>;
 
   loadPositionDataById(positionId: string): MayBePromise<PositionData>;
 

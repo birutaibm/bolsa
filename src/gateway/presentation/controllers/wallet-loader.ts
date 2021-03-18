@@ -1,9 +1,12 @@
 import { Authorization } from '@domain/user/usecases';
 import { WalletLoader } from '@domain/wallet/usecases';
+import { WalletNotFoundError } from '@errors/not-found';
+import { SignInRequiredError } from '@errors/sign-in-required';
 
 import {
-  clientError, Controller, created, Params, Response, serverError, unauthorized
+  clientError, Controller, notFoundError, ok, Params, Response, serverError, unauthorized
 } from '@gateway/presentation/contracts';
+import { walletView } from '../view';
 
 export class WalletLoaderController implements Controller {
   constructor(
@@ -21,8 +24,14 @@ export class WalletLoaderController implements Controller {
     }
     try {
       const wallet = await this.walletLoader.load(id, loggedUserId);
-      return created(wallet);
+      return ok(walletView(wallet));
     } catch (error) {
+      if (error instanceof SignInRequiredError) {
+        return unauthorized('Login required to this action!');
+      }
+      if (error instanceof WalletNotFoundError) {
+        return notFoundError(`Can't found wallet with id ${id}`);
+      }
       return serverError(error);
     }
   }

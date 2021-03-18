@@ -182,4 +182,33 @@ describe('Mongo price repository', () => {
     ).rejects.toBeInstanceOf(PriceUnavailableError);
     done();
   });
+
+  //loadAssetDataById
+  it('should be able to get asset by id', async done => {
+    const name = 'Itaú';
+    const { id } = await Assets.create({
+      ticker,
+      name,
+    });
+    await expect(
+      repo.loadAssetDataById(id)
+    ).resolves.toEqual({id, ticker, name});
+    done();
+  });
+
+  it('should be able to get asset by id without name', async done => {
+    const { id } = await Assets.create({ticker});
+    await expect(
+      repo.loadAssetDataById(id)
+    ).resolves.toEqual({id, ticker, name: ticker});
+    done();
+  });
+
+  it('should not be able to get inexistent asset by id', async done => {
+    const inexistentAssetId = '1234567890abcdef12345678';
+    await expect(
+      repo.loadAssetDataById(inexistentAssetId)
+    ).rejects.toBeInstanceOf(AssetNotFoundError);
+    done();
+  });
 });

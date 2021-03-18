@@ -1,7 +1,8 @@
+import { Persisted } from '@domain/wallet/usecases/dtos';
 import { UserDTO } from '@gateway/data/dto';
 
 export interface LoadUserRepository {
-  getUserFromUsername(userName: string): Promise<UserDTO & {id: string}>;
+  getUserFromUsername(userName: string): Promise<Persisted<UserDTO>>;
 }
 
 export interface CreateUserRepository {

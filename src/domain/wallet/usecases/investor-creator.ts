@@ -1,5 +1,6 @@
-import { Investor } from '@domain/wallet/entities';
 import { SignInRequiredError } from '@errors/sign-in-required';
+
+import { Investor } from '@domain/wallet/entities';
 
 import { InvestorData, MayBePromise, Persisted } from './dtos';
 

@@ -1,5 +1,5 @@
 import { Position } from '@domain/wallet/entities';
-import { AssetData, MayBePromise, Persisted, PositionData } from './dtos';
+import { AssetData, MayBePromise, Persisted } from './dtos';
 import WalletLoader from './wallet-loader';
 
 interface AssetLoader {
@@ -7,7 +7,7 @@ interface AssetLoader {
 }
 
 export type NewPositionSaver =
-  (assetId: string, walletId: string, loggedUserId: string) => MayBePromise<Persisted<PositionData>>;
+  (assetId: string, walletId: string) => MayBePromise<string>;
 
 export default class PositionCreator {
   constructor(
@@ -20,7 +20,7 @@ export default class PositionCreator {
     const wallet = await this.wallets.load(walletId, loggedUserId);
     const asset = await this.assets.loadAssetDataById(assetId)
     const position = new Position(asset, wallet);
-    const { id } = await this.save(assetId, walletId, loggedUserId);
+    const id = await this.save(assetId, walletId);
     return Object.assign(position, {id});
   }
 }
