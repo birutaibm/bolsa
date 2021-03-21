@@ -11,22 +11,14 @@ let userName: string;
 
 describe('Mongo user repository', () => {
   beforeAll(async done => {
-    userName = 'Rafael Arantes';
-    async function createRepo(): Promise<MongoUserRepository> {
-      try {
-        mongo = new Mongo(env.mongodb);
-        return (await mongo.createRepositoryFactories()).users.make();
-      } catch (error) {
-        throw error;
-      }
+    try {
+      userName = 'Rafael Arantes';
+      mongo = new Mongo(env.mongodb);
+      repo = (await mongo.createRepositoryFactories()).users.make();
+      done();
+    } catch (error) {
+      done(error);
     }
-    createRepo().then(
-      result => {
-        repo = result
-        done();
-      },
-      done
-    );
   });
 
   afterEach(async done => {

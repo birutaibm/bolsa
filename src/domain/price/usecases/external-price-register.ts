@@ -2,13 +2,14 @@ import { Price } from '@domain/price/entities'
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 import { AssetNotFoundError } from '@errors/asset-not-found';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 type PriceDTO = Omit<Price, 'ticker' | 'name'>;
 
 export interface RequiredFunctionalities {
   checkThereIsSomeExternal:() => boolean;
-  getExternalPrices(ticker: string): Promise<PriceDTO[]>;
-  putPrices(ticker: string, prices: PriceDTO[]): Promise<Omit<Price, 'ticker'>[]>;
+  getExternalPrices(ticker: string): MayBePromise<PriceDTO[]>;
+  putPrices(ticker: string, prices: PriceDTO[]): MayBePromise<Omit<Price, 'ticker'>[]>;
 }
 
 export class ExternalPriceRegister {

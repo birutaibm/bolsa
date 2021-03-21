@@ -30,7 +30,7 @@ describe('Server', () => {
     const userCreation = await createUser(user);
     userCreation.test();
     const token = await signIn(user);
-    const assetId = await createAsset(token);
+    //const assetId = await createAsset(token);
     await userCreation.clear();
     done();
   });

@@ -24,8 +24,8 @@ export default class PostgreSQL {
     return rows;
   }
 
-  async getClient() {
-    return await this.pool.connect();
+  getClient() {
+    return this.pool.connect();
   }
 
   async createRepositoryFactories(assets: Factory<AssetRepository>) {

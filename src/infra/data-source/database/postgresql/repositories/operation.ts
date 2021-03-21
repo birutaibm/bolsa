@@ -1,11 +1,9 @@
-import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
-import { OperationNotFoundError, PositionNotFoundError } from '@errors/not-found';
-import { Factory } from '@utils/factory';
+import { OperationNotFoundError } from '@errors/not-found';
+import { isNumber } from '@utils/validators';
 
-import { OperationRepository, OperationData, PositionRepository } from '@gateway/data/contracts';
+import { OperationRepository, OperationData } from '@gateway/data/contracts';
 
 import PostgreSQL from '..';
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 type OperationModel = {
   id: number;
@@ -24,7 +22,7 @@ export class PostgreOperationRepository implements OperationRepository {
   ) {}
 
   async loadOperationIdsByPositionId(id: string): Promise<string[]> {
-    if (isNaN(Number(id))) {
+    if (!isNumber(id)) {
       return [];
     }
     const models = await this.db.query<OperationModel>({
@@ -35,7 +33,7 @@ export class PostgreOperationRepository implements OperationRepository {
   }
 
   async loadOperationDataById(id: string): Promise<OperationData> {
-    if (isNaN(Number(id))) {
+    if (!isNumber(id)) {
       throw new OperationNotFoundError(id);
     }
     const [ model ] = await this.db.query<OperationModel>({
@@ -49,7 +47,7 @@ export class PostgreOperationRepository implements OperationRepository {
   }
 
   async loadOperationsDataByIds(ids: string[]): Promise<OperationData[]> {
-    ids = ids.filter(id => !isNaN(Number(id)));
+    ids = ids.filter(id => isNumber(id));
     const params = ids.map((_, i) => `$${i+1}`).join(',');
     const models = await this.db.query<OperationModel>({
       text: `${this.selectAllWhere} id IN (${params})`,

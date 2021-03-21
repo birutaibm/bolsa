@@ -1,5 +1,5 @@
 import { SignInRequiredError } from '@errors/sign-in-required';
-import { isValidISODate } from '@utils/validators';
+import { isNumber, isValidISODate } from '@utils/validators';
 
 import { Authorization } from '@domain/user/usecases';
 import { OperationCreator } from '@domain/wallet/usecases';
@@ -27,9 +27,7 @@ export class OperationCreatorController implements Controller {
     if (!isValidISODate(date)) {
       return clientError('Date must be in ISO format');
     }
-    const quantityNumber = Number(quantity);
-    const valueNumber = Number(value);
-    if (isNaN(quantityNumber) || isNaN(valueNumber)) {
+    if (!isNumber(quantity) || !isNumber(value)) {
       return clientError('Quantity and value must be cast to valid numbers');
     }
     try {

@@ -1,5 +1,6 @@
 import { PositionNotFoundError } from '@errors/not-found';
 import { Factory } from '@utils/factory';
+import { isNumber } from '@utils/validators';
 
 import {
   PositionRepository, PositionData,
@@ -25,7 +26,7 @@ export class PostgrePositionRepository implements PositionRepository {
   ) {}
 
   async loadPositionIdsByWalletId(id: string): Promise<string[]> {
-    if (isNaN(Number(id))) {
+    if (!isNumber(id)) {
       return [];
     }
     const models = await this.db.query<PositionModel>({
@@ -36,7 +37,7 @@ export class PostgrePositionRepository implements PositionRepository {
   }
 
   async loadPositionDataById(id: string): Promise<PositionData> {
-    if (isNaN(Number(id))) {
+    if (!isNumber(id)) {
       throw new PositionNotFoundError(id);
     }
     const [ model ] = await this.db.query<PositionModel>({
@@ -50,7 +51,7 @@ export class PostgrePositionRepository implements PositionRepository {
   }
 
   async loadPositionsDataByIds(ids: string[]): Promise<PositionData[]> {
-    ids = ids.filter(id => !isNaN(Number(id)));
+    ids = ids.filter(id => isNumber(id));
     const params = ids.map((_, i) => `$${i+1}`).join(',');
     const models = await this.db.query<PositionModel>({
       text: `${this.selectAllWhere} id IN (${params})`,

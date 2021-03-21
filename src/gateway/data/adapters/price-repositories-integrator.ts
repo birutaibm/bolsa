@@ -10,6 +10,7 @@ import {
   RequiredFunctionalities,
 } from '@domain/price/usecases/external-price-register';
 import { PriceUnavailableError } from '@errors/price-unavailable';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 type Compatible = {
   [source: string]: {
@@ -64,7 +65,7 @@ export class PriceRepositoriesIntegrator implements RequiredFunctionalities {
     return Promise.race(promises);
   }
 
-  async putPrices(ticker: string, prices: PriceDTO[]): Promise<AssetPriceDTO[]> {
-    return await this.writer.save(ticker, prices);
+  putPrices(ticker: string, prices: PriceDTO[]): MayBePromise<AssetPriceDTO[]> {
+    return this.writer.save(ticker, prices);
   }
 }

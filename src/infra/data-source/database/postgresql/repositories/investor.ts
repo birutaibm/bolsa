@@ -1,10 +1,10 @@
 import { InvestorNotFoundError } from '@errors/not-found';
+import { Factory } from '@utils/factory';
 
 import {
   InvestorCreationData,
   InvestorData, InvestorRepository, WalletRepository
 } from '@gateway/data/contracts';
-import { Factory } from '@utils/factory';
 
 import PostgreSQL from '..';
 

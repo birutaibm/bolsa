@@ -18,8 +18,8 @@ export class ExternalSymbolRepositoryProvider implements WorkerProvider {
     if (!repository) {
       throw new NoneExternalSymbolRepository();
     }
-    const register = async (entry: SymbolDictionaryEntryDTO) =>
-      await this.register.registryExternalSymbol(entry);
+    const register = (entry: SymbolDictionaryEntryDTO) =>
+      this.register.registryExternalSymbol(entry);
     const getValidSymbols = async (ticker: string) =>
       Object.keys(await repository.getExternalSymbols(ticker));
     return { register, getValidSymbols };

@@ -1,12 +1,13 @@
 import { SymbolDictionaryEntry } from '@domain/price/entities'
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-symbol-dictionary-entry';
 import { promise } from '@utils/promise';
 
 type SymbolDictionary = SymbolDictionaryEntry[];
 
 export interface Worker {
-  getValidSymbols: (ticker: string) => Promise<string[]>;
-  register: (info: SymbolDictionaryEntry) => Promise<SymbolDictionaryEntry>;
+  getValidSymbols: (ticker: string) => MayBePromise<string[]>;
+  register: (info: SymbolDictionaryEntry) => MayBePromise<SymbolDictionaryEntry>;
 }
 
 export interface WorkerProvider {

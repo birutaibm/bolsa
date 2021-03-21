@@ -18,7 +18,7 @@ export class FakeWalletRepository implements WalletRepository {
 
   loadWalletDataById(id: string): WalletData {
     const index = Number(id);
-    if (isNaN(index)) {
+    if (Number.isNaN(index)) {
       throw new WalletNotFoundError(id);
     }
     return wallets[index];

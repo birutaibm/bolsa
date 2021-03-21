@@ -1,8 +1,9 @@
 import { Price } from '@domain/price/entities';
+import { MayBePromise } from '@domain/wallet/usecases/dtos';
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 
-export type LoadFunctions<T> = Array<(ticker: string) => Promise<T[]>>;
+export type LoadFunctions<T> = Array<(ticker: string) => MayBePromise<T[]>>;
 
 export class LastPriceLoader {
   constructor(

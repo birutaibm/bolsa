@@ -32,7 +32,7 @@ export class FakePositionRepository implements PositionRepository {
 
   loadPositionDataById(id: string): PositionData {
     const index = Number(id);
-    if (isNaN(index)) {
+    if (Number.isNaN(index)) {
       throw new PositionNotFoundError(id);
     }
     return positions[index];

@@ -10,7 +10,7 @@ export function priceLoaderOf(
   externalPriceRegister: ExternalPriceRegister,
 ): LoadFunctions<AssetPriceDTO> {
   return [
-    async (ticker: string) => await loadPriceRepository.loadPriceByTicker(ticker),
+    (ticker: string) => loadPriceRepository.loadPriceByTicker(ticker),
     (ticker: string) => externalPriceRegister.registry(ticker),
   ];
 }

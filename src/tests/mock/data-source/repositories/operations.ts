@@ -22,7 +22,7 @@ export class FakeOperationRepository implements OperationRepository {
 
   loadOperationDataById(id: string): OperationData {
     const index = Number(id);
-    if (isNaN(index)) {
+    if (Number.isNaN(index)) {
       throw new OperationNotFoundError(id);
     }
     return operations[index];

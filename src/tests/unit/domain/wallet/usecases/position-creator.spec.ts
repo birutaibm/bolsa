@@ -1,11 +1,10 @@
-import { InvestorNotFoundError, WalletNotFoundError } from '@errors/not-found';
+import { WalletNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 
 import { WalletLoader, PositionCreator } from '@domain/wallet/usecases';
 import { AssetData, Persisted, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 let walletData: Persisted<PopulatedWalletData>;
-let data: {name: string; investorId: string; };
 let useCase: PositionCreator;
 let asset: AssetData;
 

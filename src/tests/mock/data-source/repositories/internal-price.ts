@@ -46,7 +46,7 @@ export class FakePriceRepository implements InternalRepository {
 
   loadAssetDataById(id: string): { id: string; ticker: string; name: string; } {
     const index = Number(id);
-    if (isNaN(index) || index >= this.assets.length) {
+    if (Number.isNaN(index) || index >= this.assets.length) {
       throw new AssetNotFoundError(id);
     }
     const asset = this.assets[index];

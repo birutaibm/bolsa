@@ -16,10 +16,11 @@ export default class Mongo {
   async connect() {
     if (!this.connection) {
       try {
-        await mongoose.connect(
+        const connected = await mongoose.connect(
           this.config.uri,
           this.config.connectionOptions,
-        ).then(connected => this.connection = connected.connection);
+        );
+        this.connection = connected.connection;
       } catch (error) {
         throw new DatabaseConnectionError('mongodb');
       }

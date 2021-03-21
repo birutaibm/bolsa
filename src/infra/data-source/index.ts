@@ -57,7 +57,9 @@ export class RepositoryFactoriesBuilder extends Builder<Promise<RepositoryFactor
 
     const disconnectAll = async () => {
       const connections = [this.mongo, this.postgre].filter(db => db !== undefined);
-      Promise.all(connections.map(con => con.disconnect));
+      const promises = connections.map(con => con.disconnect());
+      const disconnected = await Promise.all(promises);
+      return disconnected;
     };
 
     return {

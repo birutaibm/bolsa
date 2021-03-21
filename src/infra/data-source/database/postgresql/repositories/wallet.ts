@@ -1,14 +1,12 @@
-import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
-import { InvestorNotFoundError, WalletNotFoundError } from '@errors/not-found';
+import { WalletNotFoundError } from '@errors/not-found';
 import { Factory } from '@utils/factory';
+import { isNumber } from '@utils/validators';
 
 import {
-  InvestorRepository,
-  PersistedWalletData, PositionRepository, WalletData, WalletRepository
+  PositionRepository, WalletData, WalletRepository
 } from '@gateway/data/contracts';
 
 import PostgreSQL from '..';
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 type WalletModel = {
   created_on: Date;
@@ -34,7 +32,7 @@ export class PostgreWalletRepository implements WalletRepository {
   }
 
   async loadWalletDataById(id: string): Promise<WalletData> {
-    if (isNaN(Number(id))) {
+    if (!isNumber(id)) {
       throw new WalletNotFoundError(id);
     }
     const [ model ] = await this.db.query<WalletModel>({
@@ -48,7 +46,7 @@ export class PostgreWalletRepository implements WalletRepository {
   }
 
   async loadWalletsDataByIds(ids: string[]): Promise<WalletData[]> {
-    ids = ids.filter(id => !isNaN(Number(id)));
+    ids = ids.filter(id => isNumber(id));
     const params = ids.map((_, i) => `$${i+1}`).join(',');
     const models = await this.db.query<WalletModel>({
       text: `${this.selectAllWhere} id IN (${params})`,
