@@ -1,6 +1,6 @@
-import { ExternalPriceLoaderError } from "@errors/external-price-loader";
-import { ExternalRepository } from "@gateway/data/contracts";
-import { PriceDTO, ExternalSymbolsDTO } from "@gateway/data/dto";
+import { ExternalPriceLoaderError } from '@errors/external-price-loader';
+import { ExternalRepository } from '@gateway/data/contracts';
+import { PriceDTO, ExternalSymbolsDTO } from '@gateway/data/dto';
 
 export class FakeExternalPriceRepository implements ExternalRepository {
   readonly name = 'external source';

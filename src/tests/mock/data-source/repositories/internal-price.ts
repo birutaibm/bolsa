@@ -44,9 +44,18 @@ export class FakePriceRepository implements InternalRepository {
     }
   ];
 
-  async registryExternalSymbol(
+  loadAssetDataById(id: string): { id: string; ticker: string; name: string; } {
+    const index = Number(id);
+    if (Number.isNaN(index) || index >= this.assets.length) {
+      throw new AssetNotFoundError(id);
+    }
+    const asset = this.assets[index];
+    return {id, ticker: asset.ticker, name: asset.name || asset.ticker};
+  }
+
+  registryExternalSymbol(
     { ticker, source, externalSymbol }: SymbolDictionaryEntryDTO
-  ): Promise<SymbolDictionaryEntryDTO> {
+  ): SymbolDictionaryEntryDTO {
     const existent = this.assets.find(asset => asset.ticker === ticker);
     let asset: Asset;
     if (existent) {
@@ -64,9 +73,9 @@ export class FakePriceRepository implements InternalRepository {
     return { ticker, source, externalSymbol };
   }
 
-  async getExternalSymbol(
+  getExternalSymbol(
     ticker: string, externalLibrary: string
-  ): Promise<string> {
+  ): string {
     const asset = this.assets.find(asset => asset.ticker === ticker);
     if (asset) {
       const symbol = asset.externals.get(externalLibrary);
@@ -77,7 +86,7 @@ export class FakePriceRepository implements InternalRepository {
     throw new ExternalSymbolNotFoundError(externalLibrary, ticker);
   }
 
-  async save(ticker: string, prices: PriceDTO[]): Promise<AssetPriceDTO[]> {
+  save(ticker: string, prices: PriceDTO[]): AssetPriceDTO[] {
     const existent = this.assets.find(asset => asset.ticker === ticker);
     let asset: Asset;
     if (existent) {
@@ -97,7 +106,7 @@ export class FakePriceRepository implements InternalRepository {
     return adapter.toPriceDTOs(asset);
   }
 
-  async loadPriceByTicker(ticker: string): Promise<AssetPriceDTO[]> {
+  loadPriceByTicker(ticker: string): AssetPriceDTO[] {
     const asset = this.assets.find(asset => asset.ticker === ticker);
     if (!asset) {
       throw new AssetNotFoundError(ticker);

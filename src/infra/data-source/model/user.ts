@@ -1,10 +1,10 @@
 import { Schema, Document, model } from 'mongoose';
 
+import { Persisted } from '@domain/wallet/usecases/dtos';
+
 import { UserDTO } from '@gateway/data/dto';
 
-export type User = UserDTO;
-
-export type UserDocument = Document & User;
+export type UserDocument = Document & Persisted<UserDTO>;
 
 const userSchema = new Schema({
   userName: {

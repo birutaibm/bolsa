@@ -23,6 +23,7 @@ describe('SignIn', () => {
     const getUserFromUsername = async userName => {
       if (userName === user)
         return {
+          id: '0',
           userName,
           role: 'USER' as Role,
           passHash: password,
@@ -37,7 +38,7 @@ describe('SignIn', () => {
   it('should be able to signIn with correct credentials', async done => {
     const payload = await useCase.signIn(user, password);
     const json = JSON.parse(payload);
-    expect(json).toEqual({userName: user, role: 'USER'});
+    expect(json).toEqual(expect.objectContaining({userName: user, role: 'USER'}));
     done();
   });
 

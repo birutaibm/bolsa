@@ -6,6 +6,5 @@ export {
 } from './asset';
 export {
   default as Users,
-  User,
   UserDocument,
 } from './user';

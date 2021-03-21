@@ -6,7 +6,8 @@ import { ServerBuilder } from '@infra/server';
 
 import {
   FakeExternalPriceRepository,
-  FakePriceRepository, FakeUserRepository
+  FakePriceRepository, FakeUserRepository, FakeWalletRepository,
+  FakeInvestorRepository, FakeOperationRepository, FakePositionRepository,
 } from '@mock/data-source/repositories';
 
 let app: ServerBuilder['app'];
@@ -16,11 +17,18 @@ describe('GraphQL', () => {
   beforeAll(async done => {
     const builder = new ServerBuilder().withGraphQL();
     const repositories = {
+      disconnectAll: async () => {},
       prices: new SingletonFactory(() => ({
         internal: new FakePriceRepository(),
         externals: [new FakeExternalPriceRepository()],
       })),
       users: new SingletonFactory(() => new FakeUserRepository()),
+      investors: new SingletonFactory(() => new FakeInvestorRepository()),
+      wallets: new SingletonFactory(() => new FakeWalletRepository()),
+      positions: new SingletonFactory(() => new FakePositionRepository(
+        repositories.prices.make().internal
+      )),
+      operations: new SingletonFactory(() => new FakeOperationRepository()),
     };
     jest.spyOn(factories, 'ofRepositories')
       .mockReturnValue(Promise.resolve(repositories));
@@ -33,6 +41,8 @@ describe('GraphQL', () => {
     jest.spyOn(security, 'verifyToken').mockImplementationOnce(token => {
       if (token === 'validToken')
         return {
+          id: '0',
+          userName: 'anyone',
           role: 'ADMIN',
         };
       return {};

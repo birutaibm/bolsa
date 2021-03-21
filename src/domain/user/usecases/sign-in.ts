@@ -15,7 +15,7 @@ export default class SignIn {
   ) {}
 
   async signIn(userName: string, password: string): Promise<string> {
-    let user: User;
+    let user: User & { id: string; };
     try {
       user = await this.loader.load(userName);
     } catch (error) {
@@ -26,7 +26,11 @@ export default class SignIn {
       }
     }
     if (user.checkPassword(password)) {
-      return this.worker.createToken({userName, role: user.role});
+      return this.worker.createToken({
+        id: user.id,
+        userName,
+        role: user.role,
+      });
     } else {
       throw new InvalidUserPasswordError();
     }

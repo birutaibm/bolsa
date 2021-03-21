@@ -7,6 +7,7 @@ import { Assets } from '@infra/data-source/model';
 import { Mongo } from '@infra/data-source/database';
 import { MongoPriceRepository } from '@infra/data-source/database/mongo/repositories/price';
 
+let mongo: Mongo;
 let repo: MongoPriceRepository;
 let ticker: string;
 
@@ -15,7 +16,7 @@ describe('Mongo price repository', () => {
     ticker = 'ITUB3';
     async function createRepo() {
       try {
-        const mongo = new Mongo(env.mongodb);
+        mongo = new Mongo(env.mongodb);
         return (await mongo.createRepositoryFactories()).prices.make();
       } catch (error) {
         throw error;
@@ -37,6 +38,10 @@ describe('Mongo price repository', () => {
     } catch (error) {
       done(error);
     }
+  });
+
+  afterAll(async done => {
+    mongo.disconnect().then(() => done(), done);
   });
 
   // registryExternalSymbol
@@ -175,6 +180,35 @@ describe('Mongo price repository', () => {
     await expect(
       repo.loadPriceByTicker('ticker')
     ).rejects.toBeInstanceOf(PriceUnavailableError);
+    done();
+  });
+
+  //loadAssetDataById
+  it('should be able to get asset by id', async done => {
+    const name = 'Itaú';
+    const { id } = await Assets.create({
+      ticker,
+      name,
+    });
+    await expect(
+      repo.loadAssetDataById(id)
+    ).resolves.toEqual({id, ticker, name});
+    done();
+  });
+
+  it('should be able to get asset by id without name', async done => {
+    const { id } = await Assets.create({ticker});
+    await expect(
+      repo.loadAssetDataById(id)
+    ).resolves.toEqual({id, ticker, name: ticker});
+    done();
+  });
+
+  it('should not be able to get inexistent asset by id', async done => {
+    const inexistentAssetId = '1234567890abcdef12345678';
+    await expect(
+      repo.loadAssetDataById(inexistentAssetId)
+    ).rejects.toBeInstanceOf(AssetNotFoundError);
     done();
   });
 });

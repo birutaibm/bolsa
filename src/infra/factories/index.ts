@@ -18,6 +18,7 @@ class Factories {
       this.repositories = await new RepositoryFactoriesBuilder()
         .withMongo(env.mongodb)
         .withAlphavantage(env.externalPrices.alphavantageKey)
+        .withPostgre(env.postgre)
         .build();
     }
     return this.repositories;

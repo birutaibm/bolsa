@@ -68,4 +68,16 @@ export class MongoPriceRepository implements InternalRepository {
     }
     return adapter.toPriceDTOs(asset);
   }
+
+  async loadAssetDataById(id: string): Promise<{id: string; ticker: string; name: string;}> {
+    const asset = await Assets.findById(id);
+    if (!asset) {
+      throw new AssetNotFoundError(id);
+    }
+    return {
+      id: asset.id,
+      ticker: asset.ticker,
+      name: asset.name || asset.ticker,
+    };
+  }
 }

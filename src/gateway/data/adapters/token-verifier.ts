@@ -7,8 +7,14 @@ type TokenVerifier = {
 export function createVerifyToken(verifier: TokenVerifier) {
   return (token: string) => {
     const data = verifier.verifyToken(token);
-    if (data && data['role'] && (data['role'] === 'ADMIN' || data['role'] === 'USER')) {
-      return { role: data['role'] };
+    if (data && data['role'] && data['userName'] && data['id'] &&
+      (data['role'] === 'ADMIN' || data['role'] === 'USER')
+    ) {
+      return {
+        id: data['id'],
+        role: data['role'],
+        userName: data['userName'],
+      };
     }
     throw new InvalidTokenFormatError();
   };

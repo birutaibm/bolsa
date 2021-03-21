@@ -1,11 +1,14 @@
-import { UserRepository } from '@gateway/data/contracts';
-import { UserDTO } from '@gateway/data/dto';
+import { notNull } from '@utils/validators';
 import { UserNotFoundError } from '@errors/user-not-found';
 
+import { UserRepository } from '@gateway/data/contracts';
+import { UserDTO } from '@gateway/data/dto';
+
 import Users from '@infra/data-source/model/user';
+import { Persisted } from '@domain/wallet/usecases/dtos';
 
 export class MongoUserRepository implements UserRepository {
-  async getUserFromUsername(userName: string): Promise<UserDTO> {
+  async getUserFromUsername(userName: string): Promise<Persisted<UserDTO>> {
     const user = await Users.findOne({ userName });
     if (user) {
       return user;

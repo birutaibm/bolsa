@@ -25,7 +25,8 @@ export class Server {
     );
   }
 
-  stop() {
+  async stop() {
+    (await factories.ofRepositories()).disconnectAll();
     console.log(`Finishing server ${this.url}`);
     this.running.close();
   }

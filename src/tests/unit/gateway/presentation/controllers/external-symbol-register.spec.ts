@@ -37,7 +37,7 @@ describe('External symbol register controller', () => {
     const workingUseCase = new ExternalSymbolRegister(workingLoader);
     authorization = 'Token ',
     controller = new ExternalSymbolRegisterController(
-      workingUseCase, new Authorization(() => ({ role: 'ADMIN' })),
+      workingUseCase, new Authorization(() => ({id: '', userName: 'anybody', role: 'ADMIN' })),
     );
   });
 
