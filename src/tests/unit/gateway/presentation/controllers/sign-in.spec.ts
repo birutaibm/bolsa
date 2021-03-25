@@ -12,23 +12,18 @@ describe('Sign-in controller', () => {
       encode: async (plain: string) => plain,
       verify: (plain: string, encoded: string) => plain === encoded,
     }
-    const tokenGenerator = {
-      createToken: (payload: object) => JSON.stringify(payload)
-    }
+    const tokenGenerator = (payload: object) => JSON.stringify(payload);
     const userData: UserData = {
       userName: 'Rafael',
       passHash: '123456',
       role: 'USER'
     };
-    const workingWorker = {
-      getUserFromUsername: async (userName: string) => ({...userData, id:'', userName})
-    };
+    const workingWorker = async (userName: string) =>
+      ({...userData, id:'', userName});
     const workingLoader = new UserLoader(workingWorker, encoder);
     const workingUseCase = new SignIn(tokenGenerator, workingLoader);
     workingController = new SignInController(workingUseCase);
-    const brokenWorker = {
-      getUserFromUsername: async () => {throw new Error();}
-    }
+    const brokenWorker = async () => {throw new Error();};
     const brokenLoader = new UserLoader(brokenWorker, encoder);
     const brokenUseCase = new SignIn(tokenGenerator, brokenLoader);
     brokenController = new SignInController(brokenUseCase);

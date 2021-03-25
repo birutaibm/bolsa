@@ -18,9 +18,9 @@ describe('Position creator', () => {
       ...wallet,
       positions: [],
     };
-    const walletLoader = new WalletLoader((id, loggedUserId) => {
+    const walletLoader = new WalletLoader((id, isLogged) => {
       if (id === walletData.id) {
-        if (walletData.owner.id === loggedUserId) return walletData;
+        if (isLogged(walletData.owner.id)) return walletData;
         throw new SignInRequiredError();
       }
       throw new WalletNotFoundError(id);
@@ -34,7 +34,7 @@ describe('Position creator', () => {
 
   it('should be able create position', async done => {
     const position = await useCase.create(
-      'assetId', walletData.id, walletData.owner.id
+      'assetId', walletData.id, () => true
     );
     expect(position.asset).toEqual(expect.objectContaining(asset));
     expect(position.wallet.name).toEqual(walletData.name);
@@ -46,7 +46,7 @@ describe('Position creator', () => {
 
   it('should not be able create position without been logged', async done => {
     await expect(
-      useCase.create('assetId', walletData.id, 'hackerID')
+      useCase.create('assetId', walletData.id, () => false)
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
   });
@@ -54,7 +54,7 @@ describe('Position creator', () => {
   it('should not be able create position for inexistent wallet', async done => {
     const id = 'nonWalletId';
     await expect(
-      useCase.create('assetId', id, walletData.owner.id)
+      useCase.create('assetId', id, () => true)
     ).rejects.toBeInstanceOf(WalletNotFoundError);
     done();
   });

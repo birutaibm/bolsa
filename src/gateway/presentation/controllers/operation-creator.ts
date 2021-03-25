@@ -17,10 +17,7 @@ export class OperationCreatorController implements Controller {
   ) {}
 
   async handle({date, quantity, value, positionId, authorization}: Params): Promise<Response> {
-    const loggedUserId = this.auth.getInfo(authorization)?.id;
-    if (!loggedUserId) {
-      return unauthorized('Login required to this action!');
-    }
+    const checkLoggedUserId = (id: string) => this.auth.checkId(id, authorization);
     if (!date || !quantity || !value || !positionId) {
       return clientError('Required parameters: date, quantity, value, positionId');
     }
@@ -32,7 +29,7 @@ export class OperationCreatorController implements Controller {
     }
     try {
       const operation = await this.operationCreator.create(
-        new Date(date), Number(quantity), Number(value), positionId, loggedUserId
+        new Date(date), Number(quantity), Number(value), positionId, checkLoggedUserId
       );
       return created(operationView(operation));
     } catch (error) {

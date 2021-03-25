@@ -1,5 +1,5 @@
 import { Position } from '@domain/wallet/entities';
-import { AssetData, MayBePromise, Persisted } from './dtos';
+import { AssetData, CheckLoggedUserId, MayBePromise, Persisted } from './dtos';
 import WalletLoader from './wallet-loader';
 
 interface AssetLoader {
@@ -16,8 +16,8 @@ export default class PositionCreator {
     private readonly assets: AssetLoader,
   ) {}
 
-  async create(assetId: string, walletId: string, loggedUserId: string): Promise<Persisted<Position>> {
-    const wallet = await this.wallets.load(walletId, loggedUserId);
+  async create(assetId: string, walletId: string, isLogged: CheckLoggedUserId): Promise<Persisted<Position>> {
+    const wallet = await this.wallets.load(walletId, isLogged);
     const asset = await this.assets.loadAssetDataById(assetId)
     const position = new Position(asset, wallet);
     const id = await this.save(assetId, walletId);

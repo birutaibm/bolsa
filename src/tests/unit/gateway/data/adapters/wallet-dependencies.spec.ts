@@ -41,14 +41,14 @@ describe('Wallet module dependencies adapter', () => {
 
   it('should be able to load operation', async done => {
     await expect(
-      adapter.operationLoader(operation.id, investor.id)
+      adapter.operationLoader(operation.id, () => true)
     ).resolves.toEqual(expect.objectContaining(opData));
     done();
   });
 
   it('should be able to load position', async done => {
     await expect(
-      adapter.positionLoader(position.id, investor.id)
+      adapter.positionLoader(position.id, () => true)
     ).resolves.toEqual(expect.objectContaining({operations: [
       expect.objectContaining(opData),
     ]}));
@@ -57,7 +57,7 @@ describe('Wallet module dependencies adapter', () => {
 
   it('should be able to load wallet', async done => {
     await expect(
-      adapter.walletLoader(wallet.id, investor.id)
+      adapter.walletLoader(wallet.id, () => true)
     ).resolves.toEqual(expect.objectContaining({name: wallet.name}));
     done();
   });
@@ -77,47 +77,34 @@ describe('Wallet module dependencies adapter', () => {
 
   it('should not be able to load inexistent wallet', async done => {
     await expect(
-      adapter.walletLoader('inexistentId', investor.id)
+      adapter.walletLoader('inexistentId', () => true)
     ).rejects.toBeInstanceOf(WalletNotFoundError);
     done();
   });
 
   it('should not be able to load inexistent position', async done => {
     await expect(
-      adapter.positionLoader('inexistentId', investor.id)
+      adapter.positionLoader('inexistentId', () => true)
     ).rejects.toBeInstanceOf(PositionNotFoundError);
     done();
   });
 
   it('should not be able to load inexistent operation', async done => {
     await expect(
-      adapter.operationLoader('inexistentId', investor.id)
+      adapter.operationLoader('inexistentId', () => true)
     ).rejects.toBeInstanceOf(OperationNotFoundError);
     done();
   });
 
   it('should not be able to load any data of unknown investor', async done => {
     await expect(
-      adapter.walletLoader(wallet.id, 'HackerId')
-    ).rejects.toBeInstanceOf(SignInRequiredError);
-    await expect(
-      adapter.positionLoader(position.id, 'HackerId')
-    ).rejects.toBeInstanceOf(SignInRequiredError);
-    await expect(
-      adapter.operationLoader(operation.id, 'HackerId')
-    ).rejects.toBeInstanceOf(SignInRequiredError);
-    done();
-  });
-
-  it('should not be able to load any data of other investor', async done => {
-    await expect(
-      adapter.walletLoader(wallet.id, otherInvestor.id)
+      adapter.walletLoader(wallet.id, () => false)
     ).rejects.toBeInstanceOf(WalletNotFoundError);
     await expect(
-      adapter.positionLoader(position.id, otherInvestor.id)
+      adapter.positionLoader(position.id, () => false)
     ).rejects.toBeInstanceOf(PositionNotFoundError);
     await expect(
-      adapter.operationLoader(operation.id, otherInvestor.id)
+      adapter.operationLoader(operation.id, () => false)
     ).rejects.toBeInstanceOf(OperationNotFoundError);
     done();
   });

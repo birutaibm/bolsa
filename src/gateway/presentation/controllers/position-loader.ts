@@ -16,15 +16,12 @@ export class PositionLoaderController implements Controller {
   ) {}
 
   async handle({id, authorization}: Params): Promise<Response> {
-    const loggedUserId = this.auth.getInfo(authorization)?.id;
-    if (!loggedUserId) {
-      return unauthorized('Login required to this action!');
-    }
+    const checkLoggedUserId = (id: string) => this.auth.checkId(id, authorization);
     if (!id) {
       return clientError('Required parameters: id');
     }
     try {
-      const position = await this.positionLoader.load(id, loggedUserId);
+      const position = await this.positionLoader.load(id, checkLoggedUserId);
       return ok(positionView(position));
     } catch (error) {
       if (error instanceof SignInRequiredError) {

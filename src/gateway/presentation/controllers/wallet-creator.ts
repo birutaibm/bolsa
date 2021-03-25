@@ -14,15 +14,14 @@ export class WalletCreatorController implements Controller {
   ) {}
 
   async handle({name, investorId, authorization}: Params): Promise<Response> {
-    const loggedUserId = this.auth.getInfo(authorization)?.id;
-    if (!loggedUserId) {
-      return unauthorized('Login required to this action!');
-    }
+    const checkLoggedUserId = (id: string) => this.auth.checkId(id, authorization);
     if (!name || !investorId) {
       return clientError('Required parameters: investorId, name');
     }
     try {
-      const wallet = await this.walletCreator.create({name, investorId}, loggedUserId);
+      const wallet = await this.walletCreator.create(
+        {name, investorId}, checkLoggedUserId
+      );
       return created(walletView(wallet));
     } catch (error) {
       if (error instanceof SignInRequiredError) {

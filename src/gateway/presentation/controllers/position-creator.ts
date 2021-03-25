@@ -14,16 +14,13 @@ export class PositionCreatorController implements Controller {
   ) {}
 
   async handle({assetId, walletId, authorization}: Params): Promise<Response> {
-    const loggedUserId = this.auth.getInfo(authorization)?.id;
-    if (!loggedUserId) {
-      return unauthorized('Login required to this action!');
-    }
+    const checkLoggedUserId = (id: string) => this.auth.checkId(id, authorization);
     if (!assetId || !walletId) {
       return clientError('Required parameters: assetId, walletId');
     }
     try {
       const position = await this.positionCreator.create(
-        assetId, walletId, loggedUserId
+        assetId, walletId, checkLoggedUserId
       );
       return created(positionView(position));
     } catch (error) {

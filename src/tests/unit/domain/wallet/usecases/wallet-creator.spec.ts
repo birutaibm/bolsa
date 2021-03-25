@@ -26,7 +26,7 @@ describe('Wallet creator', () => {
   });
 
   it('should be able create wallet', async done => {
-    const wallet = await useCase.create(data, investorData.id );
+    const wallet = await useCase.create(data, () => true);
     expect(wallet.name).toEqual(data.name);
     expect(wallet.owner.id).toEqual(data.investorId);
     expect(wallet.getPositions()).toEqual([]);
@@ -35,7 +35,7 @@ describe('Wallet creator', () => {
 
   it('should not be able create wallet without been logged', async done => {
     await expect(
-      useCase.create(data, 'hackerID')
+      useCase.create(data, () => false)
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
   });
@@ -43,7 +43,7 @@ describe('Wallet creator', () => {
   it('should not be able create wallet for non-investor', async done => {
     const id = 'nonInvestorId';
     await expect(
-      useCase.create({...data, investorId: id}, id)
+      useCase.create({...data, investorId: id}, () => true)
     ).rejects.toBeInstanceOf(InvestorNotFoundError);
     done();
   });

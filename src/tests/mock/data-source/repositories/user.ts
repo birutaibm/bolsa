@@ -1,5 +1,5 @@
 import { Persisted } from '@domain/wallet/usecases/dtos';
-import { UserNotFoundError } from '@errors/user-not-found';
+import { UserNotFoundError } from '@errors/not-found';
 import { UserRepository } from '@gateway/data/contracts';
 import { UserDTO } from '@gateway/data/dto';
 
@@ -16,8 +16,10 @@ export class FakeUserRepository implements UserRepository {
     passHash: '123456',
   }];
 
-  async saveUser(user: UserDTO): Promise<void> {
+  async saveUser(user: UserDTO): Promise<Persisted<any>> {
+    user.id = user.id || String(this.users.length);
     this.users.push(user);
+    return user;
   }
 
   async getUserFromUsername(userName: string): Promise<Persisted<UserDTO>> {

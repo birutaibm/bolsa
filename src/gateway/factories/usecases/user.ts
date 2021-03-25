@@ -8,15 +8,18 @@ export default function createUserUseCasesFactories(
   repository: UserRepository,
   security: Security,
 ) {
-  const userLoader = new SingletonFactory(
-    () => new UserLoader(repository, security)
-  );
-  const userCreator = new SingletonFactory(
-    () => new UserCreator(repository, security)
-  );
-  const signIn = new SingletonFactory(
-    () => new SignIn(security, userLoader.make())
-  );
+  const userLoader = new SingletonFactory(() => new UserLoader(
+    username => repository.getUserFromUsername(username),
+    security,
+  ));
+  const userCreator = new SingletonFactory(() => new UserCreator(
+    userData => repository.saveUser(userData),
+    security,
+  ));
+  const signIn = new SingletonFactory(() => new SignIn(
+    payload => security.createToken(payload),
+    userLoader.make(),
+  ));
   const authorization = new SingletonFactory(
     () => new Authorization(createVerifyToken(security))
   );

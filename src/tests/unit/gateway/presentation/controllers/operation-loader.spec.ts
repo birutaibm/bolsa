@@ -1,4 +1,4 @@
-import { OperationNotFoundError, PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
+import { OperationNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 
 import { Role } from '@domain/user/entities/user';
@@ -31,13 +31,13 @@ describe('Position loader controller', () => {
     investorId = 'myId';
     owner = { id: investorId, name: 'My Name' };
     asset = {name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
-    operationLoader = new OperationLoader((id, loggedUserId) => {
+    operationLoader = new OperationLoader((id, isLoggedUserId) => {
       if (id === 'Invalid id in db rules') {
         throw new Error("");
       } else if (id !== operationId) {
         throw new OperationNotFoundError(id);
       }
-      if (owner.id !== loggedUserId) {
+      if (!isLoggedUserId(owner.id)) {
         throw new SignInRequiredError();
       }
       return {

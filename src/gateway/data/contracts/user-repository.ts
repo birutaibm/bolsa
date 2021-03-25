@@ -6,7 +6,7 @@ export interface LoadUserRepository {
 }
 
 export interface CreateUserRepository {
-  saveUser(user: UserDTO): Promise<void>;
+  saveUser(user: UserDTO): Promise<Persisted<{}>>;
 }
 
 export interface UserRepository

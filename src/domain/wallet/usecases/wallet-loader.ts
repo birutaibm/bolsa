@@ -1,8 +1,8 @@
 import { Operation, Position, Wallet, Investor } from '@domain/wallet/entities';
-import { MayBePromise, Persisted, PopulatedWalletData } from './dtos';
+import { CheckLoggedUserId, MayBePromise, Persisted, PopulatedWalletData } from './dtos';
 
 export type WalletDataLoader =
-  (id: string, loggedUserId: string) => MayBePromise<Persisted<PopulatedWalletData>>;
+  (id: string, isLogged: CheckLoggedUserId) => MayBePromise<Persisted<PopulatedWalletData>>;
 
 export default class WalletLoader {
   constructor(
@@ -10,9 +10,9 @@ export default class WalletLoader {
   ) {}
 
   async load(
-    id: string, loggedUserId: string
+    id: string, isLogged: CheckLoggedUserId
   ): Promise<Persisted<Wallet>> {
-    const data = await this.loadData(id, loggedUserId);
+    const data = await this.loadData(id, isLogged);
     const owner = new Investor(data.owner.id, data.owner.name);
     const wallet = new Wallet(data.name, owner);
     data.positions.forEach(position => {

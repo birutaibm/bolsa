@@ -15,15 +15,14 @@ export class InvestorLoaderController implements Controller {
   ) {}
 
   async handle({id, authorization}: Params): Promise<Response> {
-    const loggedUserId = this.auth.getInfo(authorization)?.id;
-    if (!loggedUserId) {
-      return unauthorized('Login required to this action!');
-    }
     if (!id) {
       return clientError('Required parameters: id');
     }
+    if (!this.auth.checkId(id, authorization)) {
+      return unauthorized('Login required to this action!');
+    }
     try {
-      const investor = await this.investorLoader.load(id, loggedUserId);
+      const investor = await this.investorLoader.load(id);
       return ok(investorView(investor));
     } catch (error) {
       if (error instanceof SignInRequiredError) {

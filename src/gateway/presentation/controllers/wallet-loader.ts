@@ -15,15 +15,12 @@ export class WalletLoaderController implements Controller {
   ) {}
 
   async handle({authorization, id}: Params): Promise<Response> {
-    const loggedUserId = this.auth.getInfo(authorization)?.id;
-    if (!loggedUserId) {
-      return unauthorized('Login required to this action!');
-    }
+    const checkLoggedUserId = (id: string) => this.auth.checkId(id, authorization);
     if (!id) {
       return clientError('Required parameters: id');
     }
     try {
-      const wallet = await this.walletLoader.load(id, loggedUserId);
+      const wallet = await this.walletLoader.load(id, checkLoggedUserId);
       return ok(walletView(wallet));
     } catch (error) {
       if (error instanceof SignInRequiredError) {

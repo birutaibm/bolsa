@@ -1,3 +1,4 @@
+export { UserNotFoundError } from './user';
 export { InvestorNotFoundError } from './investor';
 export { WalletNotFoundError } from './wallet';
 export { PositionNotFoundError } from './position';

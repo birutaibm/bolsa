@@ -1,38 +1,38 @@
 import { InvalidUserPasswordError } from '@errors/invalid-user-password';
-import { UserNotFoundError } from '@errors/user-not-found';
-import User from '../entities/user';
+import { UserNotFoundError } from '@errors/not-found';
 
 import UserLoader from './user-loader';
+import { PersistedUser } from './dto';
 
-export interface RequiredFunctionalities {
-  createToken(payload: object): string;
-}
+export type CreateToken = (payload: object) => string;
 
 export default class SignIn {
   constructor(
-    private readonly worker: RequiredFunctionalities,
+    private readonly createToken: CreateToken,
     private readonly loader: UserLoader,
   ) {}
 
   async signIn(userName: string, password: string): Promise<string> {
-    let user: User & { id: string; };
+    const user = await this.loadUser(userName);
+    if (!user.checkPassword(password)) {
+      throw new InvalidUserPasswordError();
+    }
+    return this.createToken({
+      id: user.id,
+      userName,
+      role: user.role,
+    });
+  }
+
+  private async loadUser(userName: string): Promise<PersistedUser> {
     try {
-      user = await this.loader.load(userName);
+      return await this.loader.load(userName);
     } catch (error) {
       if (error instanceof UserNotFoundError) {
         throw new InvalidUserPasswordError();
       } else {
         throw error;
       }
-    }
-    if (user.checkPassword(password)) {
-      return this.worker.createToken({
-        id: user.id,
-        userName,
-        role: user.role,
-      });
-    } else {
-      throw new InvalidUserPasswordError();
     }
   }
 }

@@ -7,10 +7,10 @@ export default class User {
 
   constructor(
     readonly userName: string,
-    readonly passHash: string,
+    passHash: string,
     readonly role: Role,
     verify: PassVerifier,
   ) {
-    this.checkPassword = (password: string) => verify(password, this.passHash);
+    this.checkPassword = (password: string) => verify(password, passHash);
   }
 }

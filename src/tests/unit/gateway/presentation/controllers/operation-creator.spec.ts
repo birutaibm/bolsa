@@ -1,9 +1,9 @@
 import { SignInRequiredError } from '@errors/sign-in-required';
-import { PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
+import { PositionNotFoundError } from '@errors/not-found';
 
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { OperationCreator, PositionCreator, PositionLoader, WalletLoader } from '@domain/wallet/usecases';
+import { OperationCreator, PositionLoader } from '@domain/wallet/usecases';
 
 import { OperationCreatorController } from '@gateway/presentation/controllers';
 
@@ -34,13 +34,13 @@ describe('Position creator controller', () => {
     authorization = 'Token ';
     investorId = 'myId';
     owner = { id: investorId, name: 'My Name' };
-    positionLoader = new PositionLoader((id, loggedUserId) => {
+    positionLoader = new PositionLoader((id, isLoggedUserId) => {
       if (id === 'Invalid id in db rules') {
         throw new Error("");
       } else if (id !== positionId) {
         throw new PositionNotFoundError(id);
       }
-      if (owner.id !== loggedUserId) {
+      if (!isLoggedUserId(owner.id)) {
         throw new SignInRequiredError();
       }
       return { id, wallet: { name: 'My Wallet', owner }, operations: [], asset };

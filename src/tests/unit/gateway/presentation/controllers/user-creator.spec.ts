@@ -12,14 +12,10 @@ describe('User creator controller', () => {
       encode: async (plain: string) => plain,
       verify: (plain: string, encoded: string) => plain === encoded,
     }
-    const workingWorker = {
-      saveUser: async () => {}
-    }
+    const workingWorker = async () => ({ id: 'id', });
     const workingUseCase = new UserCreator(workingWorker, encoder);
     workingController = new UserCreatorController(workingUseCase);
-    const brokenWorker = {
-      saveUser: async () => {throw new Error();}
-    }
+    const brokenWorker = async () => {throw new Error();};
     const brokenUseCase = new UserCreator(brokenWorker, encoder);
     brokenController = new UserCreatorController(brokenUseCase);
     params = {

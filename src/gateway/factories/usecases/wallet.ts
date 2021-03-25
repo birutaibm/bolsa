@@ -35,7 +35,7 @@ export default function createWalletUseCasesFactories(
 
   const walletLoader = new SingletonFactory(
     () => new WalletLoader(
-      (id, loggedUserId) => adapter.walletLoader(id, loggedUserId)
+      (id, isLogged) => adapter.walletLoader(id, isLogged)
     ),
   );
   const walletCreator = new SingletonFactory(() =>
@@ -46,7 +46,7 @@ export default function createWalletUseCasesFactories(
   );
 
   const positionLoader = new SingletonFactory(
-    () => new PositionLoader((id, loggedUserId) => adapter.positionLoader(id, loggedUserId)),
+    () => new PositionLoader((id, isLogged) => adapter.positionLoader(id, isLogged)),
   );
   const positionCreator = new SingletonFactory(
     () => new PositionCreator(async (assetId, walletId) =>
@@ -58,7 +58,7 @@ export default function createWalletUseCasesFactories(
 
   const operationLoader = new SingletonFactory(
     () => new OperationLoader(
-      (id, loggedUserId) => adapter.operationLoader(id, loggedUserId)
+      (id, isLogged) => adapter.operationLoader(id, isLogged)
     ),
   );
   const operationCreator = new SingletonFactory(

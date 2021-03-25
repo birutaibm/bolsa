@@ -1,5 +1,4 @@
-import { notNull } from '@utils/validators';
-import { UserNotFoundError } from '@errors/user-not-found';
+import { UserNotFoundError } from '@errors/not-found';
 
 import { UserRepository } from '@gateway/data/contracts';
 import { UserDTO } from '@gateway/data/dto';
@@ -16,8 +15,8 @@ export class MongoUserRepository implements UserRepository {
     throw new UserNotFoundError(userName);
   }
 
-  async saveUser(user: UserDTO): Promise<void> {
+  async saveUser(user: UserDTO): Promise<Persisted<{}>> {
     const created = await Users.create(user);
-    await created.save();
+    return await created.save();
   }
 }

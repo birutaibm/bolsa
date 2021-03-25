@@ -1,7 +1,16 @@
-import User from '@domain/user/entities/user';
+import User, { Role } from '@domain/user/entities/user';
 
-export type UserData = Omit<User, 'checkPassword'>;
+export type UserData = {
+  readonly userName: string;
+  readonly role: Role;
+  readonly passHash: string;
+};
 
-export type PersistedUserData = UserData & {id: string};
+export type PersistedUserData = {
+  readonly userName: string;
+  readonly role: Role;
+  readonly passHash: string;
+  readonly id: string;
+};
 
 export type PersistedUser = User & {id: string};

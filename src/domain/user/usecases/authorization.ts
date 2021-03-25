@@ -1,4 +1,4 @@
-import { Role } from "../entities/user";
+import { Role } from '@domain/user/entities/user';
 
 type VerifyToken = (token: string) => {
   id: string; role: Role; userName: string;
@@ -9,7 +9,7 @@ export default class Authorization {
     private readonly verifyToken: VerifyToken,
   ) {}
 
-  getInfo(authorization: string | undefined) {
+  private getInfo(authorization: string | undefined) {
     try {
       if (authorization?.startsWith('Token ')) {
         const token = authorization.substring(6);
@@ -31,5 +31,9 @@ export default class Authorization {
 
   checkAdmin(authorization?: string): boolean {
     return this.extractRole(authorization) === 'ADMIN';
+  }
+
+  checkId(id: string, authorization?: string): boolean {
+    return this.getInfo(authorization)?.id === id;
   }
 }

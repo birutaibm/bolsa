@@ -21,9 +21,9 @@ describe('Operation loader', () => {
       id: 'operationId',
       position,
     };
-    useCase = new OperationLoader((id, loggedUserId) => {
+    useCase = new OperationLoader((id, isLoggedUserId) => {
       if (id === data.id) {
-        if (data.position.wallet.owner.id === loggedUserId) return data;
+        if (isLoggedUserId(data.position.wallet.owner.id)) return data;
         throw new SignInRequiredError();
       }
       throw new PositionNotFoundError(id);
@@ -31,21 +31,21 @@ describe('Operation loader', () => {
   });
 
   it('should be able to load operation', async done => {
-    const operation = await useCase.load(data.id, data.position.wallet.owner.id);
+    const operation = await useCase.load(data.id, () => true);
     expect(operation).toEqual(expect.objectContaining(opData));
     done();
   });
 
   it('should not be able to load operation without been logged', async done => {
     await expect(
-      useCase.load(data.id, 'hackerID')
+      useCase.load(data.id, () => false)
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
   });
 
   it('should not be able to load inexistent operation', async done => {
     await expect(
-      useCase.load('invalidID', 'invalidID')
+      useCase.load('invalidID', () => true)
     ).rejects.toBeInstanceOf(PositionNotFoundError);
     done();
   });

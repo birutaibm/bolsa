@@ -1,4 +1,4 @@
-import { UserNotFoundError } from '@errors/user-not-found';
+import { UserNotFoundError } from '@errors/not-found';
 
 import { env } from '@infra/environment';
 import { Users } from '@infra/data-source/model';

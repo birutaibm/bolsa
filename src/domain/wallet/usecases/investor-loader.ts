@@ -11,10 +11,7 @@ export default class InvestorLoader {
     private readonly loadData: PopulatedInvestorDataLoader,
   ) {}
 
-  async load(id: string, loggedUserId: string): Promise<Persisted<Investor>> {
-    if (loggedUserId !== id) {
-      throw new SignInRequiredError();
-    }
+  async load(id: string): Promise<Persisted<Investor>> {
     const data = await this.loadData(id);
     const investor = new Investor(data.id, data.name);
     data.wallets.forEach(walletData => {

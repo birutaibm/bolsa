@@ -1,6 +1,6 @@
 import {
   Persisted, PopulatedWalletData, PopulatedInvestorData,
-  OperationData, PopulatedPositionData, WalletData, PositionData, InvestorData,
+  OperationData, PopulatedPositionData, WalletData, PositionData, InvestorData, CheckLoggedUserId,
 } from '@domain/wallet/usecases/dtos';
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { InvestorNotFoundError, OperationNotFoundError, PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
@@ -42,13 +42,13 @@ export default class WalletDependencies {
   }
 
   async walletLoader(
-    id: string, loggedUserId: string
+    id: string, isLogged: CheckLoggedUserId
   ): Promise<Persisted<PopulatedWalletData>> {
-    const investor = await this.loadLoggedInvestorDataById(loggedUserId);
-    if (!investor.walletIds.includes(id)) {
+    const walletData = await this.wallets.loadWalletDataById(id);
+    if (!isLogged(walletData.ownerId)) {
       throw new WalletNotFoundError(id);
     }
-    const walletData = await this.wallets.loadWalletDataById(id);
+    const investor = await this.investors.loadInvestorDataById(walletData.ownerId);
     const positions = await this.positions.loadPositionsDataByIds(
       walletData.positionIds
     );
@@ -58,14 +58,14 @@ export default class WalletDependencies {
     );
   }
 
-  async positionLoader(id: string, loggedUserId: string): Promise<Persisted<PopulatedPositionData>> {
-    const owner = await this.loadLoggedInvestorDataById(loggedUserId);
+  async positionLoader(id: string, isLogged: CheckLoggedUserId): Promise<Persisted<PopulatedPositionData>> {
     const { asset, walletId, operationIds } = await this.positions
       .loadPositionDataById(id);
     const { name, ownerId } = await this.wallets.loadWalletDataById(walletId);
-    if (loggedUserId !== ownerId) {
+    if (!isLogged(ownerId)) {
       throw new PositionNotFoundError(id);
     }
+    const owner = await this.investors.loadInvestorDataById(ownerId);
     const operationsData = await this.operations
       .loadOperationsDataByIds(operationIds);
     const position = {
@@ -74,30 +74,21 @@ export default class WalletDependencies {
     return this.addOperationsToPosition(position, operationsData);
   }
 
-  async operationLoader(id: string, loggedUserId: string): Promise<Persisted<OperationData>> {
-    const owner = await this.loadLoggedInvestorDataById(loggedUserId);
+  async operationLoader(id: string, isLogged: CheckLoggedUserId): Promise<Persisted<OperationData>> {
     const { date, quantity, value, positionId } = await this.operations
       .loadOperationDataById(id);
     const { asset, walletId } = await this.positions
       .loadPositionDataById(positionId);
     const { name, ownerId } = await this.wallets.loadWalletDataById(walletId);
-    if (loggedUserId !== ownerId) {
+    if (!isLogged(ownerId)) {
       throw new OperationNotFoundError(id);
     }
+    const owner = await this.investors.loadInvestorDataById(ownerId);
     const position = {id: positionId, asset, wallet: { name, owner } };
     const opData = {id, quantity, value, date};
     return Object.assign(opData, {
       position: this.addOperationsToPosition(position, [opData]),
     });
-  }
-
-  private async loadLoggedInvestorDataById(loggedUserId: string): Promise<InvestorDTO> {
-    try {
-      const investor = await this.investors.loadInvestorDataById(loggedUserId);
-      return investor;
-    } catch (error) {
-      throw new SignInRequiredError();
-    }
   }
 
   private async loadPositionsAndOperationsDataByWallets(

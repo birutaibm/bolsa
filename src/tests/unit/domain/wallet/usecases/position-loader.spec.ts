@@ -25,9 +25,9 @@ describe('Position loader', () => {
         position,
       }],
     };
-    useCase = new PositionLoader((id, loggedUserId) => {
+    useCase = new PositionLoader((id, isLogged) => {
       if (id === data.id) {
-        if (data.wallet.owner.id === loggedUserId) return data;
+        if (isLogged(data.wallet.owner.id)) return data;
         throw new SignInRequiredError();
       }
       throw new PositionNotFoundError(id);
@@ -35,7 +35,7 @@ describe('Position loader', () => {
   });
 
   it('should be able to load position', async done => {
-    const position = await useCase.load(data.id, data.wallet.owner.id);
+    const position = await useCase.load(data.id, () => true);
     expect(position.asset).toEqual(expect.objectContaining(asset));
     expect(position.getOperations()[0]).toEqual(expect.objectContaining(opData));
     done();
@@ -43,14 +43,14 @@ describe('Position loader', () => {
 
   it('should not be able to load position without been logged', async done => {
     await expect(
-      useCase.load(data.id, 'hackerID')
+      useCase.load(data.id, () => false)
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
   });
 
   it('should not be able to load inexistent position', async done => {
     await expect(
-      useCase.load('invalidID', 'invalidID')
+      useCase.load('invalidID', () => true)
     ).rejects.toBeInstanceOf(PositionNotFoundError);
     done();
   });

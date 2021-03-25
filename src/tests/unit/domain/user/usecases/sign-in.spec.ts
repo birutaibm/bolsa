@@ -1,9 +1,10 @@
+import { InvalidUserPasswordError } from '@errors/invalid-user-password';
+import { UserNotFoundError } from '@errors/not-found';
+
+import { Role } from '@domain/user/entities/user';
 import UserLoader from '@domain/user/usecases/user-loader';
 import SignIn from '@domain/user/usecases/sign-in';
-import { InvalidUserPasswordError } from '@errors/invalid-user-password';
 import Encoder from '@domain/user/usecases/encoder';
-import { Role } from '@domain/user/entities/user';
-import { UserNotFoundError } from '@errors/user-not-found';
 
 let createToken: (payload: object) => string;
 let loader: UserLoader;
@@ -30,8 +31,8 @@ describe('SignIn', () => {
         };
       throw new UserNotFoundError(userName);
     };
-    loader = new UserLoader({getUserFromUsername}, encoder);
-    useCase = new SignIn({createToken}, loader);
+    loader = new UserLoader(getUserFromUsername, encoder);
+    useCase = new SignIn(createToken, loader);
     done();
   });
 
@@ -59,7 +60,7 @@ describe('SignIn', () => {
   it('should repass any unpredicted error, without change it', async done => {
     const error = new Error("I'm an unpredictable error!");
     const createToken = () => {throw error};
-    const useCase = new SignIn({createToken}, loader);
+    const useCase = new SignIn(createToken, loader);
     await expect(
       useCase.signIn(user, password)
     ).rejects.toBe(error);

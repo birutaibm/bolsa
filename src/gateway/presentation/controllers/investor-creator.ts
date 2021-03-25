@@ -13,15 +13,14 @@ export class InvestorCreatorController implements Controller {
   ) {}
 
   async handle({id, name, authorization}: Params): Promise<Response> {
-    const loggedUserId = this.auth.getInfo(authorization)?.id;
-    if (!loggedUserId) {
-      return unauthorized('Login required to this action!');
-    }
     if (!id || !name) {
       return clientError('Required parameters: id, name');
     }
+    if (!this.auth.checkId(id, authorization)) {
+      return unauthorized('Login required to this action!');
+    }
     try {
-      const investor = await this.investorCreator.create({id, name}, loggedUserId);
+      const investor = await this.investorCreator.create({id, name});
       return created(investor);
     } catch (error) {
       if (error instanceof SignInRequiredError) {

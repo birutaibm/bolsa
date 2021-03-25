@@ -47,7 +47,7 @@ describe('Investor creator controller', () => {
 
   it('should not be able to create investor without data', async done => {
     const params = {
-      name: 'My Name',
+      id: 'myId',
       authorization,
     };
     const result = {message: 'Required parameters: id, name'};

@@ -24,9 +24,9 @@ describe('Operation creator', () => {
         position,
       }],
     }
-    const positionLoader = new PositionLoader((id, loggedUserId) => {
+    const positionLoader = new PositionLoader((id, isLoggedUserId) => {
       if (id === positionData.id) {
-        if (positionData.wallet.owner.id === loggedUserId) return positionData;
+        if (isLoggedUserId(positionData.wallet.owner.id)) return positionData;
         throw new SignInRequiredError();
       }
       throw new PositionNotFoundError(id);
@@ -43,7 +43,7 @@ describe('Operation creator', () => {
       opData.quantity,
       opData.value,
       positionData.id,
-      positionData.wallet.owner.id
+      () => true,
     );
     expect(operation).toEqual(expect.objectContaining(opData));
     done();
@@ -56,7 +56,7 @@ describe('Operation creator', () => {
         opData.quantity,
         opData.value,
         positionData.id,
-        'hackerID',
+        () => false,
       )
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
@@ -70,7 +70,7 @@ describe('Operation creator', () => {
         opData.quantity,
         opData.value,
         'inexistentPosition',
-        positionData.wallet.owner.id
+        () => true,
       )
     ).rejects.toBeInstanceOf(PositionNotFoundError);
     done();

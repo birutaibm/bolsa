@@ -1,5 +1,4 @@
 import { InvestorNotFoundError } from '@errors/not-found';
-import { SignInRequiredError } from '@errors/sign-in-required';
 
 import { InvestorLoader } from '@domain/wallet/usecases';
 import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
@@ -36,7 +35,7 @@ describe('Investor loader', () => {
   });
 
   it('should be able to load investor', async done => {
-    const investor = await useCase.load(investorData.id, investorData.id);
+    const investor = await useCase.load(investorData.id);
     expect(investor.id).toEqual(investorData.id);
     expect(investor.name).toEqual(investorData.name);
     expect(investor.getWallets().length).toEqual(1);
@@ -50,16 +49,9 @@ describe('Investor loader', () => {
     done();
   });
 
-  it('should not be able to load investor without been logged', async done => {
-    await expect(
-      useCase.load(investorData.id, 'hackerID')
-    ).rejects.toBeInstanceOf(SignInRequiredError);
-    done();
-  });
-
   it('should not be able to load inexistent investor', async done => {
     await expect(
-      useCase.load('invalidID', 'invalidID')
+      useCase.load('invalidID')
     ).rejects.toBeInstanceOf(InvestorNotFoundError);
     done();
   });

@@ -26,9 +26,9 @@ describe('Wallet loader', () => {
         }],
       }],
     };
-    useCase = new WalletLoader((id, loggedUserId) => {
+    useCase = new WalletLoader((id, isLogged) => {
       if (id === data.id) {
-        if (data.owner.id === loggedUserId) return data;
+        if (isLogged(data.owner.id)) return data;
         throw new SignInRequiredError();
       }
       throw new WalletNotFoundError(id);
@@ -36,7 +36,7 @@ describe('Wallet loader', () => {
   });
 
   it('should be able to load wallet', async done => {
-    const wallet = await useCase.load(data.id, data.owner.id);
+    const wallet = await useCase.load(data.id, () => true);
     expect(wallet.name).toEqual(data.name);
     expect(wallet.owner).toEqual(expect.objectContaining(data.owner));
     const position = wallet.getPositions()[0];
@@ -47,14 +47,14 @@ describe('Wallet loader', () => {
 
   it('should not be able to load wallet without been logged', async done => {
     await expect(
-      useCase.load(data.id, 'hackerID')
+      useCase.load(data.id, () => false)
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
   });
 
   it('should not be able to load inexistent wallet', async done => {
     await expect(
-      useCase.load('invalidID', 'invalidID')
+      useCase.load('invalidID', () => true)
     ).rejects.toBeInstanceOf(WalletNotFoundError);
     done();
   });

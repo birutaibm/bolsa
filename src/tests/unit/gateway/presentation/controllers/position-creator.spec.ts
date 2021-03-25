@@ -26,13 +26,13 @@ describe('Position creator controller', () => {
     authorization = 'Token ';
     investorId = 'myId';
     owner = { id: investorId, name: 'My Name' };
-    walletLoader = new WalletLoader((id, loggedUserId) => {
+    walletLoader = new WalletLoader((id, isLoggedUserId) => {
       if (id === 'Invalid id in db rules') {
         throw new Error("");
       } else if (id !== walletId) {
         throw new WalletNotFoundError(id);
       }
-      if (owner.id !== loggedUserId) {
+      if (!isLoggedUserId(owner.id)) {
         throw new SignInRequiredError();
       }
       return { id, name: 'My Wallet', positions: [], owner };

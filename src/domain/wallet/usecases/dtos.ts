@@ -2,6 +2,7 @@ import { Position, Wallet, Operation } from '@domain/wallet/entities';
 
 export type Persisted<T> = T & { id: string };
 export type MayBePromise<T> = T | Promise<T>;
+export type CheckLoggedUserId = (investorId: string) => boolean;
 
 export type InvestorData = {id: string, name: string};
 type PopulatedInvestor = InvestorData & { wallets: Wallet[] };

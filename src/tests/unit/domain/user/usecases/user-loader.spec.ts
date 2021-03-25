@@ -1,8 +1,7 @@
 import UserLoader from '@domain/user/usecases/user-loader';
 import { UserData } from '@domain/user/usecases/dto';
-import User from '@domain/user/entities/user';
 import Encoder from '@domain/user/usecases/encoder';
-import { UserNotFoundError } from '@errors/user-not-found';
+import { UserNotFoundError } from '@errors/not-found';
 
 let validUserName: string;
 let getUserFromUsername: (userName: string) => Promise<UserData & {id: string}>;
@@ -26,7 +25,7 @@ describe('UserLoader', () => {
         passHash: 'password',
       };
     };
-    useCase = new UserLoader({getUserFromUsername}, encoder);
+    useCase = new UserLoader(getUserFromUsername, encoder);
   });
 
   it('should be able load existent user', async done => {

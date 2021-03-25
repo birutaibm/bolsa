@@ -13,10 +13,7 @@ export default class InvestorCreator {
     private readonly save: NewInvestorSaver,
   ) {}
 
-  async create({id, name}: InvestorData, loggedUserId: string): Promise<Persisted<Investor>> {
-    if (loggedUserId !== id) {
-      throw new SignInRequiredError();
-    }
+  async create({id, name}: InvestorData): Promise<Persisted<Investor>> {
     await this.save({id, name});
     return new Investor(id, name);
   }
