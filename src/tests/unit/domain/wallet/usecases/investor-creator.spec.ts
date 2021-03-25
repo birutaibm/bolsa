@@ -18,7 +18,7 @@ describe('Investor creator', () => {
     const investor = await useCase.create(investorData, investorData.id);
     expect(investor.id).toEqual(investorData.id);
     expect(investor.name).toEqual(investorData.name);
-    expect(investor.wallets).toEqual([]);
+    expect(investor.getWallets()).toEqual([]);
     done();
   });
 

@@ -6,6 +6,7 @@ import { SignInRequiredError } from '@errors/sign-in-required';
 import {
   clientError, Controller, notFoundError, ok, Params, Response, serverError, unauthorized
 } from '@gateway/presentation/contracts';
+import { investorView } from '../view/investor';
 
 export class InvestorLoaderController implements Controller {
   constructor(
@@ -23,7 +24,7 @@ export class InvestorLoaderController implements Controller {
     }
     try {
       const investor = await this.investorLoader.load(id, loggedUserId);
-      return ok(investor);
+      return ok(investorView(investor));
     } catch (error) {
       if (error instanceof SignInRequiredError) {
         return unauthorized('Login required to this action!');

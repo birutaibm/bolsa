@@ -1,4 +1,4 @@
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
+import { MayBePromise, Persisted } from '@domain/wallet/usecases/dtos';
 
 import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 
@@ -15,14 +15,14 @@ export interface SavePricesRepository {
 }
 
 export interface RegistryExternalSymbolRepository {
-  registryExternalSymbol: (entry: SymbolDictionaryEntryDTO) => MayBePromise<SymbolDictionaryEntryDTO>;
+  registryExternalSymbol: (entry: SymbolDictionaryEntryDTO) => MayBePromise<Persisted<SymbolDictionaryEntryDTO>>;
 }
 
 export interface LoadPriceRepository {
   loadPriceByTicker: (ticker: string) => MayBePromise<AssetPriceDTO[]>
 }
 
-export interface InternalRepository extends
+export interface InternalPriceRepository extends
   AssetRepository,
   LoadPriceRepository,
   ExternalSymbolDictionary,

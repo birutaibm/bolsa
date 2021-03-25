@@ -17,6 +17,7 @@ export class OperationLoaderController implements Controller {
   async handle({id, authorization}: Params): Promise<Response> {
     const loggedUserId = this.auth.getInfo(authorization)?.id;
     if (!loggedUserId) {
+      console.log(`Unauthorized load operation ${id} with authorization ${authorization}`);
       return unauthorized('Login required to this action!');
     }
     if (!id) {

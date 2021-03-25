@@ -6,7 +6,8 @@ import {
 } from '@domain/wallet/usecases';
 
 import {
-  InvestorRepository, OperationRepository, WalletRepository, PositionRepository, InternalRepository
+  InvestorRepository, OperationRepository, WalletRepository, PositionRepository,
+  InternalPriceRepository,
 } from '@gateway/data/contracts';
 import WalletDependencies from '@gateway/data/adapters/wallet-dependencies';
 
@@ -15,7 +16,7 @@ export default function createWalletUseCasesFactories(
   wallets: WalletRepository,
   positions: PositionRepository,
   operations: OperationRepository,
-  assets: InternalRepository,
+  assets: InternalPriceRepository,
 ) {
   const adapter = new WalletDependencies(
     investors, wallets, positions, operations

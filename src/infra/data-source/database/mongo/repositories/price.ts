@@ -1,15 +1,16 @@
-import { InternalRepository } from '@gateway/data/contracts';
+import { InternalPriceRepository } from '@gateway/data/contracts';
 import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 
 import Assets, { AssetDocument, adapter } from '@infra/data-source/model/asset';
 import { PriceUnavailableError } from '@errors/price-unavailable';
+import { Persisted } from '@domain/wallet/usecases/dtos';
 
-export class MongoPriceRepository implements InternalRepository {
+export class MongoPriceRepository implements InternalPriceRepository {
   async registryExternalSymbol(
     { ticker, source, externalSymbol }: SymbolDictionaryEntryDTO
-  ): Promise<SymbolDictionaryEntryDTO> {
+  ): Promise<Persisted<SymbolDictionaryEntryDTO>> {
     const existent = await Assets.findOne({ ticker });
     let asset: AssetDocument;
     if (existent) {
@@ -23,7 +24,7 @@ export class MongoPriceRepository implements InternalRepository {
     }
     asset.externals.set(source, externalSymbol);
     const saved = await asset.save();
-    return { ticker, source, externalSymbol };
+    return { ticker, source, externalSymbol, id: asset.id };
   }
 
   async getExternalSymbol(

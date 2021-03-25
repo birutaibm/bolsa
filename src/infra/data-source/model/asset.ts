@@ -31,6 +31,7 @@ type PriceAtDate = {
 }
 
 export type Asset = {
+  id: string;
   ticker: string;
   name?: string;
   prices: PriceAtDate[];

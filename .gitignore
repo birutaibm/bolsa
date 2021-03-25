@@ -11,3 +11,5 @@ yarn.lock
 
 tmp/*
 !tmp/.gitkeep
+.dccache
+.dcignore

@@ -4,7 +4,17 @@ import { UserRepository } from '@gateway/data/contracts';
 import { UserDTO } from '@gateway/data/dto';
 
 export class FakeUserRepository implements UserRepository {
-  private readonly users: UserDTO[] = [];
+  private readonly users: UserDTO[] = [{
+    id: '0',
+    userName: 'testUser',
+    role: 'USER',
+    passHash: '123456',
+  }, {
+    id: '1',
+    userName: 'testAdmin',
+    role: 'ADMIN',
+    passHash: '123456',
+  }];
 
   async saveUser(user: UserDTO): Promise<void> {
     this.users.push(user);

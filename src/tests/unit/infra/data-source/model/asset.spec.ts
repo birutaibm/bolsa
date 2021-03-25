@@ -20,9 +20,10 @@ describe('Asset model', () => {
       max: 14.32,
     };
     const assetBase = { ticker: 'ticker', externals: new Map() };
-    assetToday = { ...assetBase, prices: [assetPriceToday]};
+    assetToday = { ...assetBase, id: 'assetToday', prices: [assetPriceToday]};
     assetWith2Prices = {
       ...assetBase,
+      id: 'assetWith2Prices',
       prices: [{
         date: yesterday.getTime(),
         open: 23.43,

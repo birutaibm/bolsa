@@ -16,6 +16,7 @@ export default class Mongo {
   async connect() {
     if (!this.connection) {
       try {
+        // deepcode ignore Ssrf: This class is not responsibly to check this, it need to be injected correct
         const connected = await mongoose.connect(
           this.config.uri,
           this.config.connectionOptions,

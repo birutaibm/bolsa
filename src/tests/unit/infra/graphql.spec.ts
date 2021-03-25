@@ -33,7 +33,12 @@ describe('GraphQL', () => {
     jest.spyOn(factories, 'ofRepositories')
       .mockReturnValue(Promise.resolve(repositories));
     app = builder.app;
-    builder.build().then(() => done(), done);
+    try {
+      builder.build();
+      done();
+    } catch (error) {
+      done(error);
+    }
   });
 
   it('should be able to post symbol when logged in as admin', async (done) => {
@@ -58,7 +63,7 @@ describe('GraphQL', () => {
           }])
         }`
       })
-      .set("Accept", "application/json")
+      .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(200)
       .end((err, res) => {
@@ -90,7 +95,7 @@ describe('GraphQL', () => {
           }])
         }`
       })
-      .set("Accept", "application/json")
+      .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(200)
       .end((err, res) => {
@@ -109,7 +114,7 @@ describe('GraphQL', () => {
           symbolSearch(ticker: "ITUB3")
         }`
       })
-      .set("Accept", "application/json")
+      .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(200)
       .end((err, res) => {
@@ -131,7 +136,7 @@ describe('GraphQL', () => {
           }
         }`
       })
-      .set("Accept", "application/json")
+      .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(200)
       .end((err, res) => {

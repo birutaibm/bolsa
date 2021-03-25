@@ -1,6 +1,6 @@
-import { InternalRepository, ExternalRepository } from '.';
+import { InternalPriceRepository, ExternalRepository } from '.';
 
 export interface PriceRepositoriesProvider {
-  readonly internal: InternalRepository,
+  readonly internal: InternalPriceRepository,
   readonly externals: ExternalRepository[],
 }

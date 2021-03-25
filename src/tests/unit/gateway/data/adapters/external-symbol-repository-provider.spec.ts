@@ -19,7 +19,7 @@ describe('SearchExternalSymbolRepositories', () => {
       getExternalSymbols: async ticker => ({ [ticker]: {} }),
     };
     registry = {
-      registryExternalSymbol: async entry => entry,
+      registryExternalSymbol: async entry => ({...entry, id: entry.ticker}),
     };
     searchAll = [ searchEmpty, searchData ];
     adapter = new ExternalSymbolRepositoryProvider(registry, searchAll);

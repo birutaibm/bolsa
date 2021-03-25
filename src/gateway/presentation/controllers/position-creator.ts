@@ -5,7 +5,7 @@ import { SignInRequiredError } from '@errors/sign-in-required';
 import {
   clientError, Controller, created, Params, Response, serverError, unauthorized
 } from '@gateway/presentation/contracts';
-import { positionView } from '../view/position';
+import { positionView } from '@gateway/presentation/view/position';
 
 export class PositionCreatorController implements Controller {
   constructor(

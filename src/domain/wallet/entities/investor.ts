@@ -4,10 +4,14 @@ export default class Investor {
   constructor(
     readonly id: string,
     readonly name: string,
-    readonly wallets: Wallet[] = [],
+    private readonly wallets: Wallet[] = [],
   ) {}
 
   addWallet(wallet: Wallet): void {
     this.wallets.push(wallet);
+  }
+
+  getWallets() {
+    return [ ...this.wallets ];
   }
 };

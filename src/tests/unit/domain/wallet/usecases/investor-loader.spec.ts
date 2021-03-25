@@ -39,8 +39,8 @@ describe('Investor loader', () => {
     const investor = await useCase.load(investorData.id, investorData.id);
     expect(investor.id).toEqual(investorData.id);
     expect(investor.name).toEqual(investorData.name);
-    expect(investor.wallets.length).toEqual(1);
-    const wallet = investor.wallets[0];
+    expect(investor.getWallets().length).toEqual(1);
+    const wallet = investor.getWallets()[0];
     expect(wallet.name).toEqual(investorData.wallets[0].name);
     expect(wallet.owner.id).toEqual(investor.id);
     expect(wallet.owner.name).toEqual(investor.name);

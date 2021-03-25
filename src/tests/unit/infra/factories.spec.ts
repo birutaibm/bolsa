@@ -8,11 +8,21 @@ let mongo: Mongo;
 describe('Factories at infra', () => {
   beforeAll(async done => {
     mongo = new Mongo(env.mongodb);
-    mongo.connect().then(() => done(), done);
+    try {
+      mongo.connect();
+      done();
+    } catch (error) {
+      done(error);
+    }
   });
 
   afterAll(async done => {
-    mongo.disconnect().then(() => done(), done);
+    try {
+      mongo.disconnect();
+      done();
+    } catch (error) {
+      done(error);
+    }
   });
 
   it('should be able to reuse instance of repositories factories', async (done) => {

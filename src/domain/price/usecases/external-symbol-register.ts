@@ -1,13 +1,15 @@
-import { SymbolDictionaryEntry } from '@domain/price/entities'
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
 import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-symbol-dictionary-entry';
 import { promise } from '@utils/promise';
 
+import { SymbolDictionaryEntry } from '@domain/price/entities'
+import { MayBePromise, Persisted } from '@domain/wallet/usecases/dtos';
+
 type SymbolDictionary = SymbolDictionaryEntry[];
+type PersistedSymbolDictionary = Persisted<SymbolDictionaryEntry>[];
 
 export interface Worker {
   getValidSymbols: (ticker: string) => MayBePromise<string[]>;
-  register: (info: SymbolDictionaryEntry) => MayBePromise<SymbolDictionaryEntry>;
+  register: (info: SymbolDictionaryEntry) => MayBePromise<Persisted<SymbolDictionaryEntry>>;
 }
 
 export interface WorkerProvider {
@@ -20,13 +22,13 @@ export class ExternalSymbolRegister {
     private readonly workers: WorkerProvider,
   ) {}
 
-  async registryAll(dictionary: SymbolDictionary): Promise<SymbolDictionary> {
+  async registryAll(dictionary: SymbolDictionary): Promise<PersistedSymbolDictionary> {
     const promises = dictionary.map(entry => this.registry(entry));
     const { resolved } = await promise.all(promises);
     return resolved;
   }
 
-  async registry(info: SymbolDictionaryEntry): Promise<SymbolDictionaryEntry> {
+  async registry(info: SymbolDictionaryEntry): Promise<Persisted<SymbolDictionaryEntry>> {
     let worker: Worker;
     try {
       worker = this.workers.getWorker(info.source);

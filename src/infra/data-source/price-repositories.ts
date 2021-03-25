@@ -1,14 +1,14 @@
-import { ExternalRepository, InternalRepository, PriceRepositoriesProvider } from '@gateway/data/contracts';
+import { ExternalRepository, InternalPriceRepository, PriceRepositoriesProvider } from '@gateway/data/contracts';
 
 import { AlphavantagePriceRepository } from '@infra/data-source/api';
 import { DatabaseConnectionError } from '@errors/database-connection';
 import { Builder, Factory } from '@utils/factory';
 
 export class PriceRepositoriesProviderBuilder extends Builder<PriceRepositoriesProvider> {
-  private internal: Factory<InternalRepository>;
+  private internal: Factory<InternalPriceRepository>;
   private alphavantageKey: string;
 
-  withInternal(internal: Factory<InternalRepository>) {
+  withInternal(internal: Factory<InternalPriceRepository>) {
     this.internal = internal;
     return this;
   }

@@ -29,7 +29,7 @@ describe('External symbol register controller', () => {
             if (!reqFunValues[source].includes(info.externalSymbol)) {
               throw new Error();
             }
-            return info;
+            return {...info, id: info.ticker};
           },
         };
       },
@@ -47,10 +47,11 @@ describe('External symbol register controller', () => {
       banks: 'ITUB3.SAO',
       authorization,
     };
-    const result = [{source: 'banks', ticker, externalSymbol: 'ITUB3.SAO'}];
-    await expect(
-      controller.handle(params)
-    ).resolves.toEqual({statusCode: 201, data: result});
+    const expected = [{source: 'banks', ticker, externalSymbol: 'ITUB3.SAO'}];
+    const response = await controller.handle(params);
+    expect(response.statusCode).toEqual(201);
+    expect(response.data.length).toEqual(expected.length);
+    expect(response.data[0]).toEqual(expect.objectContaining(expected[0]));
     done();
   });
 

@@ -1,13 +1,15 @@
-import { InternalRepository } from '@gateway/data/contracts';
+import { InternalPriceRepository } from '@gateway/data/contracts';
 import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
 
 import { Asset, adapter } from '@infra/data-source/model/asset';
+import { Persisted } from '@domain/wallet/usecases/dtos';
 
-export class FakePriceRepository implements InternalRepository {
+export class FakePriceRepository implements InternalPriceRepository {
   private readonly assets: Asset[] = [
     {
+      id: '0',
       ticker: 'BBAS3',
       name: 'Banco do Brasil',
       externals: new Map(),
@@ -25,6 +27,7 @@ export class FakePriceRepository implements InternalRepository {
         max: 25,
       }],
     }, {
+      id: '1',
       ticker: 'ITUB4',
       name: 'Itaú Unibanco',
       externals: new Map().set('external source', 'ITUB4.SAO'),
@@ -55,13 +58,14 @@ export class FakePriceRepository implements InternalRepository {
 
   registryExternalSymbol(
     { ticker, source, externalSymbol }: SymbolDictionaryEntryDTO
-  ): SymbolDictionaryEntryDTO {
+  ): Persisted<SymbolDictionaryEntryDTO> {
     const existent = this.assets.find(asset => asset.ticker === ticker);
     let asset: Asset;
     if (existent) {
       asset = existent;
     } else {
       asset = {
+        id: String(this.assets.length),
         ticker,
         name: ticker,
         externals: new Map(),
@@ -70,7 +74,7 @@ export class FakePriceRepository implements InternalRepository {
       this.assets.push(asset);
     }
     asset.externals.set(source, externalSymbol);
-    return { ticker, source, externalSymbol };
+    return { ticker, source, externalSymbol, id: asset.id };
   }
 
   getExternalSymbol(
@@ -96,6 +100,7 @@ export class FakePriceRepository implements InternalRepository {
       return [];
     } else {
       asset = {
+        id: String(this.assets.length),
         ticker,
         name: ticker,
         externals: new Map(),

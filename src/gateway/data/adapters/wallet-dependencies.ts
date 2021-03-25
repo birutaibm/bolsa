@@ -101,7 +101,7 @@ export default class WalletDependencies {
   }
 
   private async loadPositionsAndOperationsDataByWallets(
-    wallets: Array<{positionIds: string[]}>
+    wallets: Array<{id: string, positionIds: string[]}>
   ): Promise<{
     positions: { [walletId: string]: PersistedPositionData[]; };
     operations: { [posId: string]: OperationWithoutPosition[]; };
@@ -114,12 +114,13 @@ export default class WalletDependencies {
       map[pos.walletId] = [...(map[pos.walletId] || []), pos];
       return map;
     }, {});
+    wallets.forEach(({id}) => map[id] = map[id] || []);
     const operations = await this.loadOperationsDataByPositions(positions);
     return { positions: map, operations, };
   }
 
   private async loadOperationsDataByPositions(
-    positions: Array<{operationIds: string[]}>
+    positions: Array<{id: string, operationIds: string[]}>
   ): Promise<{ [posId: string]: OperationWithoutPosition[]; }> {
     const ids = positions
       .map(position => position.operationIds)
@@ -129,6 +130,7 @@ export default class WalletDependencies {
       map[op.positionId] = [...(map[op.positionId] || []), op];
       return map;
     }, {});
+    positions.forEach(({id}) => map[id] = map[id] || []);
     return map;
   }
 

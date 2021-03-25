@@ -23,7 +23,7 @@ export class AlphavantagePriceRepository implements ExternalRepository {
     const data: Array<{[key: string]: string}> =
       this.extractOrFail(response, 'bestMatches');
     const result: ExternalSymbolsDTO = {};
-    data.map(entry => {
+    data.forEach(entry => {
       const symbol = entry['1. symbol'];
       if (!symbol) {
         throw new ExternalPriceLoaderError(

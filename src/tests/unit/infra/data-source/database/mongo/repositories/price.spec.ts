@@ -14,21 +14,14 @@ let ticker: string;
 describe('Mongo price repository', () => {
   beforeAll(async done => {
     ticker = 'ITUB3';
-    async function createRepo() {
-      try {
-        mongo = new Mongo(env.mongodb);
-        return (await mongo.createRepositoryFactories()).prices.make();
-      } catch (error) {
-        throw error;
-      }
+    try {
+      mongo = new Mongo(env.mongodb);
+      const repositories = await mongo.createRepositoryFactories()
+      repo = repositories.prices.make();
+      done();
+    } catch (error) {
+      done(error);
     }
-    createRepo().then(
-      result => {
-        repo = result
-        done();
-      },
-      done
-    );
   });
 
   afterEach(async done => {
@@ -41,7 +34,12 @@ describe('Mongo price repository', () => {
   });
 
   afterAll(async done => {
-    mongo.disconnect().then(() => done(), done);
+    try {
+      mongo.disconnect();
+      done();
+    } catch (error) {
+      done(error);
+    }
   });
 
   // registryExternalSymbol
@@ -53,7 +51,7 @@ describe('Mongo price repository', () => {
     };
     await expect(
       repo.registryExternalSymbol(external)
-    ).resolves.toEqual(external);
+    ).resolves.toEqual(expect.objectContaining(external));
     const asset = await Assets.findOne({ ticker });
     expect(asset?.externals.get('external source')).toEqual('external symbol');
     done();
@@ -71,7 +69,7 @@ describe('Mongo price repository', () => {
     };
     await expect(
       repo.registryExternalSymbol(external)
-    ).resolves.toEqual(external);
+    ).resolves.toEqual(expect.objectContaining(external));
     const asset = await Assets.findOne({ ticker });
     expect(asset?.externals.get('external source')).toEqual('external symbol');
     done();

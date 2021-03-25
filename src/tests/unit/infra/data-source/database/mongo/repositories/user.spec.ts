@@ -31,7 +31,12 @@ describe('Mongo user repository', () => {
   });
 
   afterAll(async done => {
-    mongo.disconnect().then(() => done(), done);
+    try {
+      mongo.disconnect();
+      done();
+    } catch (error) {
+      done(error);
+    }
   });
 
   it('should be able to get user from username', async done => {

@@ -17,7 +17,8 @@ describe('ExternalSymbolRegister', () => {
           throw new Error();
         return {
           getValidSymbols: async () => reqFunValues[source],
-          register: async (info: SymbolDictionaryEntry) => info,
+          register: async (info: SymbolDictionaryEntry) =>
+            ({...info, id: info.ticker}),
         };
       },
     };
@@ -39,7 +40,7 @@ describe('ExternalSymbolRegister', () => {
     };
     await expect(
       symbolRegister.registry(info)
-    ).resolves.toEqual(info);
+    ).resolves.toEqual(expect.objectContaining(info));
     done();
   });
 
@@ -93,9 +94,11 @@ describe('ExternalSymbolRegister', () => {
       externalSymbol: 'PETR4.SAO',
       ticker: 'PETR4',
     }];
-    await expect(
-      symbolRegister.registryAll(info)
-    ).resolves.toEqual(info);
+    const response = await symbolRegister.registryAll(info);
+    expect(response.length).toEqual(info.length);
+    for (let i = 0; i < response.length; i++) {
+      expect(response[i]).toEqual(expect.objectContaining(info[i]));
+    }
     done();
   });
 
@@ -118,9 +121,11 @@ describe('ExternalSymbolRegister', () => {
       externalSymbol: 'ITUB3.SAO',
       ticker: 'PETR4',
     }];
-    await expect(
-      symbolRegister.registryAll([...invalid, ...valid])
-    ).resolves.toEqual(valid);
+    const response = await symbolRegister.registryAll([...invalid, ...valid]);
+    expect(response.length).toEqual(valid.length);
+    for (let i = 0; i < response.length; i++) {
+      expect(response[i]).toEqual(expect.objectContaining(valid[i]));
+    }
     done();
   });
 });

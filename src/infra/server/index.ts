@@ -19,10 +19,16 @@ export class Server {
   }
 
   start() {
-    this.running = this.app.listen(
-      this.port,
-      () => console.log(`Server running at ${this.url}`)
-    );
+    return new Promise<void>((resolve, reject) => {
+      try {
+        this.running = this.app.listen(this.port, () => {
+          console.log(`Server running at ${this.url}`);
+          resolve();
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   async stop() {

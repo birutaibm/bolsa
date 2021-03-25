@@ -11,7 +11,12 @@ describe('Mongo database', () => {
   });
 
   afterEach(async done => {
-    mongo.disconnect().then(() => done(), done);
+    try {
+      mongo.disconnect();
+      done();
+    } catch (error) {
+      done(error);
+    }
   });
 
   it('should be able to connect', async done => {
