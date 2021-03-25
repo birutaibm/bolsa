@@ -1,8 +1,8 @@
-import { SignInRequiredError } from '@errors/sign-in-required';
+import { MayBePromise } from '@utils/types';
 
 import { Investor } from '@domain/wallet/entities';
 
-import { InvestorData, MayBePromise, Persisted } from './dtos';
+import { InvestorData } from './dtos';
 
 export type InvestorPersistedData = InvestorData & { walletIds: string[] };
 export type NewInvestorSaver = (investor: InvestorData) =>
@@ -13,7 +13,7 @@ export default class InvestorCreator {
     private readonly save: NewInvestorSaver,
   ) {}
 
-  async create({id, name}: InvestorData): Promise<Persisted<Investor>> {
+  async create({id, name}: InvestorData): Promise<Investor> {
     await this.save({id, name});
     return new Investor(id, name);
   }

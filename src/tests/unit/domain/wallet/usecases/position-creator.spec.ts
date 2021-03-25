@@ -1,8 +1,9 @@
 import { WalletNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
+import { Persisted } from '@utils/types';
 
 import { WalletLoader, PositionCreator } from '@domain/wallet/usecases';
-import { AssetData, Persisted, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
+import { AssetData, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 let walletData: Persisted<PopulatedWalletData>;
 let useCase: PositionCreator;

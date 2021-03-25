@@ -1,16 +1,21 @@
+import { Persisted } from '@utils/types';
 import {
-  Persisted, PopulatedWalletData, PopulatedInvestorData,
+  OperationNotFoundError, PositionNotFoundError, WalletNotFoundError
+} from '@errors/not-found';
+
+import {
+  PopulatedWalletData, PopulatedInvestorData,
   OperationData, PopulatedPositionData, WalletData, PositionData, InvestorData, CheckLoggedUserId,
 } from '@domain/wallet/usecases/dtos';
-import { SignInRequiredError } from '@errors/sign-in-required';
-import { InvestorNotFoundError, OperationNotFoundError, PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
+
 import {
-  InvestorDTO,
   InvestorRepository,
   OperationRepository,
   WalletRepository
 } from '../contracts';
-import { PositionRepository, PositionData as PersistedPositionData } from '../contracts/position-repository';
+import {
+  PositionRepository, PositionData as PersistedPositionData
+} from '../contracts/position-repository';
 
 type Operation = OperationData & { id: string; };
 type OperationWithoutPosition = Omit<Operation, 'position'>;

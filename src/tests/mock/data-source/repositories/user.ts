@@ -1,5 +1,6 @@
-import { Persisted } from '@domain/wallet/usecases/dtos';
+import { Persisted } from '@utils/types';
 import { UserNotFoundError } from '@errors/not-found';
+
 import { UserRepository } from '@gateway/data/contracts';
 import { UserDTO } from '@gateway/data/dto';
 

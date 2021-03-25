@@ -1,17 +1,18 @@
-import { SignInRequiredError } from '@errors/sign-in-required';
+import { MayBePromise } from '@utils/types';
 
 import { Position, Wallet, Investor, Operation } from '@domain/wallet/entities';
 
-import { MayBePromise, Persisted, PopulatedInvestorData } from './dtos';
+import { PopulatedInvestorData } from './dtos';
 
-export type PopulatedInvestorDataLoader = (id: string) => MayBePromise<PopulatedInvestorData>;
+export type PopulatedInvestorDataLoader =
+  (id: string) => MayBePromise<PopulatedInvestorData>;
 
 export default class InvestorLoader {
   constructor(
     private readonly loadData: PopulatedInvestorDataLoader,
   ) {}
 
-  async load(id: string): Promise<Persisted<Investor>> {
+  async load(id: string): Promise<Investor> {
     const data = await this.loadData(id);
     const investor = new Investor(data.id, data.name);
     data.wallets.forEach(walletData => {

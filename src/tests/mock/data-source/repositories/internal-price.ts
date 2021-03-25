@@ -1,10 +1,11 @@
-import { InternalPriceRepository } from '@gateway/data/contracts';
-import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
+import { Persisted } from '@utils/types';
+
+import { InternalPriceRepository } from '@gateway/data/contracts';
+import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 
 import { Asset, adapter } from '@infra/data-source/model/asset';
-import { Persisted } from '@domain/wallet/usecases/dtos';
 
 export class FakePriceRepository implements InternalPriceRepository {
   private readonly assets: Asset[] = [

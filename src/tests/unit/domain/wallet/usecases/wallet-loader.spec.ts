@@ -1,8 +1,9 @@
 import { WalletNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
+import { Persisted } from '@utils/types';
 
 import { WalletLoader } from '@domain/wallet/usecases';
-import { Persisted, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
+import { PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 let asset: { ticker: string; name: string; };
 let opData: { date: Date; quantity: number; value: number; };

@@ -1,5 +1,8 @@
+import { MayBePromise, Persisted } from '@utils/types';
+
 import { Position } from '@domain/wallet/entities';
-import { AssetData, CheckLoggedUserId, MayBePromise, Persisted } from './dtos';
+
+import { AssetData, CheckLoggedUserId } from './dtos';
 import WalletLoader from './wallet-loader';
 
 interface AssetLoader {

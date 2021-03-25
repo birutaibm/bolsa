@@ -1,4 +1,3 @@
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
 import { InvestorNotFoundError, WalletNotFoundError } from '@errors/not-found';
 
 import { PersistedWalletData, WalletData, WalletRepository } from '@gateway/data/contracts';
@@ -6,7 +5,7 @@ import { PersistedWalletData, WalletData, WalletRepository } from '@gateway/data
 import { investors, wallets } from './wallet-module-data';
 
 export class FakeWalletRepository implements WalletRepository {
-  loadWalletIdsByOwnerId(id: string): MayBePromise<string[]> {
+  loadWalletIdsByOwnerId(id: string): string[] {
     return wallets
       .filter(wallet => wallet.ownerId === id)
       .map(wallet => wallet.id);

@@ -1,6 +1,5 @@
 import { Schema, Document, model } from 'mongoose';
-
-import { Persisted } from '@domain/wallet/usecases/dtos';
+import { Persisted } from '@utils/types';
 
 import { UserDTO } from '@gateway/data/dto';
 

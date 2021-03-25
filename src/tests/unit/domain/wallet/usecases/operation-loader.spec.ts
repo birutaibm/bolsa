@@ -1,8 +1,9 @@
 import { PositionNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
+import { Persisted } from '@utils/types';
 
 import { OperationLoader } from '@domain/wallet/usecases';
-import { OperationData, Persisted } from '@domain/wallet/usecases/dtos';
+import { OperationData } from '@domain/wallet/usecases/dtos';
 
 let asset: { ticker: string; name: string; };
 let opData: { date: Date; quantity: number; value: number; };

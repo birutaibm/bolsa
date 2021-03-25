@@ -1,4 +1,11 @@
+import { PriceUnavailableError } from '@errors/price-unavailable';
+import { MayBePromise } from '@utils/types';
 import { promise } from '@utils/promise';
+
+import {
+  RequiredFunctionalities,
+} from '@domain/price/usecases/external-price-register';
+
 import {
   ExternalSymbolDictionary,
   LoadExternalPriceRepository,
@@ -6,11 +13,6 @@ import {
 } from '@gateway/data/contracts';
 import { AssetPriceDTO, PriceDTO } from '@gateway/data/dto';
 
-import {
-  RequiredFunctionalities,
-} from '@domain/price/usecases/external-price-register';
-import { PriceUnavailableError } from '@errors/price-unavailable';
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 type Compatible = {
   [source: string]: {

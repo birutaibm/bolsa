@@ -1,8 +1,8 @@
 import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-symbol-dictionary-entry';
 import { promise } from '@utils/promise';
+import { MayBePromise, Persisted } from '@utils/types';
 
 import { SymbolDictionaryEntry } from '@domain/price/entities'
-import { MayBePromise, Persisted } from '@domain/wallet/usecases/dtos';
 
 type SymbolDictionary = SymbolDictionaryEntry[];
 type PersistedSymbolDictionary = Persisted<SymbolDictionaryEntry>[];

@@ -1,7 +1,9 @@
-import { Operation } from '@domain/wallet/entities';
 import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
+import { MayBePromise, Persisted } from '@utils/types';
 
-import { CheckLoggedUserId, MayBePromise, Persisted } from './dtos';
+import { Operation } from '@domain/wallet/entities';
+
+import { CheckLoggedUserId } from './dtos';
 import PositionLoader from './position-loader';
 
 export type NewOperationSaver = (

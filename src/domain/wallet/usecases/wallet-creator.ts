@@ -1,6 +1,9 @@
-import { Wallet } from '@domain/wallet/entities';
+import { MayBePromise, Persisted } from '@utils/types';
 import { SignInRequiredError } from '@errors/sign-in-required';
-import { CheckLoggedUserId, MayBePromise, Persisted } from './dtos';
+
+import { Wallet } from '@domain/wallet/entities';
+
+import { CheckLoggedUserId } from './dtos';
 import InvestorLoader from './investor-loader';
 
 type WalletCreationData = {investorId: string, name: string};

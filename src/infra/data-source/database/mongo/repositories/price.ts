@@ -1,11 +1,14 @@
-import { InternalPriceRepository } from '@gateway/data/contracts';
-import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 import { AssetNotFoundError } from '@errors/asset-not-found';
 import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
+import { PriceUnavailableError } from '@errors/price-unavailable';
+import { Persisted } from '@utils/types';
+
+import { InternalPriceRepository } from '@gateway/data/contracts';
+import {
+  AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO,
+} from '@gateway/data/dto';
 
 import Assets, { AssetDocument, adapter } from '@infra/data-source/model/asset';
-import { PriceUnavailableError } from '@errors/price-unavailable';
-import { Persisted } from '@domain/wallet/usecases/dtos';
 
 export class MongoPriceRepository implements InternalPriceRepository {
   async registryExternalSymbol(

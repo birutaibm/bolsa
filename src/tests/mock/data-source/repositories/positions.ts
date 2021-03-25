@@ -4,14 +4,13 @@ import { PositionData, PositionRepository, PositionWithWalletData } from '@gatew
 
 import { positions, wallets } from './wallet-module-data';
 import { FakePriceRepository } from './internal-price';
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
 
 export class FakePositionRepository implements PositionRepository {
   constructor(
     private readonly assets: FakePriceRepository,
   ) {}
 
-  loadPositionIdsByWalletId(id: string): MayBePromise<string[]> {
+  loadPositionIdsByWalletId(id: string): string[] {
     return positions
       .filter(position => position.walletId === id)
       .map(position => position.id);

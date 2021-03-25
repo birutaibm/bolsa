@@ -1,5 +1,8 @@
+import { MayBePromise, Persisted } from '@utils/types';
+
 import { Operation, Position, Wallet, Investor } from '@domain/wallet/entities';
-import { CheckLoggedUserId, MayBePromise, Persisted, PopulatedWalletData } from './dtos';
+
+import { CheckLoggedUserId, PopulatedWalletData } from './dtos';
 
 export type WalletDataLoader =
   (id: string, isLogged: CheckLoggedUserId) => MayBePromise<Persisted<PopulatedWalletData>>;

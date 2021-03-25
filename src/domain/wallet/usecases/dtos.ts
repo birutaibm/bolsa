@@ -1,11 +1,8 @@
-import { Position, Wallet, Operation } from '@domain/wallet/entities';
+import { Persisted } from '@utils/types';
 
-export type Persisted<T> = T & { id: string };
-export type MayBePromise<T> = T | Promise<T>;
 export type CheckLoggedUserId = (investorId: string) => boolean;
 
 export type InvestorData = {id: string, name: string};
-type PopulatedInvestor = InvestorData & { wallets: Wallet[] };
 export type PopulatedInvestorData = InvestorData & {
   wallets: PopulatedWalletData[]
 };
@@ -13,9 +10,6 @@ export type PopulatedInvestorData = InvestorData & {
 export type WalletData = {
   name: string, owner: InvestorData,
 };
-type PopulatedWallet = Persisted<WalletData> & {
-  positions: Position[],
-}
 export type PopulatedWalletData = WalletData & {
   positions: PopulatedPositionData[],
 };
@@ -27,9 +21,6 @@ export type AssetData = {
 export type PositionData = {
   wallet: WalletData, asset: AssetData,
 };
-type PopulatedPosition = Persisted<PositionData> & {
-  operations: Operation[],
-}
 export type PopulatedPositionData = Persisted<PositionData> & {
   operations: OperationData[],
 };
