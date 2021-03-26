@@ -143,14 +143,14 @@ describe('API', () => {
       .end((err, res) => {
         if (err) return done(err);
         expect(res.body).toEqual(expect.objectContaining({
-          wallet: {
+          wallet: expect.objectContaining({
             name: 'Test Existent Wallet',
-            owner: { name: 'Investor Name' },
-          },
-          asset: {
+            owner: expect.objectContaining({ name: 'Investor Name' }),
+          }),
+          asset: expect.objectContaining({
             ticker: 'BBAS3',
             name: 'Banco do Brasil',
-          },
+          }),
         }));
         expect(res.body.operations).toEqual(expect.arrayContaining([
           expect.objectContaining({
@@ -176,14 +176,14 @@ describe('API', () => {
       .end((err, res) => {
         if (err) return done(err);
         expect(res.body).toEqual(expect.objectContaining({
-          wallet: {
+          wallet: expect.objectContaining({
             name: 'Test Existent Wallet',
-            owner: { name: 'Investor Name' },
-          },
-          asset: {
+            owner: expect.objectContaining({ name: 'Investor Name' }),
+          }),
+          asset: expect.objectContaining({
             ticker: 'BBAS3',
             name: 'Banco do Brasil',
-          },
+          }),
           operations: [],
         }));
         done();
@@ -201,14 +201,14 @@ describe('API', () => {
         if (err) return done(err);
         expect(res.body).toEqual(expect.objectContaining({
           name: 'Test Existent Wallet',
-          owner: { name: 'Investor Name' },
+          owner: expect.objectContaining({ name: 'Investor Name' }),
         }));
         expect(res.body.positions).toEqual(expect.arrayContaining([
           expect.objectContaining({
-            asset: {
+            asset: expect.objectContaining({
               ticker: 'BBAS3',
               name: 'Banco do Brasil',
-            },
+            }),
             operations: expect.arrayContaining([
               expect.objectContaining({
                 value: -2345,
@@ -235,7 +235,7 @@ describe('API', () => {
         if (err) return done(err);
         expect(res.body).toEqual(expect.objectContaining({
           name: 'My Wallet',
-          owner: { name: 'Investor Name' },
+          owner: expect.objectContaining({ name: 'Investor Name' }),
           positions: [],
         }));
         done();
@@ -253,14 +253,14 @@ describe('API', () => {
         if (err) return done(err);
         expect(res.body).toEqual(expect.objectContaining({
           name: 'Investor Name',
-          wallets: expect.arrayContaining([{
+          wallets: expect.arrayContaining([expect.objectContaining({
             name: 'Test Existent Wallet',
             positions: expect.arrayContaining([
               expect.objectContaining({
-                asset: {
+                asset: expect.objectContaining({
                   ticker: 'BBAS3',
                   name: 'Banco do Brasil',
-                },
+                }),
                 operations: expect.arrayContaining([
                   expect.objectContaining({
                     value: -2345,
@@ -269,7 +269,7 @@ describe('API', () => {
                 ]),
               })
             ])
-          }]),
+          })]),
         }));
         done();
       });

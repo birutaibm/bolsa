@@ -43,9 +43,10 @@ describe('Wallet loader controller', () => {
       id: walletId,
       authorization,
     };
-    const result = {
-      id: walletId, name: 'My Wallet', owner: {name: owner.name}, positions: [],
-    };
+    const result = expect.objectContaining({
+      id: walletId, name: 'My Wallet', positions: [],
+      owner: expect.objectContaining({name: owner.name}),
+    });
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 200, data: result});

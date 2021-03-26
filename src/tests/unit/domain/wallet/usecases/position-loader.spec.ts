@@ -5,15 +5,15 @@ import { Persisted } from '@utils/types';
 import { PositionLoader } from '@domain/wallet/usecases';
 import { PopulatedPositionData } from '@domain/wallet/usecases/dtos';
 
-let asset: { ticker: string; name: string; };
-let opData: { date: Date; quantity: number; value: number; };
+let asset: { id: string; ticker: string; name: string; };
+let opData: { id: string; date: Date; quantity: number; value: number; };
 let data: Persisted<PopulatedPositionData>;
 let useCase: PositionLoader;
 
 describe('Position loader', () => {
   beforeAll(() => {
-    asset = { ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
-    opData = { date: new Date(), quantity: 100, value: -2345 };
+    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
+    opData = { id: 'operationId', date: new Date(), quantity: 100, value: -2345 };
     const owner = { id: 'myID', name: 'My Name' };
     const wallet = { id: 'walletId', name: 'My Wallet', owner };
     const position = { id: 'positionId', wallet, asset};

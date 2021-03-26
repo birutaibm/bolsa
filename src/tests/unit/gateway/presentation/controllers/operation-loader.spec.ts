@@ -13,7 +13,7 @@ let value: number;
 let operationId: string;
 let positionId: string;
 let investorId: string;
-let asset: { ticker: string; name: string; };
+let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
@@ -30,7 +30,7 @@ describe('Position loader controller', () => {
     authorization = 'Token ',
     investorId = 'myId';
     owner = { id: investorId, name: 'My Name' };
-    asset = {name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
+    asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
     operationLoader = new OperationLoader((id, isLoggedUserId) => {
       if (id === 'Invalid id in db rules') {
         throw new Error("");
@@ -42,7 +42,9 @@ describe('Position loader controller', () => {
       }
       return {
         id, date, quantity, value, position: {
-          id: positionId, wallet: { name: 'My Wallet', owner }, asset}
+          id: positionId, asset,
+          wallet: { id: 'walletId', name: 'My Wallet', owner },
+        }
       };
     });
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
@@ -56,11 +58,14 @@ describe('Position loader controller', () => {
       id: operationId,
       authorization,
     };
-    const result = {
-      id: operationId, date: date.toISOString(), quantity, value, position: {
-        asset, wallet: {name: 'My Wallet', owner: {name: owner.name}},
-      },
-    };
+    const result = expect.objectContaining({
+      id: operationId, date: date.toISOString(), quantity, value,
+      position: expect.objectContaining({
+        asset, wallet: expect.objectContaining({
+          name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
+        }),
+      }),
+    });
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 200, data: result});

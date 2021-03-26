@@ -11,7 +11,7 @@ let assetId: string;
 let walletId: string;
 let positionId: string;
 let investorId: string;
-let asset: { ticker: string; name: string; };
+let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
@@ -38,7 +38,7 @@ describe('Position creator controller', () => {
       return { id, name: 'My Wallet', positions: [], owner };
     });
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
-    asset = {name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
+    asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
     assetId = 'assetId';
     useCase = new PositionCreator(
       () => positionId,
@@ -58,10 +58,12 @@ describe('Position creator controller', () => {
       walletId,
       authorization,
     };
-    const result = {
+    const result = expect.objectContaining({
       id: positionId, asset, operations: [],
-      wallet: {name: 'My Wallet', owner: {name: owner.name}},
-    };
+      wallet: expect.objectContaining({
+        name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
+      }),
+    });
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 201, data: result});

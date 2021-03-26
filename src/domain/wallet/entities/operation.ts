@@ -1,3 +1,4 @@
+import { Persisted } from '@utils/types';
 import Position from './position';
 
 export default class Operation {
@@ -5,7 +6,7 @@ export default class Operation {
     readonly date: Date,
     readonly quantity: number,
     readonly value: number,
-    readonly position: Position,
+    readonly position: Persisted<Position>,
   ) {
     position.addOperation(this);
   }

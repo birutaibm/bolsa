@@ -1,5 +1,3 @@
-import { PopulatedInvestorData, PopulatedPositionData, PopulatedWalletData } from "@domain/wallet/usecases/dtos";
-
-export type PositionDTO = PopulatedPositionData;
+import { PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 export type WalletDTO = PopulatedWalletData;

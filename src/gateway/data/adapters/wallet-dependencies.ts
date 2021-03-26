@@ -4,8 +4,8 @@ import {
 } from '@errors/not-found';
 
 import {
-  PopulatedWalletData, PopulatedInvestorData,
-  OperationData, PopulatedPositionData, WalletData, PositionData, InvestorData, CheckLoggedUserId,
+  PopulatedWalletData, PopulatedInvestorData, PopulatedPositionData,
+  OperationData, WalletData, PositionData, InvestorData, CheckLoggedUserId,
 } from '@domain/wallet/usecases/dtos';
 
 import {
@@ -17,13 +17,13 @@ import {
   PositionRepository, PositionData as PersistedPositionData
 } from '../contracts/position-repository';
 
-type Operation = OperationData & { id: string; };
+type Operation = Persisted<OperationData>;
 type OperationWithoutPosition = Omit<Operation, 'position'>;
 
-type Position = PositionData & { id: string; };
+type Position = Persisted<PositionData>;
 type PositionWithoutWallet = Omit<Position, 'wallet'>;
 
-type Wallet = WalletData & { id: string; };
+type Wallet = Persisted<WalletData>;
 type WalletWithoutOwner = Omit<Wallet, 'owner'>;
 
 export default class WalletDependencies {
@@ -63,7 +63,9 @@ export default class WalletDependencies {
     );
   }
 
-  async positionLoader(id: string, isLogged: CheckLoggedUserId): Promise<Persisted<PopulatedPositionData>> {
+  async positionLoader(
+    id: string, isLogged: CheckLoggedUserId
+  ): Promise<Persisted<PopulatedPositionData>> {
     const { asset, walletId, operationIds } = await this.positions
       .loadPositionDataById(id);
     const { name, ownerId } = await this.wallets.loadWalletDataById(walletId);
@@ -74,7 +76,7 @@ export default class WalletDependencies {
     const operationsData = await this.operations
       .loadOperationsDataByIds(operationIds);
     const position = {
-      id, asset, wallet: { name, owner },
+      id, asset, wallet: { id: walletId, name, owner },
     };
     return this.addOperationsToPosition(position, operationsData);
   }
@@ -89,7 +91,7 @@ export default class WalletDependencies {
       throw new OperationNotFoundError(id);
     }
     const owner = await this.investors.loadInvestorDataById(ownerId);
-    const position = {id: positionId, asset, wallet: { name, owner } };
+    const position = {id: positionId, asset, wallet: { id: walletId, name, owner } };
     const opData = {id, quantity, value, date};
     return Object.assign(opData, {
       position: this.addOperationsToPosition(position, [opData]),
@@ -154,7 +156,7 @@ export default class WalletDependencies {
   }
 
   private addOperationsToPosition(
-    position: Persisted<PositionData>, operations: OperationWithoutPosition[]
+    position: Position, operations: OperationWithoutPosition[]
   ): PopulatedPositionData {
     return Object.assign(position, {
       operations: operations.map(operation =>

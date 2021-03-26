@@ -44,9 +44,10 @@ describe('Wallet creator controller', () => {
       investorId,
       authorization,
     };
-    const result = {
-      id: walletId, name: 'My Wallet', owner: {name: 'My Name'}, positions: [],
-    };
+    const result = expect.objectContaining({
+      id: walletId, name: 'My Wallet', positions: [],
+      owner: expect.objectContaining({name: 'My Name'}),
+    });
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 201, data: result});

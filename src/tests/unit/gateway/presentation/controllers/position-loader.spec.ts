@@ -9,7 +9,7 @@ import { PositionLoaderController } from '@gateway/presentation/controllers';
 
 let positionId: string;
 let investorId: string;
-let asset: { ticker: string; name: string; };
+let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
@@ -22,7 +22,7 @@ describe('Position loader controller', () => {
     authorization = 'Token ',
     investorId = 'myId';
     owner = { id: investorId, name: 'My Name' };
-    asset = {name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
+    asset = { id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
     positionLoader = new PositionLoader((id, isLoggedUserId) => {
       if (id === 'Invalid id in db rules') {
         throw new Error("");
@@ -32,7 +32,10 @@ describe('Position loader controller', () => {
       if (!isLoggedUserId(owner.id)) {
         throw new SignInRequiredError();
       }
-      return { id, wallet: { name: 'My Wallet', owner }, operations: [], asset };
+      return {
+        id, asset, operations: [],
+        wallet: { id: 'walletId', name: 'My Wallet', owner },
+      };
     });
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     controller = new PositionLoaderController(
@@ -45,10 +48,12 @@ describe('Position loader controller', () => {
       id: positionId,
       authorization,
     };
-    const result = {
+    const result = expect.objectContaining({
       id: positionId, asset, operations: [],
-      wallet: {name: 'My Wallet', owner: {name: owner.name}},
-    };
+      wallet: expect.objectContaining({
+        name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
+      }),
+    });
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 200, data: result});

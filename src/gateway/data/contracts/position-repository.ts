@@ -1,6 +1,8 @@
-import { AssetData as AssetDTO, MayBePromise } from '@domain/wallet/usecases/dtos';
+import { MayBePromise, Persisted } from '@utils/types';
 
-export type AssetData = AssetDTO & {id: string;};
+import { AssetData as AssetDTO } from '@domain/wallet/usecases/dtos';
+
+export type AssetData = Persisted<AssetDTO>;
 
 export type PositionData = {
   id: string;

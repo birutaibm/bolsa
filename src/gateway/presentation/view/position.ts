@@ -1,12 +1,14 @@
 export function positionView(entity: PositionEntity): PositionView {
   return {
     id: entity.id,
-    asset: { ticker: entity.asset.ticker, name: entity.asset.name, },
+    asset: entity.asset,
     wallet: {
-      name: entity.wallet.name,
-      owner: { name: entity.wallet.owner.name, },
+      id: entity.wallet.id, name: entity.wallet.name, owner: {
+        id: entity.wallet.owner.id, name: entity.wallet.owner.name,
+      }
     },
     operations: entity.getOperations().map(operation => ({
+      id: operation.id,
       date: operation.date.toISOString(),
       quantity: operation.quantity,
       value: operation.value,
@@ -16,6 +18,7 @@ export function positionView(entity: PositionEntity): PositionView {
 
 type PositionView = PositionBase & {
   operations: Array<{
+    id: string;
     date: string;
     quantity: number;
     value: number;
@@ -24,6 +27,7 @@ type PositionView = PositionBase & {
 
 type PositionEntity = PositionBase & {
   getOperations: () => Array<{
+    id: string;
     date: Date;
     quantity: number;
     value: number;
@@ -34,14 +38,17 @@ type PositionBase = {
   id: string;
   asset: Asset
   wallet: {
+    id: string;
     name: string;
     owner: {
+      id: string;
       name: string;
     };
   };
 }
 
 type Asset = {
+  id: string;
   ticker: string;
   name: string;
 };

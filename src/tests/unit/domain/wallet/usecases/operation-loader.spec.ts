@@ -5,14 +5,14 @@ import { Persisted } from '@utils/types';
 import { OperationLoader } from '@domain/wallet/usecases';
 import { OperationData } from '@domain/wallet/usecases/dtos';
 
-let asset: { ticker: string; name: string; };
+let asset: { id: string; ticker: string; name: string; };
 let opData: { date: Date; quantity: number; value: number; };
 let data: Persisted<OperationData>;
 let useCase: OperationLoader;
 
 describe('Operation loader', () => {
   beforeAll(() => {
-    asset = { ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
+    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
     opData = { date: new Date(), quantity: 100, value: -2345 };
     const owner = { id: 'myID', name: 'My Name' };
     const wallet = { id: 'walletId', name: 'My Wallet', owner };

@@ -5,14 +5,13 @@ export function operationView(entity: OperationEntity): OperationView {
     value: entity.value,
     date: entity.date.toISOString(),
     position: {
-      asset: {
-        ticker: entity.position.asset.ticker,
-        name: entity.position.asset.name,
-      },
-      wallet: {
-        name: entity.position.wallet.name,
-        owner: { name: entity.position.wallet.owner.name, },
-      },
+      id: entity.position.id, asset: entity.position.asset, wallet: {
+        id: entity.position.wallet.id, name: entity.position.wallet.name,
+        owner: {
+          id: entity.position.wallet.owner.id,
+          name: entity.position.wallet.owner.name,
+        }
+      }
     },
   };
 }
@@ -30,10 +29,13 @@ type OperationBase = {
   quantity: number;
   value: number;
   position: {
+    id: string;
     asset: Asset
     wallet: {
+      id: string;
       name: string;
       owner: {
+        id: string;
         name: string;
       };
     };
@@ -41,6 +43,7 @@ type OperationBase = {
 }
 
 type Asset = {
+  id: string;
   ticker: string;
   name: string;
 };

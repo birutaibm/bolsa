@@ -6,7 +6,7 @@ import { AssetData, CheckLoggedUserId } from './dtos';
 import WalletLoader from './wallet-loader';
 
 interface AssetLoader {
-  loadAssetDataById(id: string): MayBePromise<AssetData>
+  loadAssetDataById(id: string): MayBePromise<Persisted<AssetData>>
 }
 
 export type NewPositionSaver =

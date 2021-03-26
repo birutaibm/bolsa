@@ -17,13 +17,16 @@ export default class WalletLoader {
   ): Promise<Persisted<Wallet>> {
     const data = await this.loadData(id, isLogged);
     const owner = new Investor(data.owner.id, data.owner.name);
-    const wallet = new Wallet(data.name, owner);
+    const wallet = Object.assign(new Wallet(data.name, owner), {id});
     data.positions.forEach(position => {
-      const pos = new Position(position.asset, wallet);
-      position.operations.forEach(({date, quantity, value}) =>
-        new Operation(date, quantity, value, pos)
+      const pos = Object.assign(
+        new Position(position.asset, wallet),
+        { id: position.id },
+      );
+      position.operations.forEach(({date, quantity, value, id}) =>
+        Object.assign(new Operation(date, quantity, value, pos), { id })
       );
     });
-    return Object.assign(wallet, {id});
+    return wallet;
   }
 }

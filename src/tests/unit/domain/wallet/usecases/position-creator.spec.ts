@@ -7,11 +7,11 @@ import { AssetData, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 let walletData: Persisted<PopulatedWalletData>;
 let useCase: PositionCreator;
-let asset: AssetData;
+let asset: Persisted<AssetData>;
 
 describe('Position creator', () => {
   beforeAll(() => {
-    asset = { ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
+    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
     const owner = { id: 'myID', name: 'My Name' };
     const wallet = { name: 'My Wallet', owner };
     walletData = {
