@@ -2,7 +2,7 @@ import { WalletNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { Persisted } from '@utils/types';
 
-import { WalletLoader, PositionCreator, InvestorLoader, WalletCreator } from '@domain/wallet/usecases';
+import { WalletLoader, PositionCreator, InvestorLoader, WalletCreator, InvestorCreator } from '@domain/wallet/usecases';
 import { AssetData, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 let walletData: Persisted<PopulatedWalletData>;
@@ -29,6 +29,7 @@ describe('Position creator', () => {
     const walletCreator = new WalletCreator(
       () => {throw new Error()},
       new InvestorLoader(() => {throw new Error()}),
+      new InvestorCreator(() => {throw new Error()}),
     );
     useCase = new PositionCreator(
       () => 'positionId',

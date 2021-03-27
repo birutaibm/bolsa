@@ -42,6 +42,7 @@ export default function createWalletUseCasesFactories(
     new WalletCreator(async (walletName, investorId) =>
         (await wallets.saveNewWallet(walletName, investorId)).id,
       investorLoader.make(),
+      investorCreator.make(),
     ),
   );
 

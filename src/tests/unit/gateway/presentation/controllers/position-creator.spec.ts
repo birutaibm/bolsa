@@ -3,7 +3,7 @@ import { WalletNotFoundError } from '@errors/not-found';
 
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { InvestorLoader, PositionCreator, WalletCreator, WalletLoader } from '@domain/wallet/usecases';
+import { InvestorCreator, InvestorLoader, PositionCreator, WalletCreator, WalletLoader } from '@domain/wallet/usecases';
 
 import { PositionCreatorController } from '@gateway/presentation/controllers';
 
@@ -43,6 +43,7 @@ describe('Position creator controller', () => {
     const walletCreator = new WalletCreator(
       () => {throw new Error()},
       new InvestorLoader(() => {throw new Error()}),
+      new InvestorCreator(() => {throw new Error()}),
     );
     useCase = new PositionCreator(
       () => positionId,

@@ -20,7 +20,7 @@ export class WalletCreatorController implements Controller {
     }
     try {
       const wallet = await this.walletCreator.create(
-        {name, investorId}, checkLoggedUserId
+        {walletName: name, investorId, isLogged: checkLoggedUserId},
       );
       return created(walletView(wallet));
     } catch (error) {

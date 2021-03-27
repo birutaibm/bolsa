@@ -29,18 +29,29 @@ export type OperationData = {
   date: Date; quantity: number; value: number; position: Persisted<PositionData>
 };
 
+export type WalletCreationData = WalletCreationDataWithInvestor
+                               | WalletCreationDataWithoutInvestor;
+export type WalletCreationDataWithInvestor = {
+  walletName: string;
+  investorId: string;
+  isLogged: CheckLoggedUserId
+};
+export type WalletCreationDataWithoutInvestor = {
+  walletName: string;
+  investorName: string;
+  userId: string;
+  isLogged: CheckLoggedUserId
+};
+
 export type PositionCreationData = PositionCreationDataWithWallet
-                                  | PositionCreationDataWithInvestor;
+                                 | PositionCreationDataWithInvestor;
 export type PositionCreationDataWithWallet = {
   assetId: string;
   walletId: string;
   isLogged: CheckLoggedUserId
 };
-export type PositionCreationDataWithInvestor = {
+export type PositionCreationDataWithInvestor = WalletCreationData & {
   assetId: string;
-  walletName: string;
-  investorId: string;
-  isLogged: CheckLoggedUserId
 };
 
 export type OperationCreationData = OperationCreationDataWithPosition

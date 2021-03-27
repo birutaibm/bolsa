@@ -41,9 +41,10 @@ export class OperationCreatorController implements Controller {
     };
   }
 
-  async handle(
-    {date, quantity, value, authorization, positionId, assetId, walletId}: Params
-  ): Promise<Response> {
+  async handle({
+    date, quantity, value, authorization, positionId, assetId, walletId,
+    walletName, investorId,
+  }: Params): Promise<Response> {
     try {
       const data = this.validateBasicInfo(date, quantity, value, authorization);
       if (positionId) {
@@ -60,7 +61,16 @@ export class OperationCreatorController implements Controller {
         });
         return created(operationView(operation));
       }
-      return clientError('Required parameters: walletId');
+      if (!walletName) {
+        return clientError('Required parameters: walletId or walletName');
+      }
+      if (investorId) {
+        const operation = await this.operationCreator.create({
+          ...data, assetId, walletName, investorId,
+        });
+        return created(operationView(operation));
+      }
+      return clientError('Required parameters: investorId');
     } catch (error) {
       if (error instanceof SignInRequiredError) {
         return unauthorized('Login required to this action!');

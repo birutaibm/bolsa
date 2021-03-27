@@ -2,7 +2,7 @@ import { PositionNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { Persisted } from '@utils/types';
 
-import { PositionLoader, OperationCreator, PositionCreator, WalletLoader } from '@domain/wallet/usecases';
+import { PositionLoader, OperationCreator, PositionCreator, WalletLoader, WalletCreator, InvestorCreator, InvestorLoader } from '@domain/wallet/usecases';
 import { PopulatedPositionData } from '@domain/wallet/usecases/dtos';
 
 let asset: { id: string; ticker: string; name: string; };
@@ -34,8 +34,13 @@ describe('Operation creator', () => {
     });
     const positionCreator = new PositionCreator(
       () => 'positionId',
+      { loadAssetDataById() {throw new Error('Not implemented');} },
       new WalletLoader(() => {throw new Error('Not implemented');}),
-      { loadAssetDataById() {throw new Error('Not implemented');} }
+      new WalletCreator(
+        () => {throw new Error('Not implemented');},
+        new InvestorLoader(() => {throw new Error('Not implemented');}),
+        new InvestorCreator(() => {throw new Error('Not implemented');}),
+      ),
     );
     useCase = new OperationCreator(
       () => 'operationId',

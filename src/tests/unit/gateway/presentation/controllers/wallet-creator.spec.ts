@@ -2,7 +2,7 @@ import { InvestorNotFoundError } from '@errors/not-found';
 
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { InvestorLoader, WalletCreator } from '@domain/wallet/usecases';
+import { InvestorCreator, InvestorLoader, WalletCreator } from '@domain/wallet/usecases';
 
 import { WalletCreatorController } from '@gateway/presentation/controllers';
 
@@ -27,13 +27,14 @@ describe('Wallet creator controller', () => {
       throw new InvestorNotFoundError(id);
     });
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
+    const investorCreator = new InvestorCreator(() => {throw new Error()});
     controller = new WalletCreatorController(
       new WalletCreator((name) => {
         if (name === 'Invalid name in db rules') {
           throw new Error("");
         }
         return walletId;
-      }, investorLoader),
+      }, investorLoader, investorCreator),
       new Authorization(() => loggedUser),
     );
   });

@@ -1,12 +1,12 @@
 import { MayBePromise, Persisted } from '@utils/types';
 import { SignInRequiredError } from '@errors/sign-in-required';
 
-import { Wallet } from '@domain/wallet/entities';
+import { Investor, Wallet } from '@domain/wallet/entities';
 
-import { CheckLoggedUserId } from './dtos';
+import { CheckLoggedUserId, WalletCreationData } from './dtos';
 import InvestorLoader from './investor-loader';
+import { InvestorCreator } from '.';
 
-type WalletCreationData = {investorId: string, name: string};
 export type NewWalletSaver =
   (name: string, investorId: string) => MayBePromise<string>;
 
@@ -14,15 +14,26 @@ export default class WalletCreator {
   constructor(
     private readonly save: NewWalletSaver,
     private readonly investors: InvestorLoader,
+    private readonly investorCreator: InvestorCreator,
   ) {}
 
-  async create({name, investorId}: WalletCreationData, isLogged: CheckLoggedUserId): Promise<Persisted<Wallet>> {
-    if (!isLogged(investorId)) {
+  async create({walletName, ...data}: WalletCreationData): Promise<Persisted<Wallet>> {
+    const investor = await this.getInvestor(data);
+    const wallet = new Wallet(walletName, investor);
+    const id = await this.save(walletName, investor.id);
+    return Object.assign(wallet, {id});
+  }
+
+  private async getInvestor(
+    { isLogged, ...data }: { investorId: string; isLogged: CheckLoggedUserId; }
+      | { investorName: string; userId: string; isLogged: CheckLoggedUserId; }
+  ): Promise<Investor> {
+    const id = 'investorId' in data ? data.investorId : data.userId;
+    if (!isLogged(id)) {
       throw new SignInRequiredError();
     }
-    const investor = await this.investors.load(investorId);
-    const wallet = new Wallet(name, investor);
-    const id = await this.save(name, investorId);
-    return Object.assign(wallet, {id});
+    return 'investorId' in data
+      ? await this.investors.load(id)
+      : await this.investorCreator.create({ id, name: data.investorName});
   }
 }
