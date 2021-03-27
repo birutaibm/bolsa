@@ -29,3 +29,19 @@ export type PopulatedPositionData = Persisted<PositionData> & {
 export type OperationData = {
   date: Date; quantity: number; value: number; position: Persisted<PositionData>
 };
+
+export type OperationCreationData = OperationCreationDataWithPosition
+                                  | OperationCreationDataWithWallet;
+export type OperationCreationBaseData = {
+  date: Date;
+  quantity: number;
+  value: number;
+  isLogged: CheckLoggedUserId
+};
+export type OperationCreationDataWithPosition = OperationCreationBaseData & {
+  positionId: string;
+};
+export type OperationCreationDataWithWallet = OperationCreationBaseData & {
+  assetId: string;
+  walletId: string;
+};

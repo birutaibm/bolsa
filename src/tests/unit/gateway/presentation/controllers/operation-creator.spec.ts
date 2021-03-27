@@ -3,7 +3,7 @@ import { PositionNotFoundError } from '@errors/not-found';
 
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { OperationCreator, PositionLoader } from '@domain/wallet/usecases';
+import { OperationCreator, PositionCreator, PositionLoader, WalletLoader } from '@domain/wallet/usecases';
 
 import { OperationCreatorController } from '@gateway/presentation/controllers';
 
@@ -51,9 +51,15 @@ describe('Position creator controller', () => {
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     assetId = 'assetId';
     asset = {id: assetId, name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
+    const positionCreator = new PositionCreator(
+      () => 'positionId',
+      new WalletLoader(() => {throw new Error('Not implemented');}),
+      { loadAssetDataById() {throw new Error('Not implemented');} }
+    );
     useCase = new OperationCreator(
       () => operationId,
       positionLoader,
+      positionCreator,
     );
     controller = new OperationCreatorController(
       useCase, new Authorization(() => loggedUser),

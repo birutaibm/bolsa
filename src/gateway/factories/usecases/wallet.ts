@@ -66,7 +66,8 @@ export default function createWalletUseCasesFactories(
       async (date, quantity, value, positionId) =>
         (await operations.saveNewOperation({date, quantity, value, positionId}))
           .id,
-      positionLoader.make()
+      positionLoader.make(),
+      positionCreator.make(),
     ),
   );
 

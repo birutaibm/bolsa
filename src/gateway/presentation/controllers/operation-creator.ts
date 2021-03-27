@@ -28,9 +28,13 @@ export class OperationCreatorController implements Controller {
       return clientError('Quantity and value must be cast to valid numbers');
     }
     try {
-      const operation = await this.operationCreator.create(
-        new Date(date), Number(quantity), Number(value), positionId, checkLoggedUserId
-      );
+      const operation = await this.operationCreator.create({
+        date: new Date(date),
+        quantity: Number(quantity),
+        value: Number(value),
+        positionId,
+        isLogged: checkLoggedUserId
+      });
       return created(operationView(operation));
     } catch (error) {
       if (error instanceof SignInRequiredError) {

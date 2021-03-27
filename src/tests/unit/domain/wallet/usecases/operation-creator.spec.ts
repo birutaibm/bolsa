@@ -2,7 +2,7 @@ import { PositionNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { Persisted } from '@utils/types';
 
-import { PositionLoader, OperationCreator } from '@domain/wallet/usecases';
+import { PositionLoader, OperationCreator, PositionCreator, WalletLoader } from '@domain/wallet/usecases';
 import { PopulatedPositionData } from '@domain/wallet/usecases/dtos';
 
 let asset: { id: string; ticker: string; name: string; };
@@ -32,33 +32,39 @@ describe('Operation creator', () => {
       }
       throw new PositionNotFoundError(id);
     });
+    const positionCreator = new PositionCreator(
+      () => 'positionId',
+      new WalletLoader(() => {throw new Error('Not implemented');}),
+      { loadAssetDataById() {throw new Error('Not implemented');} }
+    );
     useCase = new OperationCreator(
       () => 'operationId',
       positionLoader,
+      positionCreator,
     );
   });
 
   it('should be able create operation', async done => {
-    const operation = await useCase.create(
-      opData.date,
-      opData.quantity,
-      opData.value,
-      positionData.id,
-      () => true,
-    );
+    const operation = await useCase.create({
+      date: opData.date,
+      quantity: opData.quantity,
+      value: opData.value,
+      positionId: positionData.id,
+      isLogged: () => true,
+    });
     expect(operation).toEqual(expect.objectContaining(opData));
     done();
   });
 
   it('should not be able create operation without been logged', async done => {
     await expect(
-      useCase.create(
-        opData.date,
-        opData.quantity,
-        opData.value,
-        positionData.id,
-        () => false,
-      )
+      useCase.create({
+        date: opData.date,
+        quantity: opData.quantity,
+        value: opData.value,
+        positionId: positionData.id,
+        isLogged: () => false,
+      })
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
   });
@@ -66,13 +72,13 @@ describe('Operation creator', () => {
   it('should not be able create operation for inexistent position', async done => {
     const id = 'nonInvestorId';
     await expect(
-      useCase.create(
-        opData.date,
-        opData.quantity,
-        opData.value,
-        'inexistentPosition',
-        () => true,
-      )
+      useCase.create({
+        date: opData.date,
+        quantity: opData.quantity,
+        value: opData.value,
+        positionId: 'inexistentPosition',
+        isLogged: () => true,
+      })
     ).rejects.toBeInstanceOf(PositionNotFoundError);
     done();
   });
