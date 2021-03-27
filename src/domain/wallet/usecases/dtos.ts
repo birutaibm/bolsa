@@ -1,5 +1,4 @@
 import { Persisted } from '@utils/types';
-import { Operation, Position } from '../entities';
 
 export type CheckLoggedUserId = (investorId: string) => boolean;
 
@@ -30,8 +29,22 @@ export type OperationData = {
   date: Date; quantity: number; value: number; position: Persisted<PositionData>
 };
 
+export type PositionCreationData = PositionCreationDataWithWallet
+                                  | PositionCreationDataWithInvestor;
+export type PositionCreationDataWithWallet = {
+  assetId: string;
+  walletId: string;
+  isLogged: CheckLoggedUserId
+};
+export type PositionCreationDataWithInvestor = {
+  assetId: string;
+  walletName: string;
+  investorId: string;
+  isLogged: CheckLoggedUserId
+};
+
 export type OperationCreationData = OperationCreationDataWithPosition
-                                  | OperationCreationDataWithWallet;
+                                  | OperationCreationDataWithoutPosition
 export type OperationCreationBaseData = {
   date: Date;
   quantity: number;
@@ -41,7 +54,5 @@ export type OperationCreationBaseData = {
 export type OperationCreationDataWithPosition = OperationCreationBaseData & {
   positionId: string;
 };
-export type OperationCreationDataWithWallet = OperationCreationBaseData & {
-  assetId: string;
-  walletId: string;
-};
+export type OperationCreationDataWithoutPosition = OperationCreationBaseData
+                                                 & PositionCreationData;

@@ -3,7 +3,7 @@ import { WalletNotFoundError } from '@errors/not-found';
 
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { PositionCreator, WalletLoader } from '@domain/wallet/usecases';
+import { InvestorLoader, PositionCreator, WalletCreator, WalletLoader } from '@domain/wallet/usecases';
 
 import { PositionCreatorController } from '@gateway/presentation/controllers';
 
@@ -40,12 +40,15 @@ describe('Position creator controller', () => {
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
     assetId = 'assetId';
+    const walletCreator = new WalletCreator(
+      () => {throw new Error()},
+      new InvestorLoader(() => {throw new Error()}),
+    );
     useCase = new PositionCreator(
       () => positionId,
+      { loadAssetDataById: () => asset },
       walletLoader,
-      {
-        loadAssetDataById: () => asset,
-      },
+      walletCreator,
     );
     controller = new PositionCreatorController(
       useCase, new Authorization(() => loggedUser),

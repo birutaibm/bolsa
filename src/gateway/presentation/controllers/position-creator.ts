@@ -19,9 +19,9 @@ export class PositionCreatorController implements Controller {
       return clientError('Required parameters: assetId, walletId');
     }
     try {
-      const position = await this.positionCreator.create(
-        assetId, walletId, checkLoggedUserId
-      );
+      const position = await this.positionCreator.create({
+        assetId, walletId, isLogged: checkLoggedUserId,
+      });
       return created(positionView(position));
     } catch (error) {
       if (error instanceof SignInRequiredError) {

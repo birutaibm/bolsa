@@ -9,6 +9,7 @@ import {
 } from '@gateway/presentation/contracts';
 import { operationView } from '../view/operation';
 import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
+import { OperationCreationBaseData, OperationCreationData } from '@domain/wallet/usecases/dtos';
 
 export class OperationCreatorController implements Controller {
   constructor(
@@ -16,26 +17,50 @@ export class OperationCreatorController implements Controller {
     private readonly auth: Authorization,
   ) {}
 
-  async handle({date, quantity, value, positionId, authorization}: Params): Promise<Response> {
-    const checkLoggedUserId = (id: string) => this.auth.checkId(id, authorization);
-    if (!date || !quantity || !value || !positionId) {
-      return clientError('Required parameters: date, quantity, value, positionId');
+  private validateBasicInfo(
+    date?: string, quantity?: string, value?: string, authorization?: string
+  ): OperationCreationBaseData {
+    if (!date || !quantity || !value) {
+      throw new InvalidParameterValueError(
+        'Required parameters: date, quantity, value'
+      );
     }
     if (!isValidISODate(date)) {
-      return clientError('Date must be in ISO format');
+      throw new InvalidParameterValueError('Date must be in ISO format');
     }
     if (!isNumber(quantity) || !isNumber(value)) {
-      return clientError('Quantity and value must be cast to valid numbers');
+      throw new InvalidParameterValueError(
+        'Quantity and value must be cast to valid numbers'
+      );
     }
+    return {
+      isLogged: (id: string) => this.auth.checkId(id, authorization),
+      date: new Date(date),
+      quantity: Number(quantity),
+      value: Number(value),
+    };
+  }
+
+  async handle(
+    {date, quantity, value, authorization, positionId, assetId, walletId}: Params
+  ): Promise<Response> {
     try {
-      const operation = await this.operationCreator.create({
-        date: new Date(date),
-        quantity: Number(quantity),
-        value: Number(value),
-        positionId,
-        isLogged: checkLoggedUserId
-      });
-      return created(operationView(operation));
+      const data = this.validateBasicInfo(date, quantity, value, authorization);
+      if (positionId) {
+        const operation = await this.operationCreator.create({
+          ...data, positionId,
+        });
+        return created(operationView(operation));
+      } if (!assetId) {
+        return clientError('Required parameters: positionId or assetId');
+      }
+      if (walletId) {
+        const operation = await this.operationCreator.create({
+          ...data, assetId, walletId,
+        });
+        return created(operationView(operation));
+      }
+      return clientError('Required parameters: walletId');
     } catch (error) {
       if (error instanceof SignInRequiredError) {
         return unauthorized('Login required to this action!');

@@ -109,7 +109,7 @@ describe('Position creator controller', () => {
       positionId,
       authorization,
     };
-    const result = {message: 'Required parameters: date, quantity, value, positionId'};
+    const result = {message: 'Required parameters: date, quantity, value'};
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 400, data: result});

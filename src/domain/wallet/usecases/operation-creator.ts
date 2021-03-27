@@ -3,7 +3,7 @@ import { MayBePromise, Persisted } from '@utils/types';
 
 import { Operation, Position } from '@domain/wallet/entities';
 
-import { CheckLoggedUserId, OperationCreationData } from './dtos';
+import { CheckLoggedUserId, OperationCreationData, PositionCreationData } from './dtos';
 import PositionLoader from './position-loader';
 import PositionCreator from './position-creator';
 
@@ -19,32 +19,27 @@ export default class OperationCreator {
   ) {}
 
   async create(
-    {date, quantity, value, isLogged, ...data}: OperationCreationData
+    {date, quantity, value, ...data}: OperationCreationData
   ): Promise<Persisted<Operation>> {
     if (quantity * value > 0) {
       throw new InvalidParameterValueError(
         'Quantity and value must be opposite signal numbers'
       );
     }
-    const position = await this.getPosition(data, isLogged);
+    const position = await this.getPosition(data);
     const operation = new Operation(date, quantity, value, position)
     const id = await this.save(date, quantity, value, position.id);
     return Object.assign(operation, {id});
   }
 
-  //TODO: improve this flow
   private async getPosition(
-    data: { positionId: string; assetId?: string; walletId?: string; }
-        | { positionId?: string; assetId: string; walletId: string; },
-    isLogged: CheckLoggedUserId,
+    data: { positionId: string; isLogged: CheckLoggedUserId; }
+        | PositionCreationData,
   ): Promise<Persisted<Position>> {
-    if (data.positionId) {
-      return await this.positions.load(data.positionId, isLogged);
+    if ('positionId' in data) {
+      return await this.positions.load(data.positionId, data.isLogged);
     }
-    if (data.assetId && data.walletId) {
-      return await this.positionCreator.create(data.assetId, data.walletId, isLogged);
-    }
-    throw new Error('Wrong parameter: need positionId or both assetId and walletId.');
+    return await this.positionCreator.create(data);
   }
 }
 

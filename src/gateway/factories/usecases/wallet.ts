@@ -51,8 +51,9 @@ export default function createWalletUseCasesFactories(
   const positionCreator = new SingletonFactory(
     () => new PositionCreator(async (assetId, walletId) =>
         (await positions.saveNewPosition(assetId, walletId)).id,
-      walletLoader.make(),
       assets,
+      walletLoader.make(),
+      walletCreator.make(),
     ),
   );
 
