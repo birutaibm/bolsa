@@ -1,6 +1,8 @@
-export class OperationNotFoundError extends Error {
+import NotFoundError from '.';
+
+export class OperationNotFoundError extends NotFoundError {
   constructor(id: string) {
-    super(`Operation ${id} not found`);
+    super('Operation', id);
     this.name = 'OperationNotFoundError';
   }
 }

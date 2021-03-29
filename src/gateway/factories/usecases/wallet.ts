@@ -39,10 +39,18 @@ export default function createWalletUseCasesFactories(
     ),
   );
   const walletCreator = new SingletonFactory(() =>
-    new WalletCreator(async (walletName, investorId) =>
-        (await wallets.saveNewWallet(walletName, investorId)).id,
+    new WalletCreator({
+        async newWalletOfInvestor(walletName, investorId) {
+          return (await wallets.saveNewWallet(walletName, investorId)).id;
+        },
+        async newWalletAndInvestor(name, investor, user) {
+          const { id, ownerId } = await wallets.saveNewWalletAndInvestor(
+            name, investor, user
+          );
+          return { walletId: id, investorId: ownerId };
+        }
+      },
       investorLoader.make(),
-      investorCreator.make(),
     ),
   );
 

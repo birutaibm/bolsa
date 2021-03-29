@@ -1,27 +1,23 @@
 import { LastPriceLoader } from '@domain/price/usecases';
+
 import {
-  Controller, Params, Response, ok, clientError, serverError, notFoundError
+  Controller, Params, Response, ok, clientError,
 } from '@gateway/presentation/contracts';
 import { PriceEntity, priceTranslator, PriceView } from '@gateway/presentation/view';
 
-export class LoadLastPriceController implements Controller {
+export class LoadLastPriceController extends Controller {
   constructor(
     private readonly lastPriceLoader: LastPriceLoader
-  ) {}
+  ) {
+    super();
+  }
 
-  async handle({ticker}: Params): Promise<Response<PriceView>> {
+  protected async tryHandle({ticker}: Params): Promise<Response<PriceView>> {
     if (!ticker) {
       return clientError('Can not find ticker at route');
     }
-    try {
-      const price: PriceEntity = await this.lastPriceLoader.load(ticker);
-      const data = priceTranslator.entityToView(price);
-      return ok(data);
-    } catch (error) {
-      if (error.name === 'AssetNotFoundError') {
-        return notFoundError(error.message);
-      }
-      return serverError(error);
-    }
+    const price: PriceEntity = await this.lastPriceLoader.load(ticker);
+    const data = priceTranslator.entityToView(price);
+    return ok(data);
   }
 }

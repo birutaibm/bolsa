@@ -26,10 +26,12 @@ describe('Position creator', () => {
       }
       throw new WalletNotFoundError(id);
     });
-    const walletCreator = new WalletCreator(
-      () => {throw new Error()},
+    const walletCreator = new WalletCreator({
+        newWalletOfInvestor:() => 'walletId',
+        newWalletAndInvestor:(w, i, investorId) =>
+          ({walletId: 'walletId', investorId}),
+      },
       new InvestorLoader(() => {throw new Error()}),
-      new InvestorCreator(() => {throw new Error()}),
     );
     useCase = new PositionCreator(
       () => 'positionId',

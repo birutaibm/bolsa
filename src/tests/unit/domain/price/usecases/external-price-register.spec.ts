@@ -1,9 +1,11 @@
-import { ExternalPriceRegister, RequiredFunctionalities } from '@domain/price/usecases/external-price-register';
-import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
-import { AssetPriceDTO, PriceDTO } from '@gateway/data/dto';
-import { AssetNotFoundError } from '@errors/asset-not-found';
+import { AssetNotFoundError } from '@errors/not-found';
 import { ExternalPriceLoaderError } from '@errors/external-price-loader';
 import { PriceUnavailableError } from '@errors/price-unavailable';
+import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
+
+import { ExternalPriceRegister, RequiredFunctionalities } from '@domain/price/usecases/external-price-register';
+
+import { AssetPriceDTO, PriceDTO } from '@gateway/data/dto';
 
 type Compatible = () => Promise<PriceDTO[]>;
 

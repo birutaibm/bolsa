@@ -101,7 +101,7 @@ describe('Position loader controller', () => {
       id: 'inexistentPositionId',
       authorization,
     };
-    const result = {message: `Can't found position with id inexistentPositionId`};
+    const result = {message: 'Position inexistentPositionId not found'};
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 404, data: result});

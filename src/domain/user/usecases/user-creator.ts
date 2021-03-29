@@ -1,9 +1,10 @@
+import { MayBePromise } from '@utils/types';
 import User, { Role } from '@domain/user/entities/user';
 
 import { PersistedUser, UserData } from './dto';
 import Encoder from './encoder';
 
-export type SaveUserData = (user: UserData) => Promise<{id: string}>;
+export type SaveUserData = (user: UserData) => MayBePromise<{id: string}>;
 
 export default class UserCreator {
   constructor(

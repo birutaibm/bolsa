@@ -3,37 +3,47 @@ import { SignInRequiredError } from '@errors/sign-in-required';
 
 import { Investor, Wallet } from '@domain/wallet/entities';
 
-import { CheckLoggedUserId, WalletCreationData } from './dtos';
+import { WalletCreationData } from './dtos';
 import InvestorLoader from './investor-loader';
-import { InvestorCreator } from '.';
 
-export type NewWalletSaver =
-  (name: string, investorId: string) => MayBePromise<string>;
+export interface NewWalletSaver {
+  newWalletOfInvestor(name: string, investorId: string): MayBePromise<string>;
+
+  newWalletAndInvestor(name: string, investorName: string, userId: string):
+    MayBePromise<{walletId: string; investorId: string;}>;
+}
 
 export default class WalletCreator {
   constructor(
-    private readonly save: NewWalletSaver,
+    private readonly saver: NewWalletSaver,
     private readonly investors: InvestorLoader,
-    private readonly investorCreator: InvestorCreator,
   ) {}
 
-  async create({walletName, ...data}: WalletCreationData): Promise<Persisted<Wallet>> {
-    const investor = await this.getInvestor(data);
-    const wallet = new Wallet(walletName, investor);
-    const id = await this.save(walletName, investor.id);
+  async create({isLogged, ...data}: WalletCreationData): Promise<Persisted<Wallet>> {
+    if (!isLogged('investorId' in data ? data.investorId : data.userId)) {
+      throw new SignInRequiredError();
+    }
+    const { id, investor } = await this.saveWallet(data);
+    const wallet = new Wallet(data.walletName, investor);
     return Object.assign(wallet, {id});
   }
 
-  private async getInvestor(
-    { isLogged, ...data }: { investorId: string; isLogged: CheckLoggedUserId; }
-      | { investorName: string; userId: string; isLogged: CheckLoggedUserId; }
-  ): Promise<Investor> {
-    const id = 'investorId' in data ? data.investorId : data.userId;
-    if (!isLogged(id)) {
-      throw new SignInRequiredError();
+  private async saveWallet(
+    data: { walletName: string; investorId: string; }
+        | { walletName: string; investorName: string; userId: string; }
+  ): Promise<{investor: Investor, id: string}> {
+    if ('investorId' in data) {
+      return {
+        investor: await this.investors.load(data.investorId),
+        id: await this.saver.newWalletOfInvestor(data.walletName, data.investorId),
+      };
     }
-    return 'investorId' in data
-      ? await this.investors.load(id)
-      : await this.investorCreator.create({ id, name: data.investorName});
+    const { walletId: id, investorId } = await this.saver.newWalletAndInvestor(
+      data.walletName, data.investorName, data.userId
+    );
+    return {
+      id,
+      investor: new Investor(investorId, data.investorName),
+    };
   }
 }

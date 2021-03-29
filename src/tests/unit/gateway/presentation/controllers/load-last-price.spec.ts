@@ -59,7 +59,7 @@ describe('Load last price controller', () => {
     ).resolves.toEqual(expect.objectContaining({
       statusCode: 404,
       data: {
-        message: 'Ticker ITUB4 not found',
+        message: 'Asset ITUB4 not found',
       },
     }));
     done();

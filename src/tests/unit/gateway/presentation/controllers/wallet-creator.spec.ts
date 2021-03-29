@@ -29,12 +29,18 @@ describe('Wallet creator controller', () => {
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     const investorCreator = new InvestorCreator(() => {throw new Error()});
     controller = new WalletCreatorController(
-      new WalletCreator((name) => {
-        if (name === 'Invalid name in db rules') {
-          throw new Error("");
-        }
-        return walletId;
-      }, investorLoader, investorCreator),
+        new WalletCreator({
+          newWalletOfInvestor:(name) => {
+            if (name === 'Invalid name in db rules') {
+              throw new Error("");
+            }
+            return walletId;
+          },
+          newWalletAndInvestor:(w, i, investorId) =>
+            ({walletId: 'walletId', investorId}),
+        },
+        investorLoader,
+      ),
       new Authorization(() => loggedUser),
     );
   });

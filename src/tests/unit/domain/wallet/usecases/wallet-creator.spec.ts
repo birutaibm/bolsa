@@ -1,5 +1,6 @@
 import { InvestorCreator, InvestorLoader, WalletCreator } from '@domain/wallet/usecases';
 import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
+import { NewWalletSaver } from '@domain/wallet/usecases/wallet-creator';
 import { InvestorNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 
@@ -18,11 +19,12 @@ describe('Wallet creator', () => {
       if (id === investorData.id) return investorData;
       throw new InvestorNotFoundError(id);
     })
-    const investorCreator = new InvestorCreator(() => {throw new Error()});
-    useCase = new WalletCreator(
-      (name, investorId) => 'walletId',
+    useCase = new WalletCreator({
+        newWalletOfInvestor:() => 'walletId',
+        newWalletAndInvestor:(w, i, investorId) =>
+          ({walletId: 'walletId', investorId}),
+      },
       investorLoader,
-      investorCreator,
     );
     data = { walletName: 'My Wallet', investorId: investorData.id };
   });

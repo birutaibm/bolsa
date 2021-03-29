@@ -1,4 +1,4 @@
-import { AssetNotFoundError } from '@errors/asset-not-found';
+import { AssetNotFoundError } from '@errors/not-found';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { MayBePromise } from '@utils/types';
 

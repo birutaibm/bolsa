@@ -1,4 +1,4 @@
-import { MayBePromise, Persisted } from '@domain/wallet/usecases/dtos';
+import { MayBePromise, Persisted } from '@utils/types';
 
 import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 

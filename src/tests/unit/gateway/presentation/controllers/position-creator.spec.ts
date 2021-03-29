@@ -40,10 +40,12 @@ describe('Position creator controller', () => {
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
     assetId = 'assetId';
-    const walletCreator = new WalletCreator(
-      () => {throw new Error()},
+    const walletCreator = new WalletCreator({
+        newWalletOfInvestor:() => 'walletId',
+        newWalletAndInvestor:(w, i, investorId) =>
+          ({walletId: 'walletId', investorId}),
+      },
       new InvestorLoader(() => {throw new Error()}),
-      new InvestorCreator(() => {throw new Error()}),
     );
     useCase = new PositionCreator(
       () => positionId,

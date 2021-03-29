@@ -1,7 +1,8 @@
+import { AssetNotFoundError } from '@errors/not-found';
+import { PriceUnavailableError } from '@errors/price-unavailable';
+
 import { Price } from '@domain/price/entities';
 import { LastPriceLoader } from '@domain/price/usecases/last-price-loader';
-import { AssetNotFoundError } from '@errors/asset-not-found';
-import { PriceUnavailableError } from '@errors/price-unavailable';
 
 type LoadFn = (ticker: string) => Promise<Price[]>;
 

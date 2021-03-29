@@ -1,6 +1,8 @@
-export class WalletNotFoundError extends Error {
+import NotFoundError from '.';
+
+export class WalletNotFoundError extends NotFoundError {
   constructor(name: string) {
-    super(`Wallet ${name} not found`);
+    super('Wallet', name);
     this.name = 'WalletNotFoundError';
   }
 }

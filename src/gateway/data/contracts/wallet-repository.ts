@@ -1,4 +1,4 @@
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
+import { MayBePromise } from '@utils/types';
 
 export type WalletData = {
   id: string;
@@ -26,4 +26,8 @@ export interface WalletRepository {
   saveNewWallet(
     walletName: string, investorId: string
   ): MayBePromise<{id: string;}>;
+
+  saveNewWalletAndInvestor(
+    walletName: string, investorName: string, userId: string
+  ): MayBePromise<{id: string; ownerId: string;}>;
 }

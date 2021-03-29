@@ -1,4 +1,5 @@
-import { MayBePromise, PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
+import { MayBePromise } from '@utils/types';
+import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
 
 export type InvestorDTO = {
   id: string;

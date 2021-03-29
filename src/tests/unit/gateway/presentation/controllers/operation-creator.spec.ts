@@ -55,10 +55,12 @@ describe('Position creator controller', () => {
       () => 'positionId',
       { loadAssetDataById() {throw new Error('Not implemented');} },
       new WalletLoader(() => {throw new Error('Not implemented');}),
-      new WalletCreator(
-        () => {throw new Error()},
+      new WalletCreator({
+          newWalletOfInvestor:() => 'walletId',
+          newWalletAndInvestor:(w, i, investorId) =>
+            ({walletId: 'walletId', investorId}),
+        },
         new InvestorLoader(() => {throw new Error()}),
-        new InvestorCreator(() => {throw new Error()}),
       ),
     );
     useCase = new OperationCreator(

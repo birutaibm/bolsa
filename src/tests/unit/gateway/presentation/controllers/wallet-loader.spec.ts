@@ -94,7 +94,7 @@ describe('Wallet loader controller', () => {
       id: 'inexistentWalletId',
       authorization,
     };
-    const result = {message: `Can't found wallet with id inexistentWalletId`};
+    const result = {message: 'Wallet inexistentWalletId not found'};
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 404, data: result});

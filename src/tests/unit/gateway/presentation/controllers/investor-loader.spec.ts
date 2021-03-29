@@ -82,7 +82,7 @@ describe('Investor loader controller', () => {
       id: loggedUser.id,
       authorization,
     };
-    const result = {message: `Can't found investor with id ${loggedUser.id}`};
+    const result = {message: `Investor ${loggedUser.id} not found`};
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 404, data: result});

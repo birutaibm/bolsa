@@ -1,3 +1,8 @@
+import { InvalidParameterValueError } from "@errors/invalid-parameter-value";
+import { InvalidUserPasswordError } from "@errors/invalid-user-password";
+import NotFoundError from "@errors/not-found";
+import { SignInRequiredError } from "@errors/sign-in-required";
+
 export type Response<T = any> = {
   statusCode: number;
   data: T;
@@ -48,3 +53,19 @@ export function serverError(error: Error): Response {
     },
   };
 };
+
+export function error(error: Error) {
+  if (error instanceof SignInRequiredError) {
+    return unauthorized('Login required to this action!');
+  }
+  if (error instanceof InvalidUserPasswordError) {
+    return unauthorized('Invalid user and/or password');
+  }
+  if (error instanceof InvalidParameterValueError) {
+    return clientError(error.message);
+  }
+  if (error instanceof NotFoundError) {
+    return notFoundError(error.message);
+  }
+  return serverError(error);
+}

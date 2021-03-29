@@ -1,6 +1,6 @@
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
-import { AssetNotFoundError } from '@errors/asset-not-found';
+import { AssetNotFoundError } from '@errors/not-found';
 import { MayBePromise } from '@utils/types';
 
 import { Price } from '@domain/price/entities'

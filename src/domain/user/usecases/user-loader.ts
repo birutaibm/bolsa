@@ -1,10 +1,11 @@
+import { MayBePromise } from '@utils/types';
 import User from '@domain/user/entities/user';
 
 import Encoder from './encoder'
 import { PersistedUser, PersistedUserData } from './dto';
 
 export type LoadPersistedUserDataFromUsername =
-  (userName: string) => Promise<PersistedUserData>;
+  (userName: string) => MayBePromise<PersistedUserData>;
 
 export default class UserLoader {
   constructor(

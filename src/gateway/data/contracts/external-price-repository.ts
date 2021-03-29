@@ -1,4 +1,5 @@
-import { MayBePromise } from '@domain/wallet/usecases/dtos';
+import { MayBePromise } from '@utils/types';
+
 import { ExternalSymbolsDTO, PriceDTO } from '@gateway/data/dto';
 
 export interface LoadExternalPriceRepository {

@@ -1,5 +1,4 @@
-import { AssetNotFoundError } from '@errors/asset-not-found';
-import { InvestorNotFoundError } from '@errors/not-found';
+import { AssetNotFoundError, InvestorNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
 import { InvestorData, WalletData } from '@gateway/data/contracts';

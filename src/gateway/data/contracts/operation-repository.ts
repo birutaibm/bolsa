@@ -1,4 +1,5 @@
-import { AssetData, MayBePromise, Persisted, WalletData } from "@domain/wallet/usecases/dtos";
+import { MayBePromise } from '@utils/types';
+import { AssetData, WalletData } from '@domain/wallet/usecases/dtos';
 
 export type OperationData = {
   id: string;

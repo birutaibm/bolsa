@@ -113,7 +113,7 @@ describe('Position loader controller', () => {
       id: 'inexistentOperationId',
       authorization,
     };
-    const result = {message: `Can't found operation with id inexistentOperationId`};
+    const result = {message: 'Operation inexistentOperationId not found'};
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 404, data: result});

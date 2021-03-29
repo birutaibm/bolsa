@@ -1,6 +1,7 @@
 import { InvestorNotFoundError, WalletNotFoundError } from '@errors/not-found';
 
-import { PersistedWalletData, WalletData, WalletRepository } from '@gateway/data/contracts';
+import { InvestorDTO, PersistedWalletData, WalletData, WalletRepository } from '@gateway/data/contracts';
+import { MayBePromise } from '@utils/types';
 
 import { investors, wallets } from './wallet-module-data';
 
@@ -33,5 +34,17 @@ export class FakeWalletRepository implements WalletRepository {
     investor.walletIds.push(id);
     wallets.push(wallet);
     return { ...wallet, owner: investor };
+  }
+
+  saveNewWalletAndInvestor(
+    walletName: string, investorName: string, userId: string
+  ): { id: string; ownerId: string; } {
+    const id = String(wallets.length);
+    investors.push({ id: userId, name: investorName, walletIds: [id] });
+    const wallet: WalletData = {
+      id, name: walletName, ownerId: userId, positionIds: [],
+    };
+    wallets.push(wallet);
+    return wallet;
   }
 }

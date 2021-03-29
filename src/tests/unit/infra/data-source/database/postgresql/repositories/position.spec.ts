@@ -1,5 +1,4 @@
-import { PositionNotFoundError } from '@errors/not-found';
-import { AssetNotFoundError } from '@errors/asset-not-found';
+import { AssetNotFoundError, PositionNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
 import { AssetData } from '@gateway/data/contracts';

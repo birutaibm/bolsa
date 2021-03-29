@@ -1,12 +1,13 @@
-import { Persisted } from '@domain/wallet/usecases/dtos';
+import { Persisted, MayBePromise } from '@utils/types';
+
 import { UserDTO } from '@gateway/data/dto';
 
 export interface LoadUserRepository {
-  getUserFromUsername(userName: string): Promise<Persisted<UserDTO>>;
+  getUserFromUsername(userName: string): MayBePromise<Persisted<UserDTO>>;
 }
 
 export interface CreateUserRepository {
-  saveUser(user: UserDTO): Promise<Persisted<{}>>;
+  saveUser(user: UserDTO): MayBePromise<Persisted<{}>>;
 }
 
 export interface UserRepository
