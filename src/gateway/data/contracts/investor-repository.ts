@@ -1,5 +1,6 @@
 import { MayBePromise } from '@utils/types';
 import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
+import { RepositoryChangeCommand } from './repository-change-command';
 
 export type InvestorDTO = {
   id: string;
@@ -16,7 +17,9 @@ export type InvestorCreationData = {
 
 export type PopulatedInvestorDTO = PopulatedInvestorData;
 
-export interface InvestorRepository {
+export interface InvestorRepository<E=any> {
   loadInvestorDataById(id: string): MayBePromise<InvestorDTO>;
-  saveNewInvestor(investor: InvestorCreationData): MayBePromise<InvestorDTO>;
+  saveNewInvestor(
+    investor: InvestorCreationData
+  ): RepositoryChangeCommand<InvestorDTO,E>;
 }

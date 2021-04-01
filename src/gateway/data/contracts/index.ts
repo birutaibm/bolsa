@@ -6,3 +6,4 @@ export * from './investor-repository';
 export * from './wallet-repository';
 export * from './position-repository';
 export * from './operation-repository';
+export * from './repository-change-command';

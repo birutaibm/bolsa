@@ -1,7 +1,7 @@
 import { AssetNotFoundError, PositionNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
-import { AssetData } from '@gateway/data/contracts';
+import { AssetData, RepositoryChangeCommandExecutor } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -11,6 +11,7 @@ type WalletData = {id: string;};
 type InvestorData = {id: string;};
 
 let db: PostgreSQL;
+let saveExecutor: RepositoryChangeCommandExecutor;
 let repo: PostgrePositionRepository;
 let dto: {
   asset: AssetData;
@@ -26,6 +27,7 @@ describe('Postgre position repository', () => {
   beforeAll(async done => {
     try {
       db = new PostgreSQL(env.postgre);
+      saveExecutor = await db.singleCommandExecutor();
       [ investor ] = await db.query<InvestorData>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
         values: ['positionTest_investorId1', 'Rafael Arantes', new Date()],
@@ -98,6 +100,7 @@ describe('Postgre position repository', () => {
         text: `DELETE FROM investors WHERE id = $1`,
         values: [investor.id],
       });
+      await saveExecutor.cancel();
       await db.disconnect();
     } catch (error) {
       done(error)
@@ -199,7 +202,9 @@ describe('Postgre position repository', () => {
   });
 
   it('should be able to create position', async done => {
-    const position = await repo.saveNewPosition(asset.id, wallet.id);
+    const position = await saveExecutor.append(repo.saveNewPosition(
+      asset.id, wallet.id
+    ));
     const createdId = position.id;
     positions.push(createdId);
     await expect(

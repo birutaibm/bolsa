@@ -1,11 +1,31 @@
 import { InvestorNotFoundError, WalletNotFoundError } from '@errors/not-found';
 
-import { InvestorDTO, PersistedWalletData, WalletData, WalletRepository } from '@gateway/data/contracts';
-import { MayBePromise } from '@utils/types';
+import {
+  PersistedWalletData, WalletData, WalletRepository,
+  RepositoryChangeCommand, RepositoryChangeCommandExecutors,
+} from '@gateway/data/contracts';
+
+import { executor } from '.';
 
 import { investors, wallets } from './wallet-module-data';
 
-export class FakeWalletRepository implements WalletRepository {
+export class FakeWalletRepository implements WalletRepository<void> {
+  getChangeCommandExecutors(): RepositoryChangeCommandExecutors<any> {
+    return {
+      singleCommandExecutor: () => executor,
+      multiCommandExecutor: () => executor,
+    };
+  }
+
+  loadWalletWithOwnerById(id: string): PersistedWalletData {
+    const { name, ownerId, positionIds } = this.loadWalletDataById(id);
+    const owner = investors.find(investor => investor.id === ownerId);
+    if (!owner) {
+      throw new InvestorNotFoundError(ownerId);
+    }
+    return {id, name, owner, positionIds};
+  }
+
   loadWalletIdsByOwnerId(id: string): string[] {
     return wallets
       .filter(wallet => wallet.ownerId === id)
@@ -24,16 +44,20 @@ export class FakeWalletRepository implements WalletRepository {
     return wallets[index];
   }
 
-  saveNewWallet(walletName: string, investorId: string): PersistedWalletData {
-    const id = String(wallets.length);
-    const wallet: WalletData = { id, name: walletName, ownerId: investorId, positionIds: [] };
-    const investor = investors.find(investor => investor.id === investorId);
-    if (!investor) {
-      throw new InvestorNotFoundError(investorId);
+  saveNewWallet(
+    walletName: string, investorId: string
+  ): RepositoryChangeCommand<PersistedWalletData,void> {
+    return () => {
+      const id = String(wallets.length);
+      const wallet: WalletData = { id, name: walletName, ownerId: investorId, positionIds: [] };
+      const investor = investors.find(investor => investor.id === investorId);
+      if (!investor) {
+        throw new InvestorNotFoundError(investorId);
+      }
+      investor.walletIds.push(id);
+      wallets.push(wallet);
+      return { ...wallet, owner: investor };
     }
-    investor.walletIds.push(id);
-    wallets.push(wallet);
-    return { ...wallet, owner: investor };
   }
 
   saveNewWalletAndInvestor(

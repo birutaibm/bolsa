@@ -1,13 +1,14 @@
 import { WalletNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
-import { InvestorData, WalletData } from '@gateway/data/contracts';
+import { InvestorData, RepositoryChangeCommandExecutor, WalletData } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
 import { PostgreWalletRepository } from '@infra/data-source/database/postgresql/repositories/wallet';
 
 let db: PostgreSQL;
+let saveExecutor: RepositoryChangeCommandExecutor;
 let repo: PostgreWalletRepository;
 let dto: {
   name: string;
@@ -20,6 +21,7 @@ describe('Postgre wallet repository', () => {
   beforeAll(async done => {
     try {
       db = new PostgreSQL(env.postgre);
+      saveExecutor = await db.singleCommandExecutor();
       [ investor ] = await db.query<InvestorData>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
         values: ['walletTest_investorId123', 'Rafael Arantes', new Date()],
@@ -73,6 +75,7 @@ describe('Postgre wallet repository', () => {
         text: `DELETE FROM investors WHERE id = $1`,
         values: [investor.id],
       });
+      await saveExecutor.cancel();
       await db.disconnect();
     } catch (error) {
       done(error)
@@ -159,7 +162,9 @@ describe('Postgre wallet repository', () => {
   });
 
   it('should be able to create wallet', async done => {
-    const wallet = await repo.saveNewWallet('saved', dto.ownerId);
+    const wallet = await saveExecutor.append(repo.saveNewWallet(
+      'saved', dto.ownerId
+    ));
     const createdId = wallet.id;
     wallets.push(createdId);
     await expect(

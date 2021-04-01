@@ -8,8 +8,10 @@ import {
 import {
   InvestorRepository, OperationRepository, WalletRepository, PositionRepository,
   InternalPriceRepository,
+  RepositoryChangeCommandExecutors,
 } from '@gateway/data/contracts';
 import WalletDependencies from '@gateway/data/adapters/wallet-dependencies';
+import walletModuleSavers from '@gateway/data/adapters/wallet-module-savers';
 
 export default function createWalletUseCasesFactories(
   investors: InvestorRepository,
@@ -18,8 +20,12 @@ export default function createWalletUseCasesFactories(
   operations: OperationRepository,
   assets: InternalPriceRepository,
 ) {
+  const changers = wallets.getChangeCommandExecutors();
   const adapter = new WalletDependencies(
     investors, wallets, positions, operations
+  );
+  const savers = walletModuleSavers(
+    changers, investors, wallets, positions, operations
   );
 
   const investorLoader = new SingletonFactory(
@@ -28,9 +34,7 @@ export default function createWalletUseCasesFactories(
     ),
   );
   const investorCreator = new SingletonFactory(
-    () => new InvestorCreator((investor) =>
-      investors.saveNewInvestor(investor)
-    ),
+    () => new InvestorCreator(savers.newInvestor),
   );
 
   const walletLoader = new SingletonFactory(
@@ -39,31 +43,14 @@ export default function createWalletUseCasesFactories(
     ),
   );
   const walletCreator = new SingletonFactory(() =>
-    new WalletCreator({
-        async newWalletOfInvestor(walletName, investorId) {
-          return (await wallets.saveNewWallet(walletName, investorId)).id;
-        },
-        async newWalletAndInvestor(name, investor, user) {
-          const { id, ownerId } = await wallets.saveNewWalletAndInvestor(
-            name, investor, user
-          );
-          return { walletId: id, investorId: ownerId };
-        }
-      },
-      investorLoader.make(),
-    ),
+    new WalletCreator(savers.newWallet),
   );
 
   const positionLoader = new SingletonFactory(
     () => new PositionLoader((id, isLogged) => adapter.positionLoader(id, isLogged)),
   );
   const positionCreator = new SingletonFactory(
-    () => new PositionCreator(async (assetId, walletId) =>
-        (await positions.saveNewPosition(assetId, walletId)).id,
-      assets,
-      walletLoader.make(),
-      walletCreator.make(),
-    ),
+    () => new PositionCreator(savers.newPosition),
   );
 
   const operationLoader = new SingletonFactory(
@@ -72,13 +59,7 @@ export default function createWalletUseCasesFactories(
     ),
   );
   const operationCreator = new SingletonFactory(
-    () => new OperationCreator(
-      async (date, quantity, value, positionId) =>
-        (await operations.saveNewOperation({date, quantity, value, positionId}))
-          .id,
-      positionLoader.make(),
-      positionCreator.make(),
-    ),
+    () => new OperationCreator(savers.newOperation),
   );
 
   return {

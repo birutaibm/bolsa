@@ -1,7 +1,7 @@
 import { AssetNotFoundError, OperationNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
-import { AssetData } from '@gateway/data/contracts';
+import { AssetData, RepositoryChangeCommandExecutor } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -10,6 +10,7 @@ import { PostgreOperationRepository } from '@infra/data-source/database/postgres
 type Data = {id: string;};
 
 let db: PostgreSQL;
+let saveExecutor: RepositoryChangeCommandExecutor;
 let repo: PostgreOperationRepository;
 let dto: {
   date: Date;
@@ -26,6 +27,7 @@ describe('Postgre operation repository', () => {
   beforeAll(async done => {
     try {
       db = new PostgreSQL(env.postgre);
+      saveExecutor = await db.singleCommandExecutor();
       [ investor ] = await db.query<Data>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
         values: ['operationTest_investorId', 'Rafael Arantes', new Date()],
@@ -105,6 +107,7 @@ describe('Postgre operation repository', () => {
         text: `DELETE FROM investors WHERE id = $1`,
         values: [investor.id],
       });
+      await saveExecutor.cancel();
       await db.disconnect();
     } catch (error) {
       done(error)
@@ -175,10 +178,10 @@ describe('Postgre operation repository', () => {
   });
 
   it('should be able to save operation', async done => {
-    const operation = await repo.saveNewOperation({
+    const operation = await saveExecutor.append(repo.saveNewOperation({
       ...dto,
       positionId: position.id,
-    });
+    }));
     const createdId = operation.id;
     operations.push(createdId);
     await expect(

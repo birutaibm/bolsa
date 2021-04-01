@@ -1,5 +1,8 @@
 import { MayBePromise } from '@utils/types';
+
 import { AssetData, WalletData } from '@domain/wallet/usecases/dtos';
+
+import { RepositoryChangeCommand } from './repository-change-command';
 
 export type OperationData = {
   id: string;
@@ -21,12 +24,12 @@ export type PopulatedOperationData = {
   value: number;
 };
 
-export interface OperationRepository {
+export interface OperationRepository<E=any> {
   loadOperationIdsByPositionId(id: string): MayBePromise<string[]>;
 
   saveNewOperation(
     data: Omit<OperationData, 'id'>
-  ): MayBePromise<OperationData>;
+  ): RepositoryChangeCommand<OperationData,E>;
 
   loadOperationDataById(id: string): MayBePromise<OperationData>;
 

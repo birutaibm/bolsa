@@ -3,11 +3,12 @@ import { Factory } from '@utils/factory';
 import { isNumber } from '@utils/validators';
 
 import {
-  PositionRepository, WalletData, WalletRepository
+  PersistedWalletData,
+  PositionRepository, RepositoryChangeCommand, RepositoryChangeCommandExecutors, WalletData, WalletRepository
 } from '@gateway/data/contracts';
 
-import PostgreSQL from '..';
-import { DatabaseOperationError } from '@errors/database-operation';
+import PostgreSQL, { Executor } from '..';
+import { MayBePromise } from '@utils/types';
 
 type WalletModel = {
   created_on: Date;
@@ -16,13 +17,36 @@ type WalletModel = {
   owner_id: string;
 };
 
-export class PostgreWalletRepository implements WalletRepository {
+export class PostgreWalletRepository implements WalletRepository<Executor<WalletModel>> {
   private readonly selectAllWhere = 'SELECT * FROM wallets WHERE';
 
   constructor(
     private readonly db: PostgreSQL,
     private positions: PositionRepository | Factory<PositionRepository>,
   ) {}
+
+  getChangeCommandExecutors(): RepositoryChangeCommandExecutors {
+    return this.db;
+  }
+
+  async loadWalletWithOwnerById(id: string): Promise<PersistedWalletData> {
+    if (!isNumber(id)) {
+      throw new WalletNotFoundError(id);
+    }
+    const [ model ] = await this.db.query<WalletModel>({
+      text: `${this.selectAllWhere} id = $1`,
+      values: [id],
+    });
+    if (!model) {
+      throw new WalletNotFoundError(id);
+    }
+    const [ owner ] = await this.db.query<{id: string; name: string}>({
+      text: 'SELECT id, name FROM investors WHERE id = $1',
+      values: [model.owner_id],
+    });
+    const { name, positionIds } = await this.modelToData(model);
+    return { id, name, positionIds, owner};
+  }
 
   async loadWalletIdsByOwnerId(ownerId: string): Promise<string[]> {
     const models = await this.db.query<WalletModel>({
@@ -56,49 +80,16 @@ export class PostgreWalletRepository implements WalletRepository {
     return Promise.all(models.map(model => this.modelToData(model)));
   }
 
-  async saveNewWallet(
+  saveNewWallet(
     walletName: string, investorId: string
-  ): Promise<WalletData> {
-    const [ data ] = await this.db.query<WalletModel>({
+  ): RepositoryChangeCommand<WalletData,Executor<WalletModel>> {
+    const query = {
       text: `INSERT INTO wallets(name, owner_id, created_on)
       VALUES ($1, $2, $3) RETURNING *`,
       values: [walletName, investorId, new Date()],
-    });
-    return {
-      id: String(data.id),
-      name: data.name,
-      ownerId: data.owner_id,
-      positionIds: [],
     };
-  }
-
-  async saveNewWalletAndInvestor(
-    walletName: string, investorName: string, userId: string
-  ): Promise<WalletData> {
-    const client = await this.db.getClient();
-    let wallet: WalletData | undefined = undefined;
-    await client.query({ text: 'BEGIN' });
-    try {
-      const {rows: [{id: investorId}]} = await client.query<{id: number;}>({
-        text: `INSERT INTO investors(id, name, created_on)
-        VALUES ($1, $2, $3) RETURNING id`,
-        values: [userId, investorName, new Date()],
-      });
-      const {rows: [ model ]} = await client.query<WalletModel>({
-        text: `INSERT INTO wallets(name, owner_id, created_on)
-        VALUES ($1, $2, $3) RETURNING *`,
-        values: [walletName, investorId, new Date()],
-      });
-      wallet = await this.modelToData(model, true);
-      await client.query('COMMIT');
-      client.release();
-    } catch (error) {
-      await client.query('ROLLBACK');
-    } finally {
-      client.release();
-    }
-    if (wallet) return wallet;
-    throw new DatabaseOperationError('Create wallet and investor');
+    const translate = ([data]: WalletModel[]) => this.modelToData(data, true);
+    return async executor => translate((await executor(query)).rows);
   }
 
   private async modelToData(

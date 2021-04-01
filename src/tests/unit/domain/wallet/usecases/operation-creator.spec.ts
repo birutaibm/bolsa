@@ -2,7 +2,9 @@ import { PositionNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { Persisted } from '@utils/types';
 
-import { PositionLoader, OperationCreator, PositionCreator, WalletLoader, WalletCreator, InvestorCreator, InvestorLoader } from '@domain/wallet/usecases';
+import {
+  PositionLoader, OperationCreator, PositionCreator, WalletLoader, WalletCreator
+} from '@domain/wallet/usecases';
 import { PopulatedPositionData } from '@domain/wallet/usecases/dtos';
 
 let asset: { id: string; ticker: string; name: string; };
@@ -19,36 +21,27 @@ describe('Operation creator', () => {
     const position = { id: 'positionId', wallet, asset};
     positionData = {
       ...position,
-      id: 'positionId',
       operations: [{
         ...opData,
         position,
       }],
-    }
-    const positionLoader = new PositionLoader((id, isLoggedUserId) => {
-      if (id === positionData.id) {
-        if (isLoggedUserId(positionData.wallet.owner.id)) return positionData;
+    };
+    useCase = new OperationCreator(data => {
+      if (!data.isLogged(positionData.wallet.owner.id))
         throw new SignInRequiredError();
+      if ('positionId' in data) {
+        if (positionData.id !== data.positionId)
+          throw new PositionNotFoundError(data.positionId);
+        return {
+          id: 'operationId', position: positionData,
+          date: data.date, quantity: data.quantity, value: data.value,
+        };
       }
-      throw new PositionNotFoundError(id);
+      return {
+        id: 'operationId', position: positionData,
+        date: data.date, quantity: data.quantity, value: data.value,
+      };
     });
-    const positionCreator = new PositionCreator(
-      () => 'positionId',
-      { loadAssetDataById() {throw new Error('Not implemented');} },
-      new WalletLoader(() => {throw new Error('Not implemented');}),
-      new WalletCreator({
-        newWalletOfInvestor:() => 'walletId',
-        newWalletAndInvestor:(w, i, investorId) =>
-          ({walletId: 'walletId', investorId}),
-        },
-        new InvestorLoader(() => {throw new Error('Not implemented');}),
-      )
-    );
-    useCase = new OperationCreator(
-      () => 'operationId',
-      positionLoader,
-      positionCreator,
-    );
   });
 
   it('should be able create operation', async done => {

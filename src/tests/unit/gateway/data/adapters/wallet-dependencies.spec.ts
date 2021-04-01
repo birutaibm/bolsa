@@ -5,6 +5,7 @@ import { WalletDependencies } from '@gateway/data/adapters';
 import { InvestorCreationData, OperationData, PersistedWalletData, PositionWithWalletData } from '@gateway/data/contracts';
 
 import {
+  executor,
   FakeInvestorRepository, FakeOperationRepository, FakePositionRepository,
   FakePriceRepository, FakeWalletRepository
 } from '@mock/data-source/repositories';
@@ -18,25 +19,30 @@ let operation: OperationData;
 let adapter: WalletDependencies;
 
 describe('Wallet module dependencies adapter', () => {
-  beforeAll(() => {
+  beforeAll(async done => {
     investor = { id: 'myId', name: 'My Name'};
     otherInvestor = { id: 'othersId', name: 'Other Name'};
     const investors = new FakeInvestorRepository();
     const wallets = new FakeWalletRepository();
     const positions = new FakePositionRepository(new FakePriceRepository());
     const operations = new FakeOperationRepository();
-    investors.saveNewInvestor(investor);
-    investors.saveNewInvestor(otherInvestor);
-    wallet = wallets.saveNewWallet('My wallet', investor.id);
-    position = positions.saveNewPosition('0', wallet.id);
+    await executor.append(investors.saveNewInvestor(investor));
+    await executor.append(investors.saveNewInvestor(otherInvestor));
+    wallet = await executor.append(wallets.saveNewWallet(
+      'My wallet', investor.id
+    ));
+    position = await executor.append(positions.saveNewPosition('0', wallet.id));
     opData = { date: new Date(), quantity: 100, value: -2345 };
-    operation = operations.saveNewOperation({...opData, positionId: position.id});
+    operation = await executor.append(operations.saveNewOperation(
+      {...opData, positionId: position.id}
+    ));
     adapter = new WalletDependencies(
       investors,
       wallets,
       positions,
       operations,
     );
+    done();
   });
 
   it('should be able to load operation', async done => {

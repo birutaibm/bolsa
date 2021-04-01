@@ -1,9 +1,11 @@
 import { OperationNotFoundError } from '@errors/not-found';
 import { isNumber } from '@utils/validators';
 
-import { OperationRepository, OperationData } from '@gateway/data/contracts';
+import {
+  OperationRepository, OperationData, RepositoryChangeCommand
+} from '@gateway/data/contracts';
 
-import PostgreSQL from '..';
+import PostgreSQL, { Executor } from '..';
 
 type OperationModel = {
   id: number;
@@ -14,7 +16,7 @@ type OperationModel = {
   created_on: Date;
 };
 
-export class PostgreOperationRepository implements OperationRepository {
+export class PostgreOperationRepository implements OperationRepository<Executor<OperationModel>> {
   private readonly selectAllWhere = 'SELECT * FROM operations WHERE';
 
   constructor(
@@ -56,16 +58,17 @@ export class PostgreOperationRepository implements OperationRepository {
     return Promise.all(models.map(model => this.modelToData(model)));
   }
 
-  async saveNewOperation(
+  saveNewOperation(
     data: Omit<OperationData, 'id'>
-  ): Promise<OperationData> {
-    const [ model ] = await this.db.query<OperationModel>({
+  ): RepositoryChangeCommand<OperationData, Executor<OperationModel>> {
+    const query = {
       text: `INSERT INTO
         operations(date, quantity, value, position_id, created_on)
       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       values: [data.date, data.quantity, data.value, data.positionId, new Date()],
-    });
-    return this.modelToData(model);
+    };
+    const translate = ([data]: OperationModel[]) => this.modelToData(data);
+    return async executor => translate((await executor(query)).rows);
   }
 
   private async modelToData(

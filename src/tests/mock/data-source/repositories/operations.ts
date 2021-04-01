@@ -1,22 +1,29 @@
 import { OperationNotFoundError } from '@errors/not-found';
-import { OperationData, OperationRepository } from '@gateway/data/contracts';
+
+import {
+  OperationData, OperationRepository, RepositoryChangeCommand
+} from '@gateway/data/contracts';
 
 import { operations, positions } from './wallet-module-data';
 
-export class FakeOperationRepository implements OperationRepository {
+export class FakeOperationRepository implements OperationRepository<void> {
   loadOperationIdsByPositionId(id: string): string[] {
     return operations
       .filter(operation => operation.positionId === id)
       .map(operation => operation.id);
   }
 
-  saveNewOperation(data: Omit<OperationData, "id">): OperationData {
-    const id = String(operations.length);
-    const operation = { ...data, id };
-    positions.find(position => position.id === data.positionId)?.operationIds
-      .push(id);
-    operations.push(operation);
-    return operation;
+  saveNewOperation(
+    data: Omit<OperationData, "id">
+  ): RepositoryChangeCommand<OperationData,void> {
+    return () => {
+      const id = String(operations.length);
+      const operation = { ...data, id };
+      positions.find(position => position.id === data.positionId)?.operationIds
+        .push(id);
+      operations.push(operation);
+      return operation;
+    };
   }
 
   loadOperationDataById(id: string): OperationData {

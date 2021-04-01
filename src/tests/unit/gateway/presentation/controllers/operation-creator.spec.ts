@@ -1,9 +1,8 @@
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { PositionNotFoundError } from '@errors/not-found';
 
-import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { InvestorCreator, InvestorLoader, OperationCreator, PositionCreator, PositionLoader, WalletCreator, WalletLoader } from '@domain/wallet/usecases';
+import { OperationCreator } from '@domain/wallet/usecases';
 
 import { OperationCreatorController } from '@gateway/presentation/controllers';
 
@@ -11,65 +10,55 @@ let date: string;
 let quantity: string;
 let value: string;
 let operationId: string;
-let assetId: string;
-let walletId: string;
 let positionId: string;
 let investorId: string;
 let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
-let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
-let positionLoader: PositionLoader;
-let useCase: OperationCreator;
 let controller: OperationCreatorController;
 
-describe('Position creator controller', () => {
+describe('Operation creator controller', () => {
   beforeAll(() => {
     operationId = 'operationId';
     date = new Date().toISOString();
     quantity = '100';
     value = '-2345';
     positionId = 'positionId';
-    walletId = 'walletId';
     authorization = 'Token ';
     investorId = 'myId';
-    owner = { id: investorId, name: 'My Name' };
-    positionLoader = new PositionLoader((id, isLoggedUserId) => {
-      if (id === 'Invalid id in db rules') {
-        throw new Error("");
-      } else if (id !== positionId) {
-        throw new PositionNotFoundError(id);
-      }
-      if (!isLoggedUserId(owner.id)) {
+    owner = { id: investorId, name: 'Investor Name' };
+    const wallet = { id: 'walletId', name: 'My Wallet', owner };
+    asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
+    const position = { id: 'positionId', wallet, asset};
+    const positionData = {
+      ...position,
+      operations: [{
+        date, quantity, value, id: operationId,
+        position,
+      }],
+    };
+    const useCase = new OperationCreator(data => {
+      if (!data.isLogged(positionData.wallet.owner.id))
         throw new SignInRequiredError();
+      if ('positionId' in data) {
+        if (data.positionId === 'Invalid id in db rules')
+          throw new Error("");
+        else if (positionData.id !== data.positionId)
+          throw new PositionNotFoundError(data.positionId);
+        return {
+          id: 'operationId', position: positionData,
+          date: data.date, quantity: data.quantity, value: data.value,
+        };
       }
       return {
-        id, asset, operations: [],
-        wallet: { id: 'walletId', name: 'My Wallet', owner },
+        id: 'operationId', position: positionData,
+        date: data.date, quantity: data.quantity, value: data.value,
       };
     });
-    loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
-    assetId = 'assetId';
-    asset = {id: assetId, name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
-    const positionCreator = new PositionCreator(
-      () => 'positionId',
-      { loadAssetDataById() {throw new Error('Not implemented');} },
-      new WalletLoader(() => {throw new Error('Not implemented');}),
-      new WalletCreator({
-          newWalletOfInvestor:() => 'walletId',
-          newWalletAndInvestor:(w, i, investorId) =>
-            ({walletId: 'walletId', investorId}),
-        },
-        new InvestorLoader(() => {throw new Error()}),
-      ),
-    );
-    useCase = new OperationCreator(
-      () => operationId,
-      positionLoader,
-      positionCreator,
-    );
     controller = new OperationCreatorController(
-      useCase, new Authorization(() => loggedUser),
+      useCase, new Authorization(() => (
+        { id: investorId, userName: 'anybody', role: 'USER' }
+      )),
     );
   });
 
@@ -81,17 +70,16 @@ describe('Position creator controller', () => {
       positionId,
       authorization,
     };
-    const result = expect.objectContaining({
+    await expect(
+      controller.handle(params)
+    ).resolves.toEqual({statusCode: 201, data: expect.objectContaining({
       id: operationId, date, quantity: 100, value: -2345,
       position: expect.objectContaining({
         asset, wallet: expect.objectContaining({
           name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
         }),
       }),
-    });
-    await expect(
-      controller.handle(params)
-    ).resolves.toEqual({statusCode: 201, data: result});
+    })});
     done();
   });
 

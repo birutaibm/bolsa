@@ -3,7 +3,7 @@ import { WalletNotFoundError } from '@errors/not-found';
 
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { InvestorCreator, InvestorLoader, PositionCreator, WalletCreator, WalletLoader } from '@domain/wallet/usecases';
+import { PositionCreator } from '@domain/wallet/usecases';
 
 import { PositionCreatorController } from '@gateway/presentation/controllers';
 
@@ -15,7 +15,6 @@ let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
-let walletLoader: WalletLoader;
 let useCase: PositionCreator;
 let controller: PositionCreatorController;
 
@@ -26,33 +25,26 @@ describe('Position creator controller', () => {
     authorization = 'Token ';
     investorId = 'myId';
     owner = { id: investorId, name: 'My Name' };
-    walletLoader = new WalletLoader((id, isLoggedUserId) => {
-      if (id === 'Invalid id in db rules') {
-        throw new Error("");
-      } else if (id !== walletId) {
-        throw new WalletNotFoundError(id);
-      }
-      if (!isLoggedUserId(owner.id)) {
-        throw new SignInRequiredError();
-      }
-      return { id, name: 'My Wallet', positions: [], owner };
-    });
+    const wallet = { name: 'My Wallet', positions: [], owner };
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
     assetId = 'assetId';
-    const walletCreator = new WalletCreator({
-        newWalletOfInvestor:() => 'walletId',
-        newWalletAndInvestor:(w, i, investorId) =>
-          ({walletId: 'walletId', investorId}),
-      },
-      new InvestorLoader(() => {throw new Error()}),
-    );
-    useCase = new PositionCreator(
-      () => positionId,
-      { loadAssetDataById: () => asset },
-      walletLoader,
-      walletCreator,
-    );
+    useCase = new PositionCreator(data => {
+      if (!data.isLogged(wallet.owner.id)) throw new SignInRequiredError();
+      if ('walletId' in data) {
+        if (data.walletId === 'Invalid id in db rules') {
+          throw new Error("");
+        } else if (data.walletId !== walletId) {
+          throw new WalletNotFoundError(data.walletId);
+        }
+        return {
+          id: 'positionId', asset, wallet: { ...wallet, id: walletId }
+        };
+      }
+      return {
+        id: 'positionId', asset, wallet: {...wallet, id: walletId},
+      };
+    });
     controller = new PositionCreatorController(
       useCase, new Authorization(() => loggedUser),
     );

@@ -2,6 +2,8 @@ import { MayBePromise, Persisted } from '@utils/types';
 
 import { AssetData as AssetDTO } from '@domain/wallet/usecases/dtos';
 
+import { RepositoryChangeCommand } from './repository-change-command';
+
 export type AssetData = Persisted<AssetDTO>;
 
 export type PositionData = {
@@ -14,19 +16,27 @@ export type PositionData = {
 export type PositionWithWalletData = {
   id: string;
   asset: AssetData;
+  operationIds: string[];
   wallet: {
     id: string;
     name: string;
-    ownerId: string;
+    owner: {
+      id: string;
+      name: string;
+    };
   };
 };
 
-export interface PositionRepository {
+export interface PositionRepository<E=any> {
+  loadPositionWithWalletAndOwnerById(
+    id: string
+  ): MayBePromise<Persisted<PositionWithWalletData>>;
+
   loadPositionIdsByWalletId(id: string): MayBePromise<string[]>;
 
   saveNewPosition(
     assetId: string, walletId: string
-  ): MayBePromise<{id: string;}>;
+  ): RepositoryChangeCommand<{id: string; asset: AssetData},E>;
 
   loadPositionDataById(positionId: string): MayBePromise<PositionData>;
 

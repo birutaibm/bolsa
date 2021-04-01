@@ -3,10 +3,10 @@ import { Factory } from '@utils/factory';
 
 import {
   InvestorCreationData,
-  InvestorData, InvestorRepository, WalletRepository
+  InvestorData, InvestorRepository, RepositoryChangeCommand, WalletRepository
 } from '@gateway/data/contracts';
 
-import PostgreSQL from '..';
+import PostgreSQL, { Executor } from '..';
 
 type InvestorModel = {
   created_on: Date;
@@ -14,7 +14,7 @@ type InvestorModel = {
   name: string;
 };
 
-export class PostgreInvestorRepository implements InvestorRepository {
+export class PostgreInvestorRepository implements InvestorRepository<Executor<InvestorModel>> {
   constructor(
     private readonly db: PostgreSQL,
     private wallets: WalletRepository | Factory<WalletRepository>
@@ -31,20 +31,24 @@ export class PostgreInvestorRepository implements InvestorRepository {
     return this.modelToData(model);
   }
 
-  async saveNewInvestor(investor: InvestorCreationData): Promise<InvestorData> {
-    const existents = await this.db.query<InvestorModel>({
+  saveNewInvestor(investor: InvestorCreationData): RepositoryChangeCommand<InvestorData, Executor<InvestorModel>> {
+    const find = {
       text: 'SELECT * FROM investors WHERE id = $1',
       values: [investor.id],
-    });
-    if (existents.length > 0) {
-      return this.modelToData(existents[0]);
-    }
-    const [ model ] = await this.db.query<InvestorModel>({
+    };
+    const create = {
       text: `INSERT INTO investors(id, name, created_on)
       VALUES ($1, $2, $3) RETURNING *`,
       values: [investor.id, investor.name, new Date()],
-    });
-    return this.modelToData(model);
+    };
+    return async (executor: Executor<InvestorModel>) => {
+      const { rows: existents } = await executor(find);
+      if (existents.length > 0) {
+        return this.modelToData(existents[0]);
+      }
+      const { rows: [ model ]} = await executor(create);
+      return this.modelToData(model);
+    }
   }
 
   private async modelToData(

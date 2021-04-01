@@ -1,8 +1,7 @@
-import { InvestorNotFoundError } from '@errors/not-found';
-
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
-import { InvestorCreator, InvestorLoader, WalletCreator } from '@domain/wallet/usecases';
+import { WalletCreator } from '@domain/wallet/usecases';
+import { SignInRequiredError } from '@errors/sign-in-required';
 
 import { WalletCreatorController } from '@gateway/presentation/controllers';
 
@@ -10,7 +9,6 @@ let walletId: string;
 let investorId: string;
 let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
-let investorLoader: InvestorLoader;
 let controller: WalletCreatorController;
 
 describe('Wallet creator controller', () => {
@@ -18,29 +16,25 @@ describe('Wallet creator controller', () => {
     walletId = 'walletId'
     authorization = 'Token ',
     investorId = 'myId';
-    investorLoader = new InvestorLoader(id => {
-      if (id === 'Invalid id in db rules') {
-        throw new Error("");
-      } else if (id === investorId) {
-        return {id, name: 'My Name', wallets: []};
-      }
-      throw new InvestorNotFoundError(id);
-    });
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
-    const investorCreator = new InvestorCreator(() => {throw new Error()});
     controller = new WalletCreatorController(
-        new WalletCreator({
-          newWalletOfInvestor:(name) => {
-            if (name === 'Invalid name in db rules') {
-              throw new Error("");
-            }
-            return walletId;
-          },
-          newWalletAndInvestor:(w, i, investorId) =>
-            ({walletId: 'walletId', investorId}),
-        },
-        investorLoader,
-      ),
+      new WalletCreator(data => {
+        if (!data.isLogged('investorId' in data ? data.investorId: data.userId))
+          throw new SignInRequiredError();
+        if ('investorId' in data) {
+          if (data.walletName === 'Invalid name in db rules') {
+            throw new Error("");
+          }
+          return {
+            id: 'walletId', name: data.walletName,
+            owner: { id: data.investorId, name: 'My Name' },
+          };
+        }
+        return {
+          id: 'walletId', name: data.walletName,
+          owner: { id: data.userId, name: data.investorName },
+        };
+      }),
       new Authorization(() => loggedUser),
     );
   });

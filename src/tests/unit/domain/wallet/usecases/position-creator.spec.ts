@@ -2,7 +2,7 @@ import { WalletNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { Persisted } from '@utils/types';
 
-import { WalletLoader, PositionCreator, InvestorLoader, WalletCreator, InvestorCreator } from '@domain/wallet/usecases';
+import { PositionCreator } from '@domain/wallet/usecases';
 import { AssetData, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 let walletData: Persisted<PopulatedWalletData>;
@@ -19,26 +19,19 @@ describe('Position creator', () => {
       ...wallet,
       positions: [],
     };
-    const walletLoader = new WalletLoader((id, isLogged) => {
-      if (id === walletData.id) {
-        if (isLogged(walletData.owner.id)) return walletData;
-        throw new SignInRequiredError();
+    useCase = new PositionCreator(data => {
+      if (!data.isLogged(wallet.owner.id)) throw new SignInRequiredError();
+      if ('walletId' in data) {
+        if (data.walletId !== walletData.id)
+          throw new WalletNotFoundError(data.walletId);
+        return {
+          id: 'positionId', asset, wallet: { ...wallet, id: data.walletId
+        }};
       }
-      throw new WalletNotFoundError(id);
+      return {
+        id: 'positionId', asset, wallet: {...wallet, id: walletData.id},
+      };
     });
-    const walletCreator = new WalletCreator({
-        newWalletOfInvestor:() => 'walletId',
-        newWalletAndInvestor:(w, i, investorId) =>
-          ({walletId: 'walletId', investorId}),
-      },
-      new InvestorLoader(() => {throw new Error()}),
-    );
-    useCase = new PositionCreator(
-      () => 'positionId',
-      { loadAssetDataById: () => asset },
-      walletLoader,
-      walletCreator,
-    );
   });
 
   it('should be able create position', async done => {

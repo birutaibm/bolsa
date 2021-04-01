@@ -1,14 +1,35 @@
-import { PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
+import { Persisted } from '@utils/types';
+import {
+  InvestorNotFoundError, PositionNotFoundError, WalletNotFoundError
+} from '@errors/not-found';
 
-import { PositionData, PositionRepository, PositionWithWalletData } from '@gateway/data/contracts';
+import {
+  PositionData, PositionRepository, PositionWithWalletData,
+  RepositoryChangeCommand
+} from '@gateway/data/contracts';
 
-import { positions, wallets } from './wallet-module-data';
+import { investors, positions, wallets } from './wallet-module-data';
 import { FakePriceRepository } from './internal-price';
 
-export class FakePositionRepository implements PositionRepository {
+export class FakePositionRepository implements PositionRepository<void> {
   constructor(
     private readonly assets: FakePriceRepository,
   ) {}
+
+  loadPositionWithWalletAndOwnerById(id: string): Persisted<PositionWithWalletData> {
+    const { asset, operationIds, walletId } = this.loadPositionDataById(id);
+    const wallet = wallets.find(item => item.id === walletId);
+    if (!wallet) {
+      throw new WalletNotFoundError(walletId);
+    }
+    const owner = investors.find(investor => investor.id === wallet.ownerId);
+    if (!owner) {
+      throw new InvestorNotFoundError(wallet.ownerId);
+    }
+    return { id, asset, operationIds, wallet:
+      { id: wallet.id, name: wallet.name, owner, },
+    };
+  }
 
   loadPositionIdsByWalletId(id: string): string[] {
     return positions
@@ -16,17 +37,28 @@ export class FakePositionRepository implements PositionRepository {
       .map(position => position.id);
   }
 
-  saveNewPosition(assetId: string, walletId: string): PositionWithWalletData {
-    const id = String(positions.length);
-    const asset = this.assets.loadAssetDataById(assetId);
-    const position: PositionData = { id, asset, walletId, operationIds: [] };
-    const wallet = wallets.find(wallet => wallet.id === walletId);
-    if (!wallet) {
-      throw new WalletNotFoundError(walletId);
-    }
-    wallet.positionIds.push(id);
-    positions.push(position);
-    return {...position, wallet};
+  saveNewPosition(
+    assetId: string, walletId: string
+  ): RepositoryChangeCommand<PositionWithWalletData,void> {
+    return () => {
+      const id = String(positions.length);
+      const asset = this.assets.loadAssetDataById(assetId);
+      const position: PositionData = { id, asset, walletId, operationIds: [] };
+      const wallet = wallets.find(wallet => wallet.id === walletId);
+      if (!wallet) {
+        throw new WalletNotFoundError(walletId);
+      }
+      const owner = investors.find(investor => investor.id === wallet.ownerId);
+      if (!owner) {
+        throw new InvestorNotFoundError(wallet.ownerId);
+      }
+      owner.walletIds.push(wallet.id);
+      wallet.positionIds.push(id);
+      positions.push(position);
+      return {...position, wallet: {
+        id: wallet.id, name: wallet.name, owner
+      }};
+    };
   }
 
   loadPositionDataById(id: string): PositionData {
