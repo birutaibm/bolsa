@@ -15,15 +15,8 @@ export default class OperationLoader {
   async load(id: string, isLogged: CheckLoggedUserId): Promise<Persisted<Operation>> {
     const { date, quantity, value, position: data } = await this.loadData(id, isLogged);
     const owner = new Investor(data.wallet.owner.id, data.wallet.owner.name);
-    const wallet = Object.assign(
-      new Wallet(data.wallet.name, owner),
-      { id: data.wallet.id },
-    );
-    const position = Object.assign(
-      new Position(data.asset, wallet),
-      { id: data.id },
-    );
-    const operation = new Operation(date, quantity, value, position);
-    return Object.assign(operation, {id});
+    const wallet = new Wallet(data.wallet.id, data.wallet.name, owner);
+    const position = new Position(data.id, data.asset, wallet);
+    return new Operation(id, date, quantity, value, position);
   }
 }

@@ -15,16 +15,10 @@ export default class PositionLoader {
   async load(id: string, isLogged: CheckLoggedUserId): Promise<Persisted<Position>> {
     const data = await this.loadData(id, isLogged);
     const owner = new Investor(data.wallet.owner.id, data.wallet.owner.name);
-    const wallet = Object.assign(
-      new Wallet(data.wallet.name, owner),
-      { id: data.wallet.id },
-    );
-    const position = Object.assign(new Position(data.asset, wallet), {id});
+    const wallet = new Wallet(data.wallet.id, data.wallet.name, owner);
+    const position = new Position(id, data.asset, wallet);
     data.operations.forEach(({date, quantity, value, id: operationId}) =>
-      Object.assign(
-        new Operation(date, quantity, value, position),
-        { id: operationId },
-      )
+      new Operation(operationId, date, quantity, value, position)
     );
     return position;
   }

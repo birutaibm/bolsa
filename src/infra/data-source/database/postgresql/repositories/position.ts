@@ -30,25 +30,30 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     if (!isNumber(id)) {
       throw new PositionNotFoundError(id);
     }
-    const [ model ] = await this.db.query<PositionModel>({
-      text: `${this.selectAllWhere} id = $1`,
+    if (this.assets instanceof Factory) {
+      this.assets = this.assets.make();
+    }
+    const data = await this.db.query<{
+      asset_id: string; walletId: string; walletName: string; ownerId: string; ownerName: string; operationId: string;
+    }>({
+      text: `SELECT
+                p.asset_id, w.name walletName, i.id ownerId, i.name ownerName, o.id operationId
+             FROM positions p
+             INNER JOIN operations o ON o.position_id = p.id
+             INNER JOIN wallets w ON p.wallet_id = w.id
+             INNER JOIN investors i ON i.id = w.owner_id
+             WHERE p.id = $1`,
       values: [id],
     });
-    if (!model) {
+    if (data.length === 0) {
       throw new PositionNotFoundError(id);
     }
-    const [ wallet ] = await this.db.query<{id: string; name: string; owner_id: string}>({
-      text: 'SELECT id, name, owner_id FROM wallets WHERE id = $1',
-      values: [model.wallet_id],
-    });
-    const [ owner ] = await this.db.query<{id: string; name: string}>({
-      text: 'SELECT id, name FROM investors WHERE id = $1',
-      values: [wallet.owner_id],
-    });
-    const { asset, operationIds } = await this.modelToData(model);
+    const asset = await this.assets.loadAssetDataById(data[0].asset_id);
+    const operationIds = data.map(({operationId}) => operationId);
     return { id, asset, operationIds, wallet: {
-      id: wallet.id, name: wallet.name, owner: {id: owner.id, name: owner.name}
-    }};
+      id: data[0].walletId, name: data[0].walletName, owner: {
+        id: data[0].ownerId, name: data[0].ownerName
+    }}};
   }
 
   async loadPositionIdsByWalletId(id: string): Promise<string[]> {

@@ -1,16 +1,24 @@
 import { isNumber, isValidISODate } from '@utils/validators';
+import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
 
 import { Authorization } from '@domain/user/usecases';
 import { OperationCreator } from '@domain/wallet/usecases';
+import { OperationCreationBaseData, OperationCreationData } from '@domain/wallet/usecases/dtos';
 
 import {
-  clientError, Controller, created, Params, Response
+  Controller, created, Params, Response
 } from '@gateway/presentation/contracts';
-import { operationView } from '../view/operation';
-import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
-import { OperationCreationBaseData } from '@domain/wallet/usecases/dtos';
+import { operationView } from '@gateway/presentation/view/operation';
 
 export class OperationCreatorController extends Controller {
+  private readonly basicInfo = ['date', 'quantity', 'value'];
+  private readonly requiredParameters = [
+    ['positionId'],
+    ['assetId', 'walletId'],
+    ['assetId', 'walletName', 'investorId'],
+    ['assetId', 'walletName', 'investorName', 'userId'],
+  ];
+
   constructor(
     private readonly operationCreator: OperationCreator,
     private readonly auth: Authorization,
@@ -22,9 +30,11 @@ export class OperationCreatorController extends Controller {
     date?: string, quantity?: string, value?: string, authorization?: string
   ): OperationCreationBaseData {
     if (!date || !quantity || !value) {
-      throw new InvalidParameterValueError(
-        'Required parameters: date, quantity, value'
-      );
+      throw new InvalidParameterValueError(`Required parameters: ${
+        this.requiredParameters.map(
+          option => [...this.basicInfo, ...option].join(', ')
+        ).join(' or ')
+      }.`);
     }
     if (!isValidISODate(date)) {
       throw new InvalidParameterValueError('Date must be in ISO format');
@@ -42,34 +52,30 @@ export class OperationCreatorController extends Controller {
     };
   }
 
-  protected async tryHandle({
-    date, quantity, value, authorization, positionId, assetId, walletId,
-    walletName, investorId,
-  }: Params): Promise<Response> {
-    const data = this.validateBasicInfo(date, quantity, value, authorization);
-    if (positionId) {
-      const operation = await this.operationCreator.create({
-        ...data, positionId,
-      });
-      return created(operationView(operation));
-    } if (!assetId) {
-      return clientError('Required parameters: positionId or assetId');
+  private validateData(params: Params): OperationCreationData {
+    const data = this.validateBasicInfo(params.date, params.quantity, params.value, params.authorization);
+    delete params.date;
+    delete params.quantity;
+    delete params.value;
+    delete params.authorization;
+    const notInParams = (field: string) => !(field in params);
+    const allInParams = (fields: string[]) => !fields.find(notInParams);
+    for (let i = 0; i < this.requiredParameters.length; i++) {
+      const fields = this.requiredParameters[i];
+      if (allInParams(fields)) {
+        return { ...data, ...params } as OperationCreationData;
+      }
     }
-    if (walletId) {
-      const operation = await this.operationCreator.create({
-        ...data, assetId, walletId,
-      });
-      return created(operationView(operation));
-    }
-    if (!walletName) {
-      return clientError('Required parameters: walletId or walletName');
-    }
-    if (investorId) {
-      const operation = await this.operationCreator.create({
-        ...data, assetId, walletName, investorId,
-      });
-      return created(operationView(operation));
-    }
-    return clientError('Required parameters: investorId');
+    throw new InvalidParameterValueError(`Required parameters: ${
+      this.requiredParameters.map(
+        option => [...this.basicInfo, ...option].join(', ')
+      ).join(' or ')
+    }.`);
+  }
+
+  protected async tryHandle(params: Params): Promise<Response> {
+    const data = this.validateData(params);
+    const operation = await this.operationCreator.create(data);
+    return created(operationView(operation));
   }
 }

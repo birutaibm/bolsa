@@ -13,14 +13,13 @@ describe('Wallet position', () => {
       ticker: 'ITUB3',
       name: 'Itaú Unibanco Holding',
     };
-    wallet = Object.assign(
-      new Wallet('My wallet', new Investor('0', 'Rafael Arantes')),
-      { id: 'walletId', },
+    wallet = new Wallet(
+      'walletId', 'My wallet', new Investor('0', 'Rafael Arantes')
     );
   });
 
   it('should be able to create empty position', () => {
-    const position = new Position(asset, wallet);
+    const position = new Position('id', asset, wallet);
     expect(position.asset).toEqual(asset);
     expect(position.getOperations().length).toBe(0);
   });

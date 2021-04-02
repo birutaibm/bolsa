@@ -104,10 +104,11 @@ describe('Operation creator controller', () => {
       positionId,
       authorization,
     };
-    const result = {message: 'Required parameters: date, quantity, value'};
     await expect(
       controller.handle(params)
-    ).resolves.toEqual({statusCode: 400, data: result});
+    ).resolves.toEqual({statusCode: 400, data: {message: expect.stringContaining(
+        'Required parameters: date, quantity, value'
+    )}});
     done();
   });
 

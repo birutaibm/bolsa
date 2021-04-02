@@ -16,20 +16,11 @@ export default class InvestorLoader {
     const data = await this.loadData(id);
     const investor = new Investor(data.id, data.name);
     data.wallets.forEach(walletData => {
-      const wallet = Object.assign(
-        new Wallet(walletData.name, investor),
-        { id: walletData.id, },
-      );
+      const wallet = new Wallet(walletData.id, walletData.name, investor);
       walletData.positions.forEach(posData => {
-        const position = Object.assign(
-          new Position(posData.asset, wallet),
-          { id: posData.id, },
-        );
+        const position = new Position(posData.id, posData.asset, wallet);
         posData.operations.forEach(({date, quantity, value, id: operationId}) =>
-          Object.assign(
-            new Operation(date, quantity, value, position),
-            { id: operationId, },
-          )
+          new Operation(operationId, date, quantity, value, position)
         );
       });
     });

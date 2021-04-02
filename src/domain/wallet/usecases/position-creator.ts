@@ -21,10 +21,7 @@ export default class PositionCreator {
       id: walletId, name: walletName, owner: { id: ownerId, name: ownerName }
     } } = await this.save(data);
     const investor = new Investor(ownerId, ownerName);
-    const wallet = Object.assign(
-      new Wallet(walletName, investor), {id: walletId}
-    );
-    const position = new Position(asset, wallet);
-    return Object.assign(position, {id});
+    const wallet = new Wallet(walletId, walletName, investor);
+    return new Position(id, asset, wallet);
   }
 }

@@ -27,14 +27,8 @@ export default class OperationCreator {
       id: walletId, name: walletName, owner: { id: ownerId, name: ownerName }
     } } } = await this.save(data);
     const investor = new Investor(ownerId, ownerName);
-    const wallet = Object.assign(
-      new Wallet(walletName, investor), {id: walletId}
-    );
-    const position = Object.assign(
-      new Position(asset, wallet), { id: positionId }
-    );
-    return Object.assign(
-      new Operation(data.date, data.quantity, data.value, position), { id }
-    );
+    const wallet = new Wallet(walletId, walletName, investor);
+    const position = new Position(positionId, asset, wallet);
+    return new Operation(id, data.date, data.quantity, data.value, position);
   }
 }

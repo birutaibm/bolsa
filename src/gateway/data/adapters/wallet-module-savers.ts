@@ -101,7 +101,7 @@ export default function walletModuleSavers(
   }
 
   async function newOperation(data: OperationCreationData): Operation {
-    const executor = 'walletId' in data
+    const executor = 'positionId' in data
       ? await executors.singleCommandExecutor()
       : await executors.multiCommandExecutor();
     try {

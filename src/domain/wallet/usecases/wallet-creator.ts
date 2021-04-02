@@ -16,7 +16,6 @@ export default class WalletCreator {
   async create(data: WalletCreationData): Promise<Persisted<Wallet>> {
     const { id, name, owner } = await this.save(data);
     const investor = new Investor(owner.id, owner.name);
-    const wallet = new Wallet(name, investor);
-    return Object.assign(wallet, {id});
+    return new Wallet(id, name, investor);
   }
 }

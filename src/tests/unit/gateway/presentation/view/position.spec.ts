@@ -20,7 +20,7 @@ describe('Wallet view', () => {
     investorId = 'investorId';
     investorName = 'My Name';
     owner = new Investor(investorId, investorName);
-    wallet = Object.assign(new Wallet(walletName, owner), { id: 'walletId' });
+    wallet = new Wallet('walletId', walletName, owner);
     asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
     date = new Date();
     quantity = 100;
@@ -28,7 +28,7 @@ describe('Wallet view', () => {
   });
 
   it('should be able to format empty position data', () => {
-    const position = Object.assign(new Position(asset, wallet), { id });
+    const position = new Position(id, asset, wallet);
     expect(positionView(position)).toEqual(expect.objectContaining({
       id, asset, operations: [], wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
@@ -37,11 +37,8 @@ describe('Wallet view', () => {
   });
 
   it('should be able to format filled position data', () => {
-    const position = Object.assign(new Position(asset, wallet), { id });
-    Object.assign(
-      new Operation(date, quantity, value, position),
-      { id: 'operationId', },
-    );
+    const position = new Position(id, asset, wallet);
+    new Operation('operationId', date, quantity, value, position);
     expect(positionView(position)).toEqual(expect.objectContaining({
       id, asset, wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })

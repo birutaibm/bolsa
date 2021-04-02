@@ -8,7 +8,6 @@ import {
 } from '@gateway/data/contracts';
 
 import PostgreSQL, { Executor } from '..';
-import { MayBePromise } from '@utils/types';
 
 type WalletModel = {
   created_on: Date;
@@ -33,19 +32,25 @@ export class PostgreWalletRepository implements WalletRepository<Executor<Wallet
     if (!isNumber(id)) {
       throw new WalletNotFoundError(id);
     }
-    const [ model ] = await this.db.query<WalletModel>({
-      text: `${this.selectAllWhere} id = $1`,
+    const data = await this.db.query<{
+      name: string; ownerId: string; ownerName: string; positionId: string;
+    }>({
+      text: `SELECT
+                w.name, i.id ownerId, i.name ownerName, p.id positionId
+             FROM wallets w
+             INNER JOIN investors i ON i.id = w.owner_id
+             INNER JOIN positions p ON p.wallet_id = w.id
+             WHERE w.id = $1`,
       values: [id],
     });
-    if (!model) {
+    if (data.length === 0) {
       throw new WalletNotFoundError(id);
     }
-    const [ owner ] = await this.db.query<{id: string; name: string}>({
-      text: 'SELECT id, name FROM investors WHERE id = $1',
-      values: [model.owner_id],
-    });
-    const { name, positionIds } = await this.modelToData(model);
-    return { id, name, positionIds, owner};
+    const positionIds = data.map(({positionId}) => positionId);
+    return {
+      id, name: data[0].name, positionIds,
+      owner: { id: data[0].ownerId, name: data[0].ownerName, },
+    };
   }
 
   async loadWalletIdsByOwnerId(ownerId: string): Promise<string[]> {

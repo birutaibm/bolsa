@@ -1,4 +1,5 @@
 import { Persisted } from '@utils/types';
+
 import Operation from './operation';
 import Wallet from './wallet';
 
@@ -8,10 +9,10 @@ export type Asset = {
 };
 
 export default class Position {
-  private readonly operations: Array<Operation & { id?: string; }> = [];
-  private readonly persistedOperations: Persisted<Operation>[] = [];
+  private readonly operations: Operation[] = [];
 
   constructor(
+    readonly id: string,
     readonly asset: Persisted<Asset>,
     readonly wallet: Persisted<Wallet>,
   ) {
@@ -50,17 +51,7 @@ export default class Position {
   //   new Operation(date, quantity, value, this);
   // }
 
-  getOperations(): Persisted<Operation>[] {
-    for (let index = this.operations.length - 1; index >= 0; index--) {
-      const { id } = this.operations[index];
-      if (id !== undefined) {
-        const persisted = this.operations.splice(index, 1)[0];
-        this.persistedOperations.push(Object.assign(persisted, { id }));
-      }
-    }
-    if (this.operations.length > 0) {
-      console.warn('Position has some non-persisted operations');
-    }
-    return [...this.persistedOperations];
+  getOperations(): Operation[] {
+    return [...this.operations];
   }
 }

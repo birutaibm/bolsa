@@ -21,24 +21,15 @@ describe('Wallet view', () => {
     investorName = 'My Name';
     owner = new Investor(investorId, investorName);
     asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
-    const wallet = Object.assign(
-      new Wallet(walletName, owner),
-      { id: 'walletId', },
-    )
-    position = Object.assign(
-      new Position(asset, wallet),
-      { id: 'positionId', },
-    );
+    const wallet = new Wallet('walletId', walletName, owner);
+    position = new Position('positionId', asset, wallet);
     date = new Date();
     quantity = 100;
     value = -2345;
   });
 
   it('should be able to format operation data', () => {
-    const operation = Object.assign(
-      new Operation(date, quantity, value, position),
-      { id },
-    );
+    const operation = new Operation(id, date, quantity, value, position);
     expect(operationView(operation)).toEqual(expect.objectContaining({
       id, date: date.toISOString(), quantity, value,
       position: expect.objectContaining({

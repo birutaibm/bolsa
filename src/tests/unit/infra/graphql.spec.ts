@@ -12,7 +12,6 @@ import {
 
 let app: ServerBuilder['app'];
 
-// TODO: adapt this to graphql.spec.ts
 describe('GraphQL', () => {
   beforeAll(async done => {
     const builder = new ServerBuilder().withGraphQL();
