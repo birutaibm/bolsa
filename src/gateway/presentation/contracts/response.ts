@@ -1,7 +1,8 @@
-import { InvalidParameterValueError } from "@errors/invalid-parameter-value";
-import { InvalidUserPasswordError } from "@errors/invalid-user-password";
-import NotFoundError from "@errors/not-found";
-import { SignInRequiredError } from "@errors/sign-in-required";
+import {
+  InvalidParameterValueError, InvalidUserPasswordError
+} from '@errors/invalid-input';
+import NotFoundError from '@errors/not-found';
+import { SignInRequiredError } from '@errors/sign-in-required';
 
 export type Response<T = any> = {
   statusCode: number;

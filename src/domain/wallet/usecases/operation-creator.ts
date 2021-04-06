@@ -1,4 +1,4 @@
-import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
+import { InvalidParameterValueError } from '@errors/invalid-input';
 import { MayBePromise, Persisted } from '@utils/types';
 
 import { Investor, Operation, Position, Wallet } from '@domain/wallet/entities';

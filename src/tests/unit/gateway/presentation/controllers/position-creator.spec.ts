@@ -1,52 +1,32 @@
-import { SignInRequiredError } from '@errors/sign-in-required';
-import { WalletNotFoundError } from '@errors/not-found';
-
-import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
 import { PositionCreator } from '@domain/wallet/usecases';
 
 import { PositionCreatorController } from '@gateway/presentation/controllers';
 
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+
 let assetId: string;
 let walletId: string;
-let positionId: string;
 let investorId: string;
 let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
-let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
-let useCase: PositionCreator;
 let controller: PositionCreatorController;
 
 describe('Position creator controller', () => {
   beforeAll(() => {
-    positionId = 'positionId';
-    walletId = 'walletId';
+    const saver = new WalletModuleSavers();
+    walletId = saver.wallet.id;
     authorization = 'Token ';
-    investorId = 'myId';
-    owner = { id: investorId, name: 'My Name' };
-    const wallet = { name: 'My Wallet', positions: [], owner };
-    loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
-    asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
-    assetId = 'assetId';
-    useCase = new PositionCreator(data => {
-      if (!data.isLogged(wallet.owner.id)) throw new SignInRequiredError();
-      if ('walletId' in data) {
-        if (data.walletId === 'Invalid id in db rules') {
-          throw new Error("");
-        } else if (data.walletId !== walletId) {
-          throw new WalletNotFoundError(data.walletId);
-        }
-        return {
-          id: 'positionId', asset, wallet: { ...wallet, id: walletId }
-        };
-      }
-      return {
-        id: 'positionId', asset, wallet: {...wallet, id: walletId},
-      };
-    });
+    investorId = saver.owner.id;
+    owner = saver.owner;
+    asset = saver.asset;
+    assetId = asset.id;
     controller = new PositionCreatorController(
-      useCase, new Authorization(() => loggedUser),
+      new PositionCreator(saver.newPosition.bind(saver)),
+      new Authorization(() => (
+        { id: investorId, userName: 'anybody', role: 'USER' }
+      )),
     );
   });
 
@@ -57,7 +37,7 @@ describe('Position creator controller', () => {
       authorization,
     };
     const result = expect.objectContaining({
-      id: positionId, asset, operations: [],
+      asset, operations: [],
       wallet: expect.objectContaining({
         name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
       }),

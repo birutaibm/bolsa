@@ -1,8 +1,9 @@
 import { hash, compareSync } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+import { InvalidTokenFormatError } from '@errors/invalid-input';
+
 import Encoder from '@domain/user/usecases/encoder';
-import { InvalidTokenFormatError } from '@errors/invalid-token-format';
 
 export type JwtConfig = {
   privateKey: string;

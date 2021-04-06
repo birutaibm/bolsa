@@ -2,11 +2,7 @@ import { MayBePromise, Persisted } from '@utils/types';
 
 import { Investor, Position, Wallet } from '@domain/wallet/entities';
 
-import { AssetData, PositionCreationData, PositionData } from './dtos';
-
-interface AssetLoader {
-  loadAssetDataById(id: string): MayBePromise<Persisted<AssetData>>
-}
+import { PositionCreationData, PositionData } from './dtos';
 
 export type NewPositionSaver =
   (data: PositionCreationData) => MayBePromise<Persisted<PositionData>>;

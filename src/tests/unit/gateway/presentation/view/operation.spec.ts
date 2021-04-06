@@ -1,6 +1,10 @@
-import { Asset, Investor, Operation, Position, Wallet } from '@domain/wallet/entities';
-import { operationView } from '@gateway/presentation/view/operation';
 import { Persisted } from '@utils/types';
+
+import {
+  Asset, Investor, Operation, Position, Wallet
+} from '@domain/wallet/entities';
+
+import { operationView } from '@gateway/presentation/view/operation';
 
 let id: string;
 let walletName: string;

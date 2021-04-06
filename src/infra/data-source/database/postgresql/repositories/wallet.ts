@@ -3,8 +3,8 @@ import { Factory } from '@utils/factory';
 import { isNumber } from '@utils/validators';
 
 import {
-  PersistedWalletData,
-  PositionRepository, RepositoryChangeCommand, RepositoryChangeCommandExecutors, WalletData, WalletRepository
+  RepositoryChangeCommand, RepositoryChangeCommandExecutors,
+  WalletRepository, PositionRepository, PersistedWalletData, WalletData,
 } from '@gateway/data/contracts';
 
 import PostgreSQL, { Executor } from '..';

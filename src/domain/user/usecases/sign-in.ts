@@ -1,4 +1,4 @@
-import { InvalidUserPasswordError } from '@errors/invalid-user-password';
+import { InvalidUserPasswordError } from '@errors/invalid-input';
 import { UserNotFoundError } from '@errors/not-found';
 
 import UserLoader from './user-loader';

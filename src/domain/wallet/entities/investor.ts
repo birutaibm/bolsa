@@ -1,4 +1,3 @@
-import { Persisted } from '@utils/types';
 import Wallet from './wallet';
 
 export default class Investor {

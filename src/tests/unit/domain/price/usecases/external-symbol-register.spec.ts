@@ -1,6 +1,6 @@
 import { SymbolDictionaryEntry } from '@domain/price/entities';
 import { ExternalSymbolRegister } from '@domain/price/usecases/external-symbol-register';
-import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-symbol-dictionary-entry';
+import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-input';
 
 const reqFunValues = {
   banks: ['ITUB3.SAO', 'BBAS3.SAO'],

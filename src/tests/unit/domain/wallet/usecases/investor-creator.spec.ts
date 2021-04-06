@@ -1,6 +1,8 @@
 import { InvestorCreator } from '@domain/wallet/usecases';
 import { InvestorData } from '@domain/wallet/usecases/dtos';
 
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+
 let investorData: InvestorData
 let useCase: InvestorCreator;
 
@@ -9,8 +11,9 @@ describe('Investor creator', () => {
     investorData = {
       id: 'myID',
       name: 'My Name',
-    }
-    useCase = new InvestorCreator(data => ({...data, walletIds: []}));
+    };
+    const saver = new WalletModuleSavers();
+    useCase = new InvestorCreator(saver.newInvestor.bind(saver));
   });
 
   it('should be able create investor', async done => {

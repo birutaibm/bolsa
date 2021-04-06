@@ -1,6 +1,6 @@
 import { ExternalSymbolRegister } from '@domain/price/usecases';
 import { Authorization } from '@domain/user/usecases';
-import { InvalidTokenFormatError } from '@errors/invalid-token-format';
+
 import { SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 import { ExternalSymbolRegisterController } from '@gateway/presentation/controllers';
 

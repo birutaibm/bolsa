@@ -1,5 +1,5 @@
 import { createVerifyToken } from '@gateway/data/adapters';
-import { InvalidTokenFormatError } from '@errors/invalid-token-format';
+import { InvalidTokenFormatError } from '@errors/invalid-input';
 
 let verifyToken: (token: string) => object;
 let adminToken: string;

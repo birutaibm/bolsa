@@ -1,4 +1,4 @@
-import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-symbol-dictionary-entry';
+import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-input';
 import { promise } from '@utils/promise';
 import { MayBePromise, Persisted } from '@utils/types';
 

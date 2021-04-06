@@ -1,10 +1,8 @@
-import { SignInRequiredError } from '@errors/sign-in-required';
-import { PositionNotFoundError } from '@errors/not-found';
-
 import { Authorization } from '@domain/user/usecases';
 import { OperationCreator } from '@domain/wallet/usecases';
 
 import { OperationCreatorController } from '@gateway/presentation/controllers';
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
 
 let date: string;
 let quantity: string;
@@ -19,44 +17,21 @@ let controller: OperationCreatorController;
 
 describe('Operation creator controller', () => {
   beforeAll(() => {
+    const saver = new WalletModuleSavers();
     operationId = 'operationId';
     date = new Date().toISOString();
     quantity = '100';
     value = '-2345';
-    positionId = 'positionId';
+    positionId = saver.position.id;
     authorization = 'Token ';
-    investorId = 'myId';
-    owner = { id: investorId, name: 'Investor Name' };
-    const wallet = { id: 'walletId', name: 'My Wallet', owner };
-    asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
-    const position = { id: 'positionId', wallet, asset};
-    const positionData = {
-      ...position,
-      operations: [{
-        date, quantity, value, id: operationId,
-        position,
-      }],
-    };
-    const useCase = new OperationCreator(data => {
-      if (!data.isLogged(positionData.wallet.owner.id))
-        throw new SignInRequiredError();
-      if ('positionId' in data) {
-        if (data.positionId === 'Invalid id in db rules')
-          throw new Error("");
-        else if (positionData.id !== data.positionId)
-          throw new PositionNotFoundError(data.positionId);
-        return {
-          id: 'operationId', position: positionData,
-          date: data.date, quantity: data.quantity, value: data.value,
-        };
-      }
-      return {
-        id: 'operationId', position: positionData,
-        date: data.date, quantity: data.quantity, value: data.value,
-      };
-    });
+    investorId = saver.owner.id;
+    owner = saver.owner;
+    const wallet = saver.wallet;
+    asset = saver.asset;
+    const position = saver.position;
     controller = new OperationCreatorController(
-      useCase, new Authorization(() => (
+      new OperationCreator(saver.newOperation.bind(saver)),
+      new Authorization(() => (
         { id: investorId, userName: 'anybody', role: 'USER' }
       )),
     );

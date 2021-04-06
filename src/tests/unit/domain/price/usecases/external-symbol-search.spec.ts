@@ -1,8 +1,12 @@
-import { Price } from '@domain/price/entities';
-import { ExternalSymbolSearch, SearchResult, RequiredFunctionalities } from '@domain/price/usecases/external-symbol-search';
-import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
+import { ExternalSymbolNotFoundError } from '@errors/not-found';
 import { MultipleErrors } from '@errors/multiple-errors';
-import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
+import {
+  NoneExternalSymbolRepository
+} from '@errors/none-external-symbol-repository';
+
+import {
+  ExternalSymbolSearch, SearchResult, RequiredFunctionalities
+} from '@domain/price/usecases/external-symbol-search';
 
 let ticker: string;
 let optimisticResult: SearchResult;

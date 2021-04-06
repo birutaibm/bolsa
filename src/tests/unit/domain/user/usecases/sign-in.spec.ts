@@ -1,10 +1,8 @@
-import { InvalidUserPasswordError } from '@errors/invalid-user-password';
+import { InvalidUserPasswordError } from '@errors/invalid-input';
 import { UserNotFoundError } from '@errors/not-found';
 
 import { Role } from '@domain/user/entities/user';
-import UserLoader from '@domain/user/usecases/user-loader';
-import SignIn from '@domain/user/usecases/sign-in';
-import Encoder from '@domain/user/usecases/encoder';
+import { UserLoader, SignIn, Encoder } from '@domain/user/usecases';
 
 let createToken: (payload: object) => string;
 let loader: UserLoader;

@@ -23,7 +23,6 @@ export default function walletModuleSavers(
 ) {
 
   async function newInvestor(data: Investor): Promise<Investor & {walletIds: []}> {
-    console.log('saving investor', data);
     const executor = await executors.singleCommandExecutor();
     try {
       const response = await executor.append(investors.saveNewInvestor(data));

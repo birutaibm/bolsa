@@ -5,33 +5,18 @@ import { Persisted } from '@utils/types';
 import { PositionCreator } from '@domain/wallet/usecases';
 import { AssetData, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+
 let walletData: Persisted<PopulatedWalletData>;
 let useCase: PositionCreator;
 let asset: Persisted<AssetData>;
 
 describe('Position creator', () => {
   beforeAll(() => {
-    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
-    const owner = { id: 'myID', name: 'My Name' };
-    const wallet = { name: 'My Wallet', owner };
-    walletData = {
-      id: 'walletId',
-      ...wallet,
-      positions: [],
-    };
-    useCase = new PositionCreator(data => {
-      if (!data.isLogged(wallet.owner.id)) throw new SignInRequiredError();
-      if ('walletId' in data) {
-        if (data.walletId !== walletData.id)
-          throw new WalletNotFoundError(data.walletId);
-        return {
-          id: 'positionId', asset, wallet: { ...wallet, id: data.walletId
-        }};
-      }
-      return {
-        id: 'positionId', asset, wallet: {...wallet, id: walletData.id},
-      };
-    });
+    const saver = new WalletModuleSavers();
+    asset = saver.asset;
+    walletData = { ...saver.wallet, positions: [] };
+    useCase = new PositionCreator(saver.newPosition.bind(saver));
   });
 
   it('should be able create position', async done => {

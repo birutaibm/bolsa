@@ -3,19 +3,17 @@ import { InvestorCreator } from '@domain/wallet/usecases';
 
 import { InvestorCreatorController } from '@gateway/presentation/controllers';
 
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+
 let authorization: string;
 let controller: InvestorCreatorController;
 
 describe('Investor creator controller', () => {
   beforeAll(() => {
-    authorization = 'Token ',
+    authorization = 'Token ';
+    const saver = new WalletModuleSavers();
     controller = new InvestorCreatorController(
-      new InvestorCreator(data => {
-        if (data.name === 'Some reason invalid name in db rules') {
-          throw new Error("");
-        }
-        return {...data, walletIds: []};
-      }),
+      new InvestorCreator(saver.newInvestor.bind(saver)),
       new Authorization(() => ({id: 'myId', userName: 'anybody', role: 'USER' })),
     );
   });

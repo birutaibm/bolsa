@@ -1,4 +1,5 @@
 import { PriceUnavailableError } from '@errors/price-unavailable';
+
 import { PriceRepositoriesIntegrator } from '@gateway/data/adapters';
 import {
   SavePricesRepository,
@@ -6,7 +7,9 @@ import {
   LoadExternalPriceRepository,
 } from '@gateway/data/contracts';
 
-import { FakeExternalPriceRepository, FakePriceRepository } from '@mock/data-source/repositories';
+import {
+  FakeExternalPriceRepository, FakePriceRepository
+} from '@mock/data-source/repositories';
 
 let saver: SavePricesRepository;
 let dictionary: ExternalSymbolDictionary;

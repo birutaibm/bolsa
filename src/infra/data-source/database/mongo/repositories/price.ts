@@ -1,5 +1,6 @@
-import { AssetNotFoundError } from '@errors/not-found';
-import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
+import {
+  AssetNotFoundError, ExternalSymbolNotFoundError
+} from '@errors/not-found';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { Persisted } from '@utils/types';
 

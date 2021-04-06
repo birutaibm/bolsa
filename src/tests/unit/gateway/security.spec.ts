@@ -1,7 +1,8 @@
 import { generateKeyPairSync } from 'crypto';
 
+import { InvalidTokenFormatError } from '@errors/invalid-input';
+
 import Security, { JwtConfig } from '@gateway/security';
-import { InvalidTokenFormatError } from '@errors/invalid-token-format';
 
 let text: string;
 let encoded: string;

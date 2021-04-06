@@ -1,9 +1,13 @@
 import { isNumber, isValidISODate } from '@utils/validators';
-import { InvalidParameterValueError } from '@errors/invalid-parameter-value';
+import {
+  InvalidParameterValueError, RequiredParameterError
+} from '@errors/invalid-input';
 
 import { Authorization } from '@domain/user/usecases';
 import { OperationCreator } from '@domain/wallet/usecases';
-import { OperationCreationBaseData, OperationCreationData } from '@domain/wallet/usecases/dtos';
+import {
+  OperationCreationBaseData, OperationCreationData
+} from '@domain/wallet/usecases/dtos';
 
 import {
   Controller, created, Params, Response
@@ -30,11 +34,11 @@ export class OperationCreatorController extends Controller {
     date?: string, quantity?: string, value?: string, authorization?: string
   ): OperationCreationBaseData {
     if (!date || !quantity || !value) {
-      throw new InvalidParameterValueError(`Required parameters: ${
+      throw new RequiredParameterError(
         this.requiredParameters.map(
-          option => [...this.basicInfo, ...option].join(', ')
-        ).join(' or ')
-      }.`);
+          option => [...this.basicInfo, ...option]
+        )
+      );
     }
     if (!isValidISODate(date)) {
       throw new InvalidParameterValueError('Date must be in ISO format');
@@ -66,12 +70,12 @@ export class OperationCreatorController extends Controller {
         return { ...data, ...params } as OperationCreationData;
       }
     }
-    throw new InvalidParameterValueError(`Required parameters: ${
+    throw new RequiredParameterError(
       this.requiredParameters.map(
-        option => [...this.basicInfo, ...option].join(', ')
-      ).join(' or ')
-    }.`);
-  }
+        option => [...this.basicInfo, ...option]
+      )
+    );
+}
 
   protected async tryHandle(params: Params): Promise<Response> {
     const data = this.validateData(params);

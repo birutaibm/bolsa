@@ -1,4 +1,4 @@
-import { InvalidTokenFormatError } from "@errors/invalid-token-format";
+import { InvalidTokenFormatError } from '@errors/invalid-input';
 
 type TokenVerifier = {
   verifyToken(token: string): object;

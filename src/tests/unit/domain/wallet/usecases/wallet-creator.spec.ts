@@ -1,7 +1,10 @@
-import { InvestorLoader, WalletCreator } from '@domain/wallet/usecases';
-import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
-import { InvestorNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
+import { InvestorNotFoundError } from '@errors/not-found';
+
+import { WalletCreator } from '@domain/wallet/usecases';
+import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
+
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
 
 let investorData: PopulatedInvestorData
 let data: {walletName: string; investorId: string; };
@@ -9,23 +12,9 @@ let useCase: WalletCreator;
 
 describe('Wallet creator', () => {
   beforeAll(() => {
-    investorData = {
-      id: 'myID',
-      name: 'My Name',
-      wallets: [],
-    }
-    useCase = new WalletCreator(data => {
-      if (!data.isLogged('investorId' in data ? data.investorId : data.userId))
-        throw new SignInRequiredError();
-      if ('investorId' in data) return {
-        id: 'walletId', name: data.walletName,
-        owner: { id: data.investorId, name: 'Investor Name' },
-      };
-      return {
-        id: 'walletId', name: data.walletName,
-        owner: { id: data.userId, name: data.investorName },
-      };
-    });
+    const saver = new WalletModuleSavers();
+    investorData = { ...saver.owner, wallets: [] };
+    useCase = new WalletCreator(saver.newWallet.bind(saver));
     data = { walletName: 'My Wallet', investorId: investorData.id };
   });
 
@@ -44,11 +33,20 @@ describe('Wallet creator', () => {
     done();
   });
 
-  it('should be able create wallet and investor for non-investorId', async done => {
+  it('should not be able create wallet for non-investorId', async done => {
     const id = 'nonInvestorId';
     await expect(
       useCase.create({walletName: data.walletName, investorId: id, isLogged: () => true})
-    ).resolves.toEqual(expect.objectContaining({
+    ).rejects.toBeInstanceOf(InvestorNotFoundError);
+    done();
+  });
+
+  it('should be able create wallet and investor', async done => {
+    const id = 'nonInvestorId';
+    await expect(useCase.create({
+      walletName: data.walletName, userId: id, investorName: 'My Name',
+      isLogged: () => true
+    })).resolves.toEqual(expect.objectContaining({
       owner: expect.objectContaining({ id })
     }));
     done();

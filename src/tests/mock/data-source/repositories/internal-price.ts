@@ -1,9 +1,12 @@
-import { AssetNotFoundError } from '@errors/not-found';
-import { ExternalSymbolNotFoundError } from '@errors/external-symbol-not-found';
+import {
+  AssetNotFoundError, ExternalSymbolNotFoundError
+} from '@errors/not-found';
 import { Persisted } from '@utils/types';
 
 import { InternalPriceRepository } from '@gateway/data/contracts';
-import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
+import {
+  AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO
+} from '@gateway/data/dto';
 
 import { Asset, adapter } from '@infra/data-source/model/asset';
 

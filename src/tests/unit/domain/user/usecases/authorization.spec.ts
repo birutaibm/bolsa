@@ -1,5 +1,6 @@
+import { InvalidTokenFormatError } from '@errors/invalid-input';
+
 import { Authorization } from '@domain/user/usecases';
-import { InvalidTokenFormatError } from '@errors/invalid-token-format';
 
 let adminToken: string;
 let userToken: string;
