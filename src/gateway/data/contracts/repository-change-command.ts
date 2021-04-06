@@ -9,6 +9,6 @@ export type RepositoryChangeCommandExecutor<E=any> = {
 export type RepositoryChangeCommand<T,E=any> = (executor: E) => MayBePromise<T>;
 
 export interface RepositoryChangeCommandExecutors<E=any> {
-  singleCommandExecutor(): MayBePromise<RepositoryChangeCommandExecutor<E>>;
+  singleCommandExecutor<T>(command: RepositoryChangeCommand<T, E>): MayBePromise<T>;
   multiCommandExecutor(): MayBePromise<RepositoryChangeCommandExecutor<E>>;
 }

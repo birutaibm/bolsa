@@ -7,6 +7,7 @@ import { AssetData, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
 import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
 
+let investorId: string;
 let walletData: Persisted<PopulatedWalletData>;
 let useCase: PositionCreator;
 let asset: Persisted<AssetData>;
@@ -16,6 +17,7 @@ describe('Position creator', () => {
     const saver = new WalletModuleSavers();
     asset = saver.asset;
     walletData = { ...saver.wallet, positions: [] };
+    investorId = saver.owner.id;
     useCase = new PositionCreator(saver.newPosition.bind(saver));
   });
 
@@ -47,6 +49,18 @@ describe('Position creator', () => {
         assetId: 'assetId', walletId: id, isLogged: () => true
       })
     ).rejects.toBeInstanceOf(WalletNotFoundError);
+    done();
+  });
+
+  it('should be able create position and wallet', async done => {
+    const walletName = 'nonWallet';
+    await expect(
+      useCase.create({
+        assetId: 'assetId', walletName, investorId, isLogged: () => true
+      })
+    ).resolves.toEqual(expect.objectContaining({
+      wallet: expect.objectContaining({ name: walletName })
+    }));
     done();
   });
 });

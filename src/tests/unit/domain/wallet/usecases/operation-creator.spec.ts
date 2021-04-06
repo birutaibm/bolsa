@@ -61,4 +61,22 @@ describe('Operation creator', () => {
     ).rejects.toBeInstanceOf(PositionNotFoundError);
     done();
   });
+
+  it('should be able create operation and position', async done => {
+    await expect(
+      useCase.create({
+        date: opData.date,
+        quantity: opData.quantity,
+        value: opData.value,
+        assetId: asset.id,
+        walletId: positionData.wallet.id,
+        isLogged: () => true,
+      })
+    ).resolves.toEqual(expect.objectContaining({
+      quantity: opData.quantity, position: expect.objectContaining({
+        asset
+      })
+    }));
+    done();
+  });
 });

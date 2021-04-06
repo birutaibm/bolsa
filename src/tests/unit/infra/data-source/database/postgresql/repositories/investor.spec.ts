@@ -8,7 +8,6 @@ import { PostgreSQL } from '@infra/data-source/database';
 import { PostgreInvestorRepository } from '@infra/data-source/database/postgresql/repositories/investor';
 
 let db: PostgreSQL;
-let saveExecutor: RepositoryChangeCommandExecutor;
 let repo: PostgreInvestorRepository;
 let dto: {
   id: string;
@@ -20,7 +19,6 @@ describe('Postgre investor repository', () => {
   beforeAll(async done => {
     try {
       db = new PostgreSQL(env.postgre);
-      saveExecutor = await db.singleCommandExecutor();
       dto = {
         id: 'investorTest_investorId1',
         name: 'Rafael Arantes',
@@ -67,7 +65,6 @@ describe('Postgre investor repository', () => {
         await db.query(query);
         investors = [];
       }
-      await saveExecutor.cancel();
       await db.disconnect();
     } catch (error) {
       done(error);
@@ -96,7 +93,7 @@ describe('Postgre investor repository', () => {
   });
 
   it('should be able to create investor', async done => {
-    const investor = await saveExecutor.append(repo.saveNewInvestor(dto));
+    const investor = await db.singleCommandExecutor(repo.saveNewInvestor(dto));
     const createdId = investor.id;
     investors.push(createdId);
     await expect(
@@ -117,7 +114,7 @@ describe('Postgre investor repository', () => {
     });
     investors.push(id);
     await expect(
-      saveExecutor.append(repo.saveNewInvestor({ ...dto, id }))
+      db.singleCommandExecutor(repo.saveNewInvestor({ ...dto, id }))
     ).resolves.toEqual(expect.objectContaining({ id }));
     done();
   });

@@ -19,8 +19,8 @@ export default function createWalletUseCasesFactories(
   positions: PositionRepository,
   operations: OperationRepository,
   assets: InternalPriceRepository,
+  changers: RepositoryChangeCommandExecutors<any>,
 ) {
-  const changers = wallets.getChangeCommandExecutors();
   const adapter = new WalletDependencies(
     investors, wallets, positions, operations
   );

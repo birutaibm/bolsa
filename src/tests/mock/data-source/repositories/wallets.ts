@@ -12,7 +12,7 @@ import { investors, wallets } from './wallet-module-data';
 export class FakeWalletRepository implements WalletRepository<void> {
   getChangeCommandExecutors(): RepositoryChangeCommandExecutors<any> {
     return {
-      singleCommandExecutor: () => executor,
+      singleCommandExecutor: executor.append.bind(executor),
       multiCommandExecutor: () => executor,
     };
   }

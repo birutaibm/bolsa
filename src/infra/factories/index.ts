@@ -30,8 +30,9 @@ class Factories {
 
   async ofUseCases() {
     if (!this.useCases) {
+      const repositories = await this.ofRepositories();
       this.useCases = createUseCasesFactories(
-        await this.ofRepositories(),
+        repositories,
         await this.ofSecurity(),
       );
     }
