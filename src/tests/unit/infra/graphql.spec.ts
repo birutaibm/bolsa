@@ -1,7 +1,7 @@
 import request from 'supertest';
 
 import { SingletonFactory } from '@utils/factory';
-import factories from '@infra/factories';
+import { Factories } from '@infra/factories';
 import { ServerBuilder } from '@infra/server';
 
 import {
@@ -11,26 +11,27 @@ import {
 } from '@mock/data-source/repositories';
 
 let app: ServerBuilder['app'];
+let factories: Factories;
 
 describe('GraphQL', () => {
   beforeAll(async done => {
-    const builder = new ServerBuilder().withGraphQL();
+    const prices = new SingletonFactory(() => ({
+      internal: new FakePriceRepository(),
+      externals: [new FakeExternalPriceRepository()],
+    }));
     const repositories = {
-      disconnectAll: async () => {},
-      prices: new SingletonFactory(() => ({
-        internal: new FakePriceRepository(),
-        externals: [new FakeExternalPriceRepository()],
-      })),
+      disconnectAll: async () => [],
+      prices,
       users: new SingletonFactory(() => new FakeUserRepository()),
       investors: new SingletonFactory(() => new FakeInvestorRepository()),
       wallets: new SingletonFactory(() => new FakeWalletRepository()),
       positions: new SingletonFactory(() => new FakePositionRepository(
-        repositories.prices.make().internal
+        prices.make().internal
       )),
       operations: new SingletonFactory(() => new FakeOperationRepository()),
     };
-    jest.spyOn(factories, 'ofRepositories')
-      .mockReturnValue(Promise.resolve(repositories));
+    factories = new Factories(repositories);
+    const builder = new ServerBuilder().withGraphQL().withFactories(factories);
     app = builder.app;
     try {
       builder.build();

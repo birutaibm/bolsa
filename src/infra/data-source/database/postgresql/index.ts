@@ -31,7 +31,7 @@ export default class PostgreSQL implements RepositoryChangeCommandExecutors<Exec
     await client.query({ text: 'BEGIN' });
     const executor: RepositoryChangeCommandExecutor<Executor> = {
       async append(command) {
-        return await command(client.query);
+        return await command(client.query.bind(client));
       },
       async execute() {
         await client.query('COMMIT');

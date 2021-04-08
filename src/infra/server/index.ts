@@ -3,7 +3,7 @@ import { Server as HTTPServer } from 'http';
 
 import RestAPI from '@infra/api';
 import GraphQL from '@infra/graphql';
-import factories from '@infra/factories'
+import { Factories } from '@infra/factories'
 import { env } from '@infra/environment';
 
 export class Server {
@@ -13,6 +13,7 @@ export class Server {
 
   constructor(
     private readonly app: Express,
+    private readonly factories: Factories,
   ) {
     this.port = Number(env.port);
     this.url = `http://localhost:${this.port}`;
@@ -32,7 +33,7 @@ export class Server {
   }
 
   async stop() {
-    (await factories.ofRepositories()).disconnectAll();
+    this.factories.repositories.disconnectAll();
     console.log(`Finishing server ${this.url}`);
     this.running.close();
   }
@@ -42,6 +43,7 @@ export class ServerBuilder {
   readonly app: Express;
   private rest: () => Promise<void>;
   private graphql: () => Promise<void>;
+  private factories: Factories;
 
   constructor() {
     this.app = express();
@@ -49,25 +51,30 @@ export class ServerBuilder {
     this.graphql = async () => {};
   }
 
-  private getControllerFactories() {
-    return factories.ofControllers();
+  private getFactories(): Factories {
+    return this.factories;
+  }
+
+  withFactories(factories: Factories) {
+    this.factories = factories;
+    return this;
   }
 
   withRestAPI() {
     this.rest = async () =>
-      new RestAPI(this.app).setup(await this.getControllerFactories());
+      new RestAPI(this.app).setup(await this.getFactories().ofControllers());
     return this;
   }
 
   withGraphQL() {
     this.graphql = async () =>
-      new GraphQL(this.app).setup(await this.getControllerFactories());
+      new GraphQL(this.app).setup(await this.getFactories().ofControllers());
     return this;
   }
 
   async build() {
     await this.rest();
     await this.graphql();
-    return new Server(this.app);
+    return new Server(this.app, this.getFactories());
   }
 }

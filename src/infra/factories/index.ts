@@ -7,22 +7,14 @@ import { RepositoryFactoriesBuilder } from '@infra/data-source';
 
 import securityFactory from './security';
 
-class Factories {
+export class Factories {
   private readonly security = securityFactory;
-  private repositories: RepositoryFactories;
   private useCases: ReturnType<typeof createUseCasesFactories>;
   private controllers: ReturnType<typeof createControllerFactories>;
 
-  async ofRepositories() {
-    if (!this.repositories) {
-      this.repositories = await new RepositoryFactoriesBuilder()
-        .withMongo(env.mongodb)
-        .withAlphavantage(env.externalPrices.alphavantageKey)
-        .withPostgre(env.postgre)
-        .build();
-    }
-    return this.repositories;
-  }
+  constructor(
+    readonly repositories: RepositoryFactories,
+  ) {}
 
   async ofSecurity() {
     return this.security;
@@ -30,9 +22,8 @@ class Factories {
 
   async ofUseCases() {
     if (!this.useCases) {
-      const repositories = await this.ofRepositories();
       this.useCases = createUseCasesFactories(
-        repositories,
+        this.repositories,
         await this.ofSecurity(),
       );
     }
@@ -46,5 +37,3 @@ class Factories {
     return this.controllers;
   }
 }
-
-export default new Factories();

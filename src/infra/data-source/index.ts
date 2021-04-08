@@ -24,6 +24,10 @@ export class RepositoryFactoriesBuilder extends Builder<Promise<RepositoryFactor
     return this;
   }
 
+  getPostgreSQL() {
+    return this.postgre;
+  }
+
   withAlphavantage(key: string) {
     this.alphavantageKey = key;
     return this;

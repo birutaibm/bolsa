@@ -1,13 +1,21 @@
-import factories from '@infra/factories';
+import { Factories } from '@infra/factories';
 
 import { env } from '@infra/environment';
 import { Mongo } from '@infra/data-source/database';
+import { RepositoryFactoriesBuilder } from '@infra/data-source';
 
 let mongo: Mongo;
+let factories: Factories;
 
 describe('Factories at infra', () => {
   beforeAll(async done => {
     mongo = new Mongo(env.mongodb);
+    factories = new Factories(await new RepositoryFactoriesBuilder()
+      .withMongo(env.mongodb)
+      .withAlphavantage(env.externalPrices.alphavantageKey)
+      .withPostgre(env.postgre)
+      .build()
+    );
     try {
       mongo.connect();
       done();
@@ -23,14 +31,6 @@ describe('Factories at infra', () => {
     } catch (error) {
       done(error);
     }
-  });
-
-  it('should be able to reuse instance of repositories factories', async (done) => {
-    const instance = await factories.ofRepositories();
-    await expect(
-      factories.ofRepositories()
-    ).resolves.toBe(instance);
-    done();
   });
 
   it('should be able to reuse instance of security factories', async (done) => {

@@ -1,19 +1,22 @@
 import request from 'supertest';
 
 import { SingletonFactory } from '@utils/factory';
-import factories from '@infra/factories';
+import { Factories } from '@infra/factories';
 import { ServerBuilder } from '@infra/server';
 
 import {
   FakeExternalPriceRepository,
   FakePriceRepository, FakeUserRepository, FakeWalletRepository, FakeInvestorRepository, FakePositionRepository, FakeOperationRepository
 } from '@mock/data-source/repositories';
+import { RepositoryFactories } from '@gateway/factories';
 
 let app: ServerBuilder['app'];
+let factories: Factories;
 
 describe('API', () => {
   beforeAll(async done => {
-    const builder = new ServerBuilder().withRestAPI();
+    factories = new Factories(mockRepositories());
+    const builder = new ServerBuilder().withRestAPI().withFactories(factories);
     mockRepositories();
     await mockSecurity();
     app = builder.app;
@@ -40,7 +43,9 @@ describe('API', () => {
         expect(res.body).toBeInstanceOf(Object);
         expect(res.body.userName).toBe('meu usuário');
         expect(res.body.role).toBe('USER');
-        expect(Object.keys(res.body).length).toBe(2);
+        expect(res.body.password).toBeUndefined();
+        expect(res.body.passHash).toBeUndefined();
+        expect(typeof res.body.id).toEqual('string');
         done();
       });
   });
@@ -337,21 +342,20 @@ async function mockSecurity() {
   });
 }
 
-function mockRepositories() {
-  const repositories = {
-    disconnectAll: async () => { },
-    prices: new SingletonFactory(() => ({
-      internal: new FakePriceRepository(),
-      externals: [new FakeExternalPriceRepository()],
-    })),
+function mockRepositories(): RepositoryFactories {
+  const prices = new SingletonFactory(() => ({
+    internal: new FakePriceRepository(),
+    externals: [new FakeExternalPriceRepository()],
+  }));
+  return {
+    disconnectAll: async () => [],
+    prices,
     users: new SingletonFactory(() => new FakeUserRepository()),
     investors: new SingletonFactory(() => new FakeInvestorRepository()),
     wallets: new SingletonFactory(() => new FakeWalletRepository()),
     positions: new SingletonFactory(() => new FakePositionRepository(
-      repositories.prices.make().internal
+      prices.make().internal
     )),
     operations: new SingletonFactory(() => new FakeOperationRepository()),
   };
-  jest.spyOn(factories, 'ofRepositories')
-    .mockReturnValue(Promise.resolve(repositories));
 }

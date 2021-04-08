@@ -1,4 +1,5 @@
 export type UserView = {
+  id: string;
   userName: string;
   role: 'ADMIN' | 'USER';
 };
@@ -6,6 +7,7 @@ export type UserView = {
 export const userTranslator = {
   entityToView<T extends UserView>(entity: T): UserView {
     return {
+      id: entity.id,
       userName: entity.userName,
       role: entity.role
     };

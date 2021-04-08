@@ -27,20 +27,20 @@ describe('User creator controller', () => {
   it('should be able to create user', async done => {
     await expect(
       workingController.handle(params)
-    ).resolves.toEqual({statusCode: 201, data: {
+    ).resolves.toEqual({statusCode: 201, data: expect.objectContaining({
       userName: 'Rafael',
       role: 'USER'
-    }});
+    })});
     done();
   });
 
   it('should be able to create admin', async done => {
     await expect(
       workingController.handle({...params, role: 'ADMIN'})
-    ).resolves.toEqual({statusCode: 201, data: {
+    ).resolves.toEqual({statusCode: 201, data: expect.objectContaining({
       userName: 'Rafael',
       role: 'ADMIN'
-    }});
+    })});
     done();
   });
 
