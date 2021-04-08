@@ -32,24 +32,26 @@ export class PostgreWalletRepository implements WalletRepository<Executor<Wallet
     if (!isNumber(id)) {
       throw new WalletNotFoundError(id);
     }
-    const data = await this.db.query<{
-      name: string; ownerId: string; ownerName: string; positionId: string;
+    const [ data ] = await this.db.query<{
+      name: string; owner_id: string; owner_name: string;
     }>({
       text: `SELECT
-                w.name, i.id ownerId, i.name ownerName, p.id positionId
+                w.name, w.owner_id, i.name owner_name
              FROM wallets w
              INNER JOIN investors i ON i.id = w.owner_id
-             INNER JOIN positions p ON p.wallet_id = w.id
              WHERE w.id = $1`,
       values: [id],
     });
-    if (data.length === 0) {
+    if (!data) {
       throw new WalletNotFoundError(id);
     }
-    const positionIds = data.map(({positionId}) => positionId);
+    if (this.positions instanceof Factory) {
+      this.positions = this.positions.make();
+    }
+    const positionIds = await this.positions.loadPositionIdsByWalletId(id);
     return {
-      id, name: data[0].name, positionIds,
-      owner: { id: data[0].ownerId, name: data[0].ownerName, },
+      id, name: data.name, positionIds,
+      owner: { id: data.owner_id, name: data.owner_name, },
     };
   }
 

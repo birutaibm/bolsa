@@ -34,6 +34,7 @@ export default class Authorization {
   }
 
   checkId(id: string, authorization?: string): boolean {
-    return this.getInfo(authorization)?.id === id;
+    const authorized = this.getInfo(authorization)?.id;
+    return authorized === id;
   }
 }

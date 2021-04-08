@@ -90,6 +90,7 @@ export default function walletModuleSavers(
     if ('walletId' in data) {
       wallet = await wallets.loadWalletWithOwnerById(data.walletId);
       if (!data.isLogged(wallet.owner.id)) {
+        console.log(wallet);
         throw new SignInRequiredError();
       }
       const { id, asset } = await executors.singleCommandExecutor(

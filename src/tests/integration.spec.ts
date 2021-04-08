@@ -97,6 +97,58 @@ describe('Server', () => {
     done();
   });
 
+  it('should be able to create wallet', async done => {
+    const { data: user } = await createUser();
+    const { response: {data: {token}} } = await signIn(user);
+    const { response: { data: { id: investorId } } } = await createInvestor(token, user.id);
+    const { response, data } = await createWallet(token, investorId);
+    expect(response.status).toEqual(201);
+    expect(response.data).toEqual(expect.objectContaining({
+      name: data.name,
+      owner: expect.objectContaining({
+        id: data.investorId, name: expect.stringContaining(''),
+      }),
+    }));
+    done();
+  });
+
+  it('should be able to create position', async done => {
+    const { data: user } = await createUser();
+    const { response: {data: {token}} } = await signIn(user);
+    const { response: { data: { id: assetId } } } = await createAsset(token);
+    const { response: { data: { id: investorId } } } = await createInvestor(token, user.id);
+    const { response: { data: {id: walletId } } } = await createWallet(token, investorId);
+    const { response } = await createPosition(token, walletId, assetId);
+    expect(response.status).toEqual(201);
+    expect(response.data).toEqual(expect.objectContaining({
+      wallet: expect.objectContaining({ id: walletId }),
+      asset: expect.objectContaining({ id: assetId }),
+    }));
+    done();
+  });
+
+  it('should be able to create operation', async done => {
+    const { data: user } = await createUser();
+    const { response: {data: {token}} } = await signIn(user);
+    const { response: { data: { id: assetId } } } = await createAsset(token);
+    const { response: { data: { id: investorId } } } = await createInvestor(token, user.id);
+    const { response: { data: { id: walletId } } } = await createWallet(token, investorId);
+    const { response: { data: { id: positionId } } } = await createPosition(token, walletId, assetId);
+    const { response, data } = await createOperation(token, positionId);
+    expect(response.status).toEqual(201);
+    expect(response.data).toEqual(expect.objectContaining({
+      date: data.date, position: expect.objectContaining({
+        id: positionId,
+        asset: expect.objectContaining({id: assetId}),
+        wallet: expect.objectContaining({
+          id: walletId,
+          owner: expect.objectContaining({id: investorId}),
+        })
+      })
+    }));
+    done();
+  });
+
   it('should be able to create operation and their dependencies', async done => {
     const { data: user } = await createUser();
     const { response: {data: {token}} } = await signIn(user);
@@ -109,22 +161,23 @@ describe('Server', () => {
         wallet: expect.objectContaining({
           name: data.walletName,
           owner: expect.objectContaining({name: data.investorName}),
-        })
-      })
+        }),
+      }),
     }));
     done();
   });
 });
 
 function string(chars: number): string {
-  const numbers = new Array(chars).map(() => {
+  const numbers: number[] = [];
+  while (numbers.length < chars) {
     let code = Math.floor(Math.random() * 53) + 32;
-    if (code !== 32){
+    if (code !== 32) {
       code += 32;
       if (code > 90) code += 6;
     }
-    return code;
-  });
+    numbers.push(code);
+  }
   return String.fromCharCode(...numbers);
 }
 
@@ -174,6 +227,68 @@ async function createInvestor(token: string, id: string) {
   };
 }
 
+async function createWallet(token: string, investorId: string) {
+  const data = { name: string(15), investorId };
+  const response = await api.post(
+    '/api/wallets',
+    data,
+    { headers: { authorization: `Token ${token}` } }
+  );
+  clearFunctions.push(() => {
+    postgre.query({
+      text: 'DELETE FROM wallets WHERE id = $1',
+      values: [response.data.id]
+    });
+  });
+  return {
+    response: { status: response.status, data: response.data },
+    data
+  };
+}
+
+async function createPosition(token: string, walletId: string, assetId: string) {
+  const data = { walletId, assetId };
+  const response = await api.post(
+    '/api/positions',
+    data,
+    { headers: { authorization: `Token ${token}` } }
+  );
+  clearFunctions.push(() => {
+    postgre.query({
+      text: 'DELETE FROM positions WHERE id = $1',
+      values: [response.data.id]
+    });
+  });
+  return {
+    response: { status: response.status, data: response.data },
+    data
+  };
+}
+
+async function createOperation(token: string, positionId: string) {
+  const data = {
+    date: new Date().toISOString(),
+    quantity: '100',
+    value: '-2345.00',
+    positionId,
+  };
+  const response = await api.post(
+    '/api/operations',
+    data,
+    { headers: { authorization: `Token ${token}` } }
+  );
+  clearFunctions.push(() => {
+    postgre.query({
+      text: 'DELETE FROM operations WHERE id = $1',
+      values: [response.data.id]
+    });
+  });
+  return {
+    response: { status: response.status, data: response.data },
+    data
+  };
+}
+
 async function createOperationAndDependencies(userId: string, assetId: string, token: string) {
   const data = {
     date: new Date().toISOString(),
@@ -206,7 +321,7 @@ async function createOperationAndDependencies(userId: string, assetId: string, t
       text: 'DELETE FROM investors WHERE id = $1',
       values: [response.data.position.wallet.owner.id]
     });
-  })
+  });
   return {
     response: { status: response.status, data: response.data },
     data
