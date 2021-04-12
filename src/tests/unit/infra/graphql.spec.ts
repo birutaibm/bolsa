@@ -19,7 +19,7 @@ describe('GraphQL', () => {
       internal: new FakePriceRepository(),
       externals: [new FakeExternalPriceRepository()],
     }));
-    const repositories = {
+    const repositories = new SingletonFactory(() => ({
       disconnectAll: async () => [],
       prices,
       users: new SingletonFactory(() => new FakeUserRepository()),
@@ -29,9 +29,9 @@ describe('GraphQL', () => {
         prices.make().internal
       )),
       operations: new SingletonFactory(() => new FakeOperationRepository()),
-    };
-    factories = new Factories(repositories);
-    const builder = new ServerBuilder().withGraphQL().withFactories(factories);
+    }));
+    factories = new Factories(repositories.make());
+    const builder = new ServerBuilder().withGraphQL().withRepositories(repositories);
     app = builder.app;
     try {
       builder.build();

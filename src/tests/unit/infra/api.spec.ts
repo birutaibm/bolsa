@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-import { SingletonFactory } from '@utils/factory';
+import { Factory, SingletonFactory } from '@utils/factory';
 import { Factories } from '@infra/factories';
 import { ServerBuilder } from '@infra/server';
 
@@ -15,10 +15,10 @@ let factories: Factories;
 
 describe('API', () => {
   beforeAll(async done => {
-    factories = new Factories(mockRepositories());
-    const builder = new ServerBuilder().withRestAPI().withFactories(factories);
-    mockRepositories();
+    const repositories = mockRepositories();
+    factories = new Factories(repositories.make());
     await mockSecurity();
+    const builder = new ServerBuilder().withRestAPI().withRepositories(repositories);
     app = builder.app;
     try {
       builder.build();
@@ -342,12 +342,12 @@ async function mockSecurity() {
   });
 }
 
-function mockRepositories(): RepositoryFactories {
+function mockRepositories(): Factory<RepositoryFactories> {
   const prices = new SingletonFactory(() => ({
     internal: new FakePriceRepository(),
     externals: [new FakeExternalPriceRepository()],
   }));
-  return {
+  const factories = {
     disconnectAll: async () => [],
     prices,
     users: new SingletonFactory(() => new FakeUserRepository()),
@@ -358,4 +358,5 @@ function mockRepositories(): RepositoryFactories {
     )),
     operations: new SingletonFactory(() => new FakeOperationRepository()),
   };
+  return new SingletonFactory(() => factories);
 }

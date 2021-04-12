@@ -66,7 +66,6 @@ export function error(error: Error) {
     return clientError(error.message);
   }
   if (error instanceof NotFoundError) {
-    console.error(error);
     return notFoundError(error.message);
   }
   return serverError(error);

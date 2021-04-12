@@ -1,16 +1,17 @@
 import axios, { AxiosInstance } from 'axios';
 
+import { MayBePromise } from '@utils/types';
+
 import { Assets, Users } from '@infra/data-source/model';
 import { ServerBuilder, Server } from '@infra/server';
-import * as DatabaseModule from '@infra/data-source/database';
-import { MayBePromise } from '@utils/types';
 import { RepositoryFactoriesBuilder } from '@infra/data-source';
+import { PostgreSQL } from '@infra/data-source/database';
 import { env } from '@infra/environment';
 import { Factories } from '@infra/factories';
 
 let api: AxiosInstance;
 let server: Server;
-let postgre: DatabaseModule.PostgreSQL;
+let postgre: PostgreSQL;
 let clearFunctions: Array<() => MayBePromise<any>>;
 
 describe('Server', () => {
@@ -23,7 +24,7 @@ describe('Server', () => {
         .withPostgre(env.postgre);
       postgre = repositories.getPostgreSQL();
       server = await new ServerBuilder()
-        .withFactories(new Factories(await repositories.build()))
+        .withRepositories(repositories.asSingletonFactory())
         .withRestAPI()
         .withGraphQL()
         .build();
@@ -304,20 +305,20 @@ async function createOperationAndDependencies(userId: string, assetId: string, t
     data,
     { headers: { authorization: `Token ${token}` } }
   );
-  clearFunctions.push(() => {
-    postgre.query({
+  clearFunctions.push(async () => {
+    await postgre.query({
       text: 'DELETE FROM operations WHERE id = $1',
       values: [response.data.id]
     });
-    postgre.query({
+    await postgre.query({
       text: 'DELETE FROM positions WHERE id = $1',
       values: [response.data.position.id]
     });
-    postgre.query({
+    await postgre.query({
       text: 'DELETE FROM wallets WHERE id = $1',
       values: [response.data.position.wallet.id]
     });
-    postgre.query({
+    await postgre.query({
       text: 'DELETE FROM investors WHERE id = $1',
       values: [response.data.position.wallet.owner.id]
     });
