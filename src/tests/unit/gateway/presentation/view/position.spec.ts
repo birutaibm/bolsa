@@ -40,11 +40,14 @@ describe('Position view', () => {
   });
 
   it('should be able to format empty position data', () => {
-    const position = new Position(id, asset, wallet);
-    expect(positionView(position)).toEqual(expect.objectContaining({
+    const position = positionView(new Position(id, asset, wallet));
+    expect(position).toEqual(expect.objectContaining({
       id, asset, wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
+    }));
+    expect(position).not.toEqual(expect.objectContaining({
+      open: expect.anything(),
     }));
   });
 
@@ -52,7 +55,8 @@ describe('Position view', () => {
     const position = new Position(id, asset, wallet);
     new Operation(datatype.number().toString(), date, quantity, value, position);
     expect(positionView(position)).toEqual(expect.objectContaining({
-      id, asset, wallet: expect.objectContaining({
+      id, asset, open: date.toISOString(),
+      wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
     }));

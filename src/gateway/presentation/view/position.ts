@@ -1,3 +1,15 @@
+function positionOpenDate(
+  operations: ReturnType<PositionEntity['getOperations']>
+): string | undefined {
+  const operation = operations.pop();
+  if (operation) {
+    return operations.reduce((acc, {date}) => {
+      return acc.getTime() < date.getTime() ? acc : date
+    }, operation.date).toISOString()
+  }
+  return;
+}
+
 export function positionView(entity: PositionEntity): PositionView {
   return {
     id: entity.id,
@@ -7,10 +19,13 @@ export function positionView(entity: PositionEntity): PositionView {
         id: entity.wallet.owner.id, name: entity.wallet.owner.name,
       }
     },
+    open: positionOpenDate(entity.getOperations()),
   };
 }
 
-type PositionView = PositionBase;
+type PositionView = PositionBase & {
+  open?: string;
+};
 
 type PositionEntity = PositionBase & {
   getOperations: () => Array<{
