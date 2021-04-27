@@ -41,8 +41,7 @@ describe('Position creator controller', () => {
       authorization,
     };
     const result = expect.objectContaining({
-      asset, operations: [],
-      wallet: expect.objectContaining({
+      asset, wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({name: owner.name})
       }),
     });

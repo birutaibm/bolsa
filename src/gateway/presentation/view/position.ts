@@ -7,23 +7,10 @@ export function positionView(entity: PositionEntity): PositionView {
         id: entity.wallet.owner.id, name: entity.wallet.owner.name,
       }
     },
-    operations: entity.getOperations().map(operation => ({
-      id: operation.id,
-      date: operation.date.toISOString(),
-      quantity: operation.quantity,
-      value: operation.value,
-    })),
   };
 }
 
-type PositionView = PositionBase & {
-  operations: Array<{
-    id: string;
-    date: string;
-    quantity: number;
-    value: number;
-  }>;
-};
+type PositionView = PositionBase;
 
 type PositionEntity = PositionBase & {
   getOperations: () => Array<{

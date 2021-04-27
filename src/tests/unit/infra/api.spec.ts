@@ -205,9 +205,6 @@ describe('API', () => {
           }),
           asset: positionAsset,
         }));
-        expect(res.body.operations).toEqual(expect.arrayContaining([
-          expect.objectContaining({ value, quantity, })
-        ]));
         done();
       });
   });
@@ -228,7 +225,6 @@ describe('API', () => {
             owner: expect.objectContaining({ name: investorName }),
           }),
           asset: positionAsset,
-          operations: [],
         }));
         done();
       });

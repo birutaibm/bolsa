@@ -42,7 +42,7 @@ describe('Position view', () => {
   it('should be able to format empty position data', () => {
     const position = new Position(id, asset, wallet);
     expect(positionView(position)).toEqual(expect.objectContaining({
-      id, asset, operations: [], wallet: expect.objectContaining({
+      id, asset, wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
     }));
@@ -55,9 +55,6 @@ describe('Position view', () => {
       id, asset, wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
-      operations: [expect.objectContaining({
-        date: date.toISOString(), quantity, value,
-      })],
     }));
   });
 });
