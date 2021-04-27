@@ -1,8 +1,11 @@
+import { datatype, finance, date as fakeDate } from 'faker';
+
 import { Authorization } from '@domain/user/usecases';
 import { OperationCreator } from '@domain/wallet/usecases';
 
 import { OperationCreatorController } from '@gateway/presentation/controllers';
-import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-savers';
 
 let date: string;
 let quantity: string;
@@ -10,30 +13,32 @@ let value: string;
 let operationId: string;
 let positionId: string;
 let investorId: string;
+let walletName: string;
 let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let authorization: string;
 let controller: OperationCreatorController;
+let invalid: string;
 
 describe('Operation creator controller', () => {
   beforeAll(() => {
     const saver = new WalletModuleSavers();
     operationId = 'operationId';
-    date = new Date().toISOString();
-    quantity = '100';
-    value = '-2345';
+    date = fakeDate.recent().toISOString();
+    quantity = datatype.number().toString();
+    value = `-${finance.amount()}`;
     positionId = saver.position.id;
     authorization = 'Token ';
     investorId = saver.owner.id;
     owner = saver.owner;
-    const wallet = saver.wallet;
+    walletName = saver.wallet.name;
     asset = saver.asset;
-    const position = saver.position;
+    invalid = saver.invalidInDB;
     controller = new OperationCreatorController(
       new OperationCreator(saver.newOperation.bind(saver)),
-      new Authorization(() => (
+      new Authorization({verifyToken: () => (
         { id: investorId, userName: 'anybody', role: 'USER' }
-      )),
+      )}),
     );
   });
 
@@ -48,10 +53,10 @@ describe('Operation creator controller', () => {
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 201, data: expect.objectContaining({
-      id: operationId, date, quantity: 100, value: -2345,
+      id: operationId, date, quantity: Number(quantity), value: Number(value),
       position: expect.objectContaining({
         asset, wallet: expect.objectContaining({
-          name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
+          name: walletName, owner: expect.objectContaining({name: owner.name})
         }),
       }),
     })});
@@ -154,7 +159,7 @@ describe('Operation creator controller', () => {
       date,
       quantity,
       value,
-      positionId: 'Invalid id in db rules',
+      positionId: invalid,
       authorization,
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});

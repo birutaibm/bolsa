@@ -9,15 +9,15 @@ describe('SearchExternalSymbolRepositories', () => {
   beforeAll(() => {
     repoFail = {
       name: 'Fail',
-      getExternalSymbols: async () => {throw new Error();},
+      getExternalSymbols: () => {throw new Error();},
     };
     repoEmpty = {
       name: 'Empty',
-      getExternalSymbols: async () => ({}),
+      getExternalSymbols: () => ({}),
     };
     repoData = {
       name: 'No data',
-      getExternalSymbols: async ticker => ({ [ticker]: {} }),
+      getExternalSymbols: ticker => ({ [ticker]: {} }),
     };
   });
 

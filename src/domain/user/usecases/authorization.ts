@@ -1,19 +1,15 @@
-import { Role } from '@domain/user/entities/user';
-
-type VerifyToken = (token: string) => {
-  id: string; role: Role; userName: string;
-};
+import { TokenVerifier } from './dependencies';
 
 export default class Authorization {
   constructor(
-    private readonly verifyToken: VerifyToken,
+    private readonly tokenVerify: TokenVerifier,
   ) {}
 
   private getInfo(authorization: string | undefined) {
     try {
       if (authorization?.startsWith('Token ')) {
         const token = authorization.substring(6);
-        return this.verifyToken(token);
+        return this.tokenVerify.verifyToken(token);
       }
       return undefined;
     } catch (error) {
@@ -21,8 +17,12 @@ export default class Authorization {
     }
   }
 
-  private extractRole(authorization: string | undefined): Role | undefined {
-    return this.getInfo(authorization)?.role;
+  private extractRole(authorization: string | undefined): string | undefined {
+    const info = this.getInfo(authorization);
+    if (!info) return undefined;
+    const role = info['role'];
+    if (typeof role !== 'string') return undefined;
+    return role;
   }
 
   checkUser(authorization?: string): boolean {
@@ -34,7 +34,8 @@ export default class Authorization {
   }
 
   checkId(id: string, authorization?: string): boolean {
-    const authorized = this.getInfo(authorization)?.id;
-    return authorized === id;
+    const info = this.getInfo(authorization);
+    if (!info) return false;
+    return info['id'] === id;
   }
 }

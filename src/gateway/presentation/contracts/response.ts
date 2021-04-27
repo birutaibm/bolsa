@@ -38,6 +38,7 @@ export function unauthorized(message: string): Response {
 };
 
 export function notFoundError(message: string): Response {
+  console.log(message);
   return {
     statusCode: 404,
     data: { message },

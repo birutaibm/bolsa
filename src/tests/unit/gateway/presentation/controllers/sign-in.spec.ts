@@ -1,36 +1,34 @@
-import { SignIn, UserData, UserLoader } from '@domain/user/usecases';
+import { internet, name } from 'faker';
+
+import {
+  LoadPersistedUserDataFromUsername, SignIn, UserData, UserLoader
+} from '@domain/user/usecases';
+
 import { Params } from '@gateway/presentation/contracts';
 import { SignInController } from '@gateway/presentation/controllers';
+
+import { encoder, tokenCreator } from '@mock/security';
 
 let workingController: SignInController;
 let brokenController: SignInController;
 let params: Params
 
+function controller(worker: LoadPersistedUserDataFromUsername): SignInController {
+  const loader = new UserLoader(worker, encoder);
+  const useCase = new SignIn(tokenCreator, loader);
+  return new SignInController(useCase);
+}
+
 describe('Sign-in controller', () => {
   beforeAll(() => {
-    const encoder = {
-      encode: async (plain: string) => plain,
-      verify: (plain: string, encoded: string) => plain === encoded,
-    }
-    const tokenGenerator = (payload: object) => JSON.stringify(payload);
-    const userData: UserData = {
-      userName: 'Rafael',
-      passHash: '123456',
-      role: 'USER'
-    };
-    const workingWorker = async (userName: string) =>
-      ({...userData, id:'', userName});
-    const workingLoader = new UserLoader(workingWorker, encoder);
-    const workingUseCase = new SignIn(tokenGenerator, workingLoader);
-    workingController = new SignInController(workingUseCase);
-    const brokenWorker = async () => {throw new Error();};
-    const brokenLoader = new UserLoader(brokenWorker, encoder);
-    const brokenUseCase = new SignIn(tokenGenerator, brokenLoader);
-    brokenController = new SignInController(brokenUseCase);
-    params = {
-      userName: 'Rafael',
-      password: '123456',
-    };
+    const userName = name.findName();
+    const pass = internet.password();
+    const userData: UserData = { userName, passHash: pass, role: 'USER' };
+    workingController = controller(
+      (userName: string) => ({...userData, id:'', userName})
+    );
+    brokenController = controller(() => {throw new Error();});
+    params = { userName, password: pass };
   });
 
   it('should be able to obtain token data', async done => {
@@ -60,10 +58,7 @@ describe('Sign-in controller', () => {
 
   it('should be able to report invalid credentials', async done => {
     await expect(
-      workingController.handle({
-        userName: 'Rafael',
-        password: '654321',
-      })
+      workingController.handle({ ...params, password: internet.password() })
     ).resolves.toEqual(expect.objectContaining({
       statusCode: 401,
       data: { message: 'Invalid user and/or password' }

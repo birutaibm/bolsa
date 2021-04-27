@@ -5,6 +5,8 @@ import { Persisted } from '@utils/types';
 import { WalletLoader } from '@domain/wallet/usecases';
 import { PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
+import WalletModuleLoaders from '@mock/data-adapters/wallet-module-loaders';
+
 let asset: { id: string; ticker: string; name: string; };
 let opData: { id: string; date: Date; quantity: number; value: number; };
 let data: Persisted<PopulatedWalletData>;
@@ -12,11 +14,11 @@ let useCase: WalletLoader;
 
 describe('Wallet loader', () => {
   beforeAll(() => {
-    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
-    opData = { id: 'operationId', date: new Date(), quantity: 100, value: -2345 };
-    const owner = { id: 'myID', name: 'My Name' };
-    const wallet = { id: 'walletId', name: 'My Wallet', owner };
-    const position = { id: 'positionId', wallet, asset};
+    const loader = new WalletModuleLoaders();
+    asset = loader.asset;
+    const { id, date, quantity, value } = loader.operation;
+    opData = { id, date, quantity, value };
+    const { wallet, position} = loader;
     data = {
       ...wallet,
       positions: [{
@@ -27,13 +29,7 @@ describe('Wallet loader', () => {
         }],
       }],
     };
-    useCase = new WalletLoader((id, isLogged) => {
-      if (id === data.id) {
-        if (isLogged(data.owner.id)) return data;
-        throw new SignInRequiredError();
-      }
-      throw new WalletNotFoundError(id);
-    });
+    useCase = new WalletLoader(loader.loadWallet.bind(loader));
   });
 
   it('should be able to load wallet', async done => {

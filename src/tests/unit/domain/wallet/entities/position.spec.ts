@@ -2,6 +2,7 @@ import Wallet from '@domain/wallet/entities/wallet';
 import Position, { Asset } from '@domain/wallet/entities/position';
 import { Investor } from '@domain/wallet/entities';
 import { Persisted } from '@utils/types';
+import { datatype, finance, name } from 'faker';
 
 let asset: Persisted<Asset>;
 let wallet: Persisted<Wallet>;
@@ -9,12 +10,14 @@ let wallet: Persisted<Wallet>;
 describe('Wallet position', () => {
   beforeAll(() => {
     asset = {
-      id: 'assetId',
-      ticker: 'ITUB3',
-      name: 'Itaú Unibanco Holding',
+      id: datatype.uuid(),
+      ticker: datatype.string(5),
+      name: finance.accountName(),
     };
     wallet = new Wallet(
-      'walletId', 'My wallet', new Investor('0', 'Rafael Arantes')
+      datatype.uuid(), finance.accountName(), new Investor(
+        datatype.uuid(), name.findName()
+      )
     );
   });
 

@@ -1,9 +1,16 @@
 import { ExternalSymbolRegister } from '@domain/price/usecases';
 import { Authorization } from '@domain/user/usecases';
 
-import { SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 import { ExternalSymbolRegisterController } from '@gateway/presentation/controllers';
+import { ExternalSymbolRegisterFunctionalities } from '@mock/data-adapters/external-symbol-register-functionalities';
 
+const symbol00 = 'ITUB3.SAO';
+const source0 = 'banks';
+const source1 = 'commodities';
+const reqFunValues = {
+  [source0]: [symbol00],
+  [source1]: [],
+};
 let controller: ExternalSymbolRegisterController;
 let ticker: string;
 let authorization: string;
@@ -11,43 +18,23 @@ let authorization: string;
 describe('External symbol register controller', () => {
   beforeAll(() => {
     ticker = 'ticker';
-    const reqFunValues = {
-      banks: ['ITUB3.SAO', 'BBAS3.SAO'],
-      commodities: ['PETR4.SAO', 'VALE4.SAO'],
-    };
-    const workingLoader = {
-      getKnownSources: () => Object.keys(reqFunValues),
-      getWorker: (source: string) => {
-        if (!reqFunValues[source])
-          throw new Error();
-        return {
-          getValidSymbols: async () => reqFunValues[source],
-          register: async (info: SymbolDictionaryEntryDTO) => {
-            if (info.source !== source) {
-              throw new Error();
-            }
-            if (!reqFunValues[source].includes(info.externalSymbol)) {
-              throw new Error();
-            }
-            return {...info, id: info.ticker};
-          },
-        };
-      },
-    };
+    const workingLoader = new ExternalSymbolRegisterFunctionalities(reqFunValues);
     const workingUseCase = new ExternalSymbolRegister(workingLoader);
     authorization = 'Token ',
     controller = new ExternalSymbolRegisterController(
-      workingUseCase, new Authorization(() => ({id: '', userName: 'anybody', role: 'ADMIN' })),
+      workingUseCase, new Authorization({verifyToken: () => (
+        {id: '', userName: 'anybody', role: 'ADMIN' }
+      )}),
     );
   });
 
   it('should be able to registry external symbol', async done => {
     const params = {
       ticker,
-      banks: 'ITUB3.SAO',
+      [source0]: symbol00,
       authorization,
     };
-    const expected = [{source: 'banks', ticker, externalSymbol: 'ITUB3.SAO'}];
+    const expected = [{source: source0, ticker, externalSymbol: symbol00}];
     const response = await controller.handle(params);
     expect(response.statusCode).toEqual(201);
     expect(response.data.length).toEqual(expected.length);
@@ -58,7 +45,7 @@ describe('External symbol register controller', () => {
   it('should be able to recognize empty result', async done => {
     const params = {
       ticker,
-      source: 'ITUB3.SAO',
+      source: symbol00,
       authorization,
     };
     await expect(
@@ -71,7 +58,7 @@ describe('External symbol register controller', () => {
 
   it('should be able to report wrong route parameters', async done => {
     const params = {
-      banks: 'ITUB3.SAO',
+      [source0]: symbol00,
       authorization,
     };
     await expect(
@@ -85,7 +72,7 @@ describe('External symbol register controller', () => {
 
   it('should be able to report wrong authorization', async done => {
     const params = {
-      banks: 'ITUB3.SAO',
+      [source0]: symbol00,
     };
     await expect(
       controller.handle(params)
@@ -99,7 +86,7 @@ describe('External symbol register controller', () => {
   it('should be able to repass error', async done => {
     const params = {
       ticker,
-      commodities: 'ITUB3.SAO',
+      [source1]: symbol00,
       authorization,
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});

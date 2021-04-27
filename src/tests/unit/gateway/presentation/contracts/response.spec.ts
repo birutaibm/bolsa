@@ -1,15 +1,19 @@
-import { ok, created, clientError, notFoundError, serverError } from "@gateway/presentation/contracts";
+import { datatype } from 'faker';
+
+import {
+  ok, created, clientError, notFoundError, serverError
+} from '@gateway/presentation/contracts';
 
 describe('Controller responses', () => {
   it('should be able to create an ok response', () => {
-    const content = { success: true };
+    const content = datatype.json();
     const response = ok(content);
     expect(response.statusCode).toBe(200);
     expect(response.data).toEqual(content);
   });
 
   it('should be able to create a created response', () => {
-    const content = { success: true };
+    const content = datatype.json();
     const response = created(content);
     expect(response.statusCode).toBe(201);
     expect(response.data).toEqual(content);

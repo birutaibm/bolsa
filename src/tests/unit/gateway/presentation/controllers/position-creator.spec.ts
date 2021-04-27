@@ -3,30 +3,34 @@ import { PositionCreator } from '@domain/wallet/usecases';
 
 import { PositionCreatorController } from '@gateway/presentation/controllers';
 
-import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-savers';
 
 let assetId: string;
 let walletId: string;
+let walletName: string;
 let investorId: string;
 let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let authorization: string;
 let controller: PositionCreatorController;
+let invalid: string;
 
 describe('Position creator controller', () => {
   beforeAll(() => {
     const saver = new WalletModuleSavers();
     walletId = saver.wallet.id;
+    walletName = saver.wallet.name;
     authorization = 'Token ';
     investorId = saver.owner.id;
     owner = saver.owner;
     asset = saver.asset;
+    invalid = saver.invalidInDB;
     assetId = asset.id;
     controller = new PositionCreatorController(
       new PositionCreator(saver.newPosition.bind(saver)),
-      new Authorization(() => (
+      new Authorization({verifyToken: () => (
         { id: investorId, userName: 'anybody', role: 'USER' }
-      )),
+      )}),
     );
   });
 
@@ -39,7 +43,7 @@ describe('Position creator controller', () => {
     const result = expect.objectContaining({
       asset, operations: [],
       wallet: expect.objectContaining({
-        name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
+        name: walletName, owner: expect.objectContaining({name: owner.name})
       }),
     });
     await expect(
@@ -90,7 +94,7 @@ describe('Position creator controller', () => {
   it('should be able to repass unknown server error', async done => {
     const params = {
       assetId,
-      walletId: 'Invalid id in db rules',
+      walletId: invalid,
       authorization,
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});

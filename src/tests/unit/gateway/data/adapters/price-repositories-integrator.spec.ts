@@ -10,7 +10,9 @@ import {
 import {
   FakeExternalPriceRepository, FakePriceRepository
 } from '@mock/data-source/repositories';
+import { externalSourceSymbols } from '@mock/data-source/repositories/price-data';
 
+let ticker: string;
 let saver: SavePricesRepository;
 let dictionary: ExternalSymbolDictionary;
 let loader: LoadExternalPriceRepository[];
@@ -18,6 +20,7 @@ let adapter: PriceRepositoriesIntegrator;
 
 describe('PriceRepositoriesIntegrator', () => {
   beforeAll(() => {
+    ticker = Object.keys(externalSourceSymbols)[0];
     const internalPrices = new FakePriceRepository();
     const externalPrices = new FakeExternalPriceRepository();
 
@@ -47,8 +50,8 @@ describe('PriceRepositoriesIntegrator', () => {
 
   it('should be able to get external prices', async done => {
     await expect(
-      adapter.getExternalPrices('ITUB4')
-    ).resolves.toEqual([]);
+      adapter.getExternalPrices(ticker)
+    ).resolves.toEqual(expect.arrayContaining([]));
     done();
   });
 

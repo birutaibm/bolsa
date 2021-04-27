@@ -1,7 +1,7 @@
 import { AssetNotFoundError, OperationNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
-import { AssetData, RepositoryChangeCommandExecutor } from '@gateway/data/contracts';
+import { AssetData } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -24,6 +24,7 @@ let operations: string[];
 
 describe('Postgre operation repository', () => {
   beforeAll(async done => {
+    operations = [];
     try {
       db = new PostgreSQL(env.postgre);
       [ investor ] = await db.query<Data>({
@@ -59,7 +60,6 @@ describe('Postgre operation repository', () => {
         })),
       );
       repo = factories.operations.make();
-      operations = [];
     } catch (error) {
       console.error(error);
       done(error);

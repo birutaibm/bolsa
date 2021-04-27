@@ -1,38 +1,37 @@
 import {
   createControllerFactories, createUseCasesFactories, RepositoryFactories
 } from '@gateway/factories';
+import { ISecurity } from '@gateway/security';
+import { Factory } from '@utils/factory';
 
-import { env } from '@infra/environment';
-import { RepositoryFactoriesBuilder } from '@infra/data-source';
-
-import securityFactory from './security';
+export { securityFactory } from './security';
 
 export class Factories {
-  private readonly security = securityFactory;
   private useCases: ReturnType<typeof createUseCasesFactories>;
   private controllers: ReturnType<typeof createControllerFactories>;
 
   constructor(
     readonly repositories: RepositoryFactories,
+    private readonly security: Factory<ISecurity>,
   ) {}
 
-  async ofSecurity() {
+  ofSecurity(): Factory<ISecurity> {
     return this.security;
   }
 
-  async ofUseCases() {
+  ofUseCases() {
     if (!this.useCases) {
       this.useCases = createUseCasesFactories(
         this.repositories,
-        await this.ofSecurity(),
+        this.ofSecurity(),
       );
     }
     return this.useCases;
   }
 
-  async ofControllers() {
+  ofControllers() {
     if (!this.controllers) {
-      this.controllers = createControllerFactories(await this.ofUseCases());
+      this.controllers = createControllerFactories(this.ofUseCases());
     }
     return this.controllers;
   }

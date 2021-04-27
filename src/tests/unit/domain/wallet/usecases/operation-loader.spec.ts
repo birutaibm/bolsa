@@ -1,45 +1,34 @@
-import { PositionNotFoundError } from '@errors/not-found';
+import { OperationNotFoundError, PositionNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
-import { Persisted } from '@utils/types';
 
 import { OperationLoader } from '@domain/wallet/usecases';
-import { OperationData } from '@domain/wallet/usecases/dtos';
+
+import WalletModuleLoaders from '@mock/data-adapters/wallet-module-loaders';
 
 let asset: { id: string; ticker: string; name: string; };
 let opData: { date: Date; quantity: number; value: number; };
-let data: Persisted<OperationData>;
+let id: string;
 let useCase: OperationLoader;
 
 describe('Operation loader', () => {
   beforeAll(() => {
-    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
-    opData = { date: new Date(), quantity: 100, value: -2345 };
-    const owner = { id: 'myID', name: 'My Name' };
-    const wallet = { id: 'walletId', name: 'My Wallet', owner };
-    const position = { id: 'positionId', wallet, asset};
-    data = {
-      ...opData,
-      id: 'operationId',
-      position,
-    };
-    useCase = new OperationLoader((id, isLoggedUserId) => {
-      if (id === data.id) {
-        if (isLoggedUserId(data.position.wallet.owner.id)) return data;
-        throw new SignInRequiredError();
-      }
-      throw new PositionNotFoundError(id);
-    });
+    const loader = new WalletModuleLoaders();
+    asset = loader.asset;
+    id = loader.operation.id;
+    const { date, quantity, value } = loader.operation;
+    opData = { date, quantity, value };
+    useCase = new OperationLoader(loader.loadOperation.bind(loader));
   });
 
   it('should be able to load operation', async done => {
-    const operation = await useCase.load(data.id, () => true);
+    const operation = await useCase.load(id, () => true);
     expect(operation).toEqual(expect.objectContaining(opData));
     done();
   });
 
   it('should not be able to load operation without been logged', async done => {
     await expect(
-      useCase.load(data.id, () => false)
+      useCase.load(id, () => false)
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
   });
@@ -47,7 +36,7 @@ describe('Operation loader', () => {
   it('should not be able to load inexistent operation', async done => {
     await expect(
       useCase.load('invalidID', () => true)
-    ).rejects.toBeInstanceOf(PositionNotFoundError);
+    ).rejects.toBeInstanceOf(OperationNotFoundError);
     done();
   });
 });

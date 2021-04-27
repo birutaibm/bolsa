@@ -1,10 +1,12 @@
+import { finance, name } from 'faker';
+
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { InvestorNotFoundError } from '@errors/not-found';
 
 import { WalletCreator } from '@domain/wallet/usecases';
 import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
 
-import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-savers';
 
 let investorData: PopulatedInvestorData
 let data: {walletName: string; investorId: string; };
@@ -15,7 +17,7 @@ describe('Wallet creator', () => {
     const saver = new WalletModuleSavers();
     investorData = { ...saver.owner, wallets: [] };
     useCase = new WalletCreator(saver.newWallet.bind(saver));
-    data = { walletName: 'My Wallet', investorId: investorData.id };
+    data = { walletName: finance.accountName(), investorId: investorData.id };
   });
 
   it('should be able create wallet', async done => {
@@ -44,7 +46,7 @@ describe('Wallet creator', () => {
   it('should be able create wallet and investor', async done => {
     const id = 'nonInvestorId';
     await expect(useCase.create({
-      walletName: data.walletName, userId: id, investorName: 'My Name',
+      walletName: data.walletName, userId: id, investorName: name.findName(),
       isLogged: () => true
     })).resolves.toEqual(expect.objectContaining({
       owner: expect.objectContaining({ id })

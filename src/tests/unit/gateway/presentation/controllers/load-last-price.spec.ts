@@ -1,6 +1,9 @@
 import { LastPriceLoader } from '@domain/price/usecases';
+
 import { Params } from '@gateway/presentation/contracts';
 import { LoadLastPriceController } from '@gateway/presentation/controllers';
+import { fakePrice, fakeTicker } from '@mock/price';
+import { company } from 'faker';
 
 let workingController: LoadLastPriceController;
 let brokenController: LoadLastPriceController;
@@ -9,27 +12,20 @@ let view: object;
 
 describe('Load last price controller', () => {
   beforeAll(() => {
-    const ticker = 'ticker';
-    const common = {
-      ticker,
-      name: 'name',
-      open: 23.43,
-      close: 23.43,
-      min: 23.43,
-      max: 23.43,
-    };
+    const ticker = fakeTicker();
     const entity = {
-      ...common,
-      date: new Date(),
+      ticker,
+      name: company.companyName(),
+      ...fakePrice(),
     };
     view = {
-      ...common,
+      ...entity,
       date: entity.date.toISOString(),
     };
-    const workingLoader = async (t: string) => t === ticker ? [entity] : [];
+    const workingLoader = (t: string) => t === ticker ? [entity] : [];
     const workingUseCase = new LastPriceLoader([workingLoader]);
     workingController = new LoadLastPriceController(workingUseCase);
-    const brokenLoader = async () => {throw new Error();};
+    const brokenLoader = () => {throw new Error();};
     const brokenUseCase = new LastPriceLoader([brokenLoader]);
     brokenController = new LoadLastPriceController(brokenUseCase);
     params = { ticker };
@@ -55,11 +51,11 @@ describe('Load last price controller', () => {
   it('should be able to report error when asset not found', async done => {
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});
     await expect(
-      workingController.handle({ticker: 'ITUB4'})
+      workingController.handle({ticker: fakeTicker()})
     ).resolves.toEqual(expect.objectContaining({
       statusCode: 404,
       data: {
-        message: 'Asset ITUB4 not found',
+        message: expect.stringMatching('Asset .* not found'),
       },
     }));
     done();

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { InvalidTokenFormatError } from '@errors/invalid-input';
 
-import Encoder from '@domain/user/usecases/encoder';
+import { Encoder, TokenCreator, TokenVerifier } from '@domain/user/usecases';
 
 export type JwtConfig = {
   privateKey: string;
@@ -11,7 +11,9 @@ export type JwtConfig = {
   options: jwt.SignOptions;
 }
 
-export default class Security implements Encoder {
+export interface ISecurity extends Encoder, TokenCreator, TokenVerifier {}
+
+export default class Security implements ISecurity {
   constructor(
     private readonly salt: number,
     private readonly jwtConfig: JwtConfig,
@@ -34,16 +36,16 @@ export default class Security implements Encoder {
     );
   }
 
-  verifyToken(token: string): object {
-    let value: object;
+  verifyToken(token: string) {
     try {
-      value = jwt.verify(
+      const value = jwt.verify(
         token,
         this.jwtConfig.publicKey,
-      ) as object;
+      );
+      if (typeof value !== 'object') throw new InvalidTokenFormatError();
+      return value;
     } catch (error) {
       throw new InvalidTokenFormatError();
     }
-    return value;
   }
 }

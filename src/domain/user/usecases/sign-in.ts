@@ -3,12 +3,11 @@ import { UserNotFoundError } from '@errors/not-found';
 
 import UserLoader from './user-loader';
 import { PersistedUser } from './dto';
-
-export type CreateToken = (payload: object) => string;
+import { TokenCreator } from './dependencies';
 
 export default class SignIn {
   constructor(
-    private readonly createToken: CreateToken,
+    private readonly tokenCreator: TokenCreator,
     private readonly loader: UserLoader,
   ) {}
 
@@ -17,7 +16,7 @@ export default class SignIn {
     if (!user.checkPassword(password)) {
       throw new InvalidUserPasswordError();
     }
-    return this.createToken({
+    return this.tokenCreator.createToken({
       id: user.id,
       userName,
       role: user.role,

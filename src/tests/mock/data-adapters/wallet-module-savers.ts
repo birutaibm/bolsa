@@ -12,25 +12,28 @@ import { NewOperationSaver } from '@domain/wallet/usecases/operation-creator';
 import { NewPositionSaver } from '@domain/wallet/usecases/position-creator';
 import { NewWalletSaver } from '@domain/wallet/usecases/wallet-creator';
 import { NewInvestorSaver } from '@domain/wallet/usecases/investor-creator';
+import { company, datatype, finance, name } from 'faker';
 
 export default class WalletModuleSavers {
   readonly position: Persisted<PositionData>;
   readonly wallet: Persisted<WalletData>;
   readonly asset: Persisted<AssetData>;
   readonly owner: InvestorData;
+  readonly invalidInDB: string;
 
   constructor() {
-    this.asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
-    this.owner = { id: 'myID', name: 'My Name' };
-    this.wallet = { id: 'walletId', name: 'My Wallet', owner: this.owner };
-    this.position = { id: 'positionId', wallet: this.wallet, asset: this.asset };
+    this.asset = { id: datatype.uuid(), ticker: datatype.string(5), name: company.companyName() };
+    this.owner = { id: datatype.uuid(), name: name.findName() };
+    this.wallet = { id: datatype.uuid(), name: finance.accountName(), owner: this.owner };
+    this.position = { id: datatype.uuid(), wallet: this.wallet, asset: this.asset };
+    this.invalidInDB = 'Invalid value in db rules';
   }
 
   newOperation: NewOperationSaver = async data => {
     if (!data.isLogged(this.owner.id))
       throw new SignInRequiredError();
     if ('positionId' in data) {
-      if (data.positionId === 'Invalid id in db rules')
+      if (data.positionId === this.invalidInDB)
         throw new Error("");
       else if (this.position.id !== data.positionId)
         throw new PositionNotFoundError(data.positionId);
@@ -49,7 +52,7 @@ export default class WalletModuleSavers {
     if (!data.isLogged(this.owner.id)) throw new SignInRequiredError();
     if (data.assetId !== this.asset.id) throw new AssetNotFoundError(data.assetId);
     if ('walletId' in data) {
-      if (data.walletId === 'Invalid id in db rules') {
+      if (data.walletId === this.invalidInDB) {
         throw new Error("");
       } else if (data.walletId !== this.wallet.id) {
         throw new WalletNotFoundError(data.walletId);
@@ -67,7 +70,7 @@ export default class WalletModuleSavers {
     if (!data.isLogged('investorId' in data ? data.investorId: data.userId))
       throw new SignInRequiredError();
     if ('investorId' in data) {
-      if (data.walletName === 'Invalid name in db rules') {
+      if (data.walletName === this.invalidInDB) {
         throw new Error("");
       } else if (data.investorId !== this.owner.id) {
         throw new InvestorNotFoundError(data.investorId);
@@ -84,7 +87,7 @@ export default class WalletModuleSavers {
   };
 
   newInvestor: NewInvestorSaver = data => {
-    if (data.name === 'Some reason invalid name in db rules') {
+    if (data.name === this.invalidInDB) {
       throw new Error("");
     }
     return {id: data.id, name: data.name, walletIds: []};

@@ -1,15 +1,16 @@
-import { ExternalPriceRegister } from "@domain/price/usecases";
-import { priceLoaderOf } from "@gateway/data/adapters";
+import { ExternalPriceRegister } from '@domain/price/usecases';
+
+import { priceLoaderOf } from '@gateway/data/adapters';
 
 describe('priceLoaderOf', () => {
   it('should provide bridge to appropriate functions', async (done) => {
     const loader = {
-      loadPriceByTicker: async (ticker: string) => [],
+      loadPriceByTicker: () => [],
     };
     const register = new ExternalPriceRegister({
       checkThereIsSomeExternal: () => true,
-      getExternalPrices: async (ticker: string) => [],
-      putPrices: async (ticker: string, prices: any[]) => [],
+      getExternalPrices: () => [],
+      putPrices: () => [],
     });
     const f1 = jest.spyOn(loader, 'loadPriceByTicker');
     const f2 = jest.spyOn(register, 'registry');

@@ -1,6 +1,11 @@
+import { internet, name } from 'faker';
+
 import { UserCreator } from '@domain/user/usecases';
+
 import { Params } from '@gateway/presentation/contracts';
 import { UserCreatorController } from '@gateway/presentation/controllers';
+
+import { encoder } from '@mock/security';
 
 let workingController: UserCreatorController;
 let brokenController: UserCreatorController;
@@ -8,19 +13,15 @@ let params: Params
 
 describe('User creator controller', () => {
   beforeAll(() => {
-    const encoder = {
-      encode: async (plain: string) => plain,
-      verify: (plain: string, encoded: string) => plain === encoded,
-    }
-    const workingWorker = async () => ({ id: 'id', });
+    const workingWorker = () => ({ id: 'id', });
     const workingUseCase = new UserCreator(workingWorker, encoder);
     workingController = new UserCreatorController(workingUseCase);
-    const brokenWorker = async () => {throw new Error();};
+    const brokenWorker = () => {throw new Error();};
     const brokenUseCase = new UserCreator(brokenWorker, encoder);
     brokenController = new UserCreatorController(brokenUseCase);
     params = {
-      userName: 'Rafael',
-      password: '123456',
+      userName: name.findName(),
+      password: internet.password(),
     };
   });
 
@@ -28,7 +29,7 @@ describe('User creator controller', () => {
     await expect(
       workingController.handle(params)
     ).resolves.toEqual({statusCode: 201, data: expect.objectContaining({
-      userName: 'Rafael',
+      userName: params.userName,
       role: 'USER'
     })});
     done();
@@ -38,7 +39,7 @@ describe('User creator controller', () => {
     await expect(
       workingController.handle({...params, role: 'ADMIN'})
     ).resolves.toEqual({statusCode: 201, data: expect.objectContaining({
-      userName: 'Rafael',
+      userName: params.userName,
       role: 'ADMIN'
     })});
     done();

@@ -10,6 +10,7 @@ import RestAPI from '@infra/api';
 import GraphQL from '@infra/graphql';
 import { Factories } from '@infra/factories'
 import { env } from '@infra/environment';
+import { ISecurity } from '@gateway/security';
 
 export class Server {
   private running: HTTPServer;
@@ -48,7 +49,9 @@ export class ServerBuilder {
   readonly app: Express;
   private rest: () => Promise<void>;
   private graphql: () => Promise<void>;
-  private factories: () => Promise<Factories>;
+  private repositories: () => Promise<RepositoryFactories>;
+  private security: Factory<ISecurity>;
+  private factories: Factories;
 
   constructor() {
     this.app = express();
@@ -56,31 +59,48 @@ export class ServerBuilder {
     this.graphql = async () => {};
   }
 
-  withRepositories(factories: Factory<MayBePromise<RepositoryFactories>>) {
-    const build = async () => await factories.make();
-    this.factories = () => build()
-      .then(repositories => new Factories(repositories));
+  private async getFactories(): Promise<Factories> {
+    if (!this.factories) {
+      const repositories = await this.repositories();
+      this.factories = new Factories(repositories, this.security);
+    }
+    return this.factories;
+  };
+
+  withRepositories(repositories: Factory<MayBePromise<RepositoryFactories>>) {
+    this.repositories = async () => await repositories.make();
+    return this;
+  }
+
+  withSecurity(security: Factory<ISecurity>) {
+    this.security = security;
     return this;
   }
 
   withRestAPI() {
-    this.rest = () => this.factories()
+    this.rest = () => this.getFactories()
       .then(factories => factories.ofControllers())
       .then(controllers => new RestAPI(this.app).setup(controllers));
     return this;
   }
 
   withGraphQL() {
-    this.graphql = () => this.factories()
+    this.graphql = () => this.getFactories()
       .then(factories => factories.ofControllers())
       .then(controllers => new GraphQL(this.app).setup(controllers));
     return this;
   }
 
   async build() {
-    return this.rest()
-      .then(this.graphql)
-      .then(this.factories)
-      .then(factories => new Server(this.app, factories));
+    try {
+      await this.rest();
+      await this.graphql();
+      if (!this.factories) {
+        throw new Error("Illegal State");
+      }
+      return new Server(this.app, this.factories);
+    } catch (error) {
+      throw error
+    }
   }
 }

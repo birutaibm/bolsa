@@ -1,3 +1,5 @@
+import { datatype, finance, name as user } from 'faker';
+
 import { Investor, Wallet } from '@domain/wallet/entities';
 
 let name: string;
@@ -5,8 +7,8 @@ let owner: Investor;
 
 describe('Wallet', () => {
   beforeAll(() => {
-    name = 'Ações de crescimento';
-    owner = new Investor('0', 'Rafael Arantes');
+    name = finance.accountName();
+    owner = new Investor(datatype.uuid(), user.findName());
   });
 
   it('should be able to create empty wallet', () => {

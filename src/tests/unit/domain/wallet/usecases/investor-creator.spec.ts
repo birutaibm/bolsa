@@ -1,7 +1,9 @@
+import { datatype, name } from 'faker';
+
 import { InvestorCreator } from '@domain/wallet/usecases';
 import { InvestorData } from '@domain/wallet/usecases/dtos';
 
-import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-savers';
 
 let investorData: InvestorData
 let useCase: InvestorCreator;
@@ -9,8 +11,8 @@ let useCase: InvestorCreator;
 describe('Investor creator', () => {
   beforeAll(() => {
     investorData = {
-      id: 'myID',
-      name: 'My Name',
+      id: datatype.uuid(),
+      name: name.findName(),
     };
     const saver = new WalletModuleSavers();
     useCase = new InvestorCreator(saver.newInvestor.bind(saver));

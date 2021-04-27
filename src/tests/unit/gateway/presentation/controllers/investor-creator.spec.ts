@@ -1,30 +1,36 @@
+import { datatype, name as user } from 'faker';
+
 import { Authorization } from '@domain/user/usecases';
 import { InvestorCreator } from '@domain/wallet/usecases';
 
 import { InvestorCreatorController } from '@gateway/presentation/controllers';
 
-import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-savers';
 
 let authorization: string;
 let controller: InvestorCreatorController;
+let id: string;
+let name: string;
+let invalidName: string;
 
 describe('Investor creator controller', () => {
   beforeAll(() => {
     authorization = 'Token ';
+    id = datatype.hexaDecimal(24);
+    name = user.findName();
     const saver = new WalletModuleSavers();
+    invalidName = saver.invalidInDB;
     controller = new InvestorCreatorController(
       new InvestorCreator(saver.newInvestor.bind(saver)),
-      new Authorization(() => ({id: 'myId', userName: 'anybody', role: 'USER' })),
+      new Authorization({verifyToken: () => (
+        {id, userName: 'anybody', role: 'USER' }
+      )}),
     );
   });
 
   it('should be able to create investor', async done => {
-    const params = {
-      id: 'myId',
-      name: 'My Name',
-      authorization,
-    };
-    const result = {id: 'myId', name: 'My Name', wallets: []};
+    const params = { id, name, authorization, };
+    const result = {id, name, wallets: []};
     await expect(
       controller.handle(params)
     ).resolves.toEqual({statusCode: 201, data: result});
@@ -32,10 +38,7 @@ describe('Investor creator controller', () => {
   });
 
   it('should not be able to create investor without authorization', async done => {
-    const params = {
-      id: 'myId',
-      name: 'My Name',
-    };
+    const params = { id, name, };
     const result = {message: 'Login required to this action!'};
     await expect(
       controller.handle(params)
@@ -44,10 +47,7 @@ describe('Investor creator controller', () => {
   });
 
   it('should not be able to create investor without data', async done => {
-    const params = {
-      id: 'myId',
-      authorization,
-    };
+    const params = { id, authorization, };
     const result = {message: 'Required parameters: id, name'};
     await expect(
       controller.handle(params)
@@ -56,11 +56,7 @@ describe('Investor creator controller', () => {
   });
 
   it('should not be able to create investor with other user id', async done => {
-    const params = {
-      id: 'notTheLoggedUserId',
-      name: 'My Name',
-      authorization,
-    };
+    const params = { id: 'notTheLoggedUserId', name, authorization, };
     const result = {message: 'Login required to this action!'};
     await expect(
       controller.handle(params)
@@ -69,11 +65,7 @@ describe('Investor creator controller', () => {
   });
 
   it('should be able to repass unknown server error', async done => {
-    const params = {
-      id: 'myId',
-      name: 'Some reason invalid name in db rules',
-      authorization,
-    };
+    const params = { id, authorization, name: invalidName, };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});
     await expect(
       controller.handle(params)

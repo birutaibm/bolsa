@@ -1,5 +1,4 @@
-import { Factories } from '@infra/factories';
-
+import { Factories, securityFactory } from '@infra/factories';
 import { env } from '@infra/environment';
 import { Mongo } from '@infra/data-source/database';
 import { RepositoryFactoriesBuilder } from '@infra/data-source';
@@ -10,11 +9,13 @@ let factories: Factories;
 describe('Factories at infra', () => {
   beforeAll(async done => {
     mongo = new Mongo(env.mongodb);
-    factories = new Factories(await new RepositoryFactoriesBuilder()
-      .withMongo(env.mongodb)
-      .withAlphavantage(env.externalPrices.alphavantageKey)
-      .withPostgre(env.postgre)
-      .build()
+    factories = new Factories(
+      await new RepositoryFactoriesBuilder()
+        .withMongo(env.mongodb)
+        .withAlphavantage(env.externalPrices.alphavantageKey)
+        .withPostgre(env.postgre)
+        .build(),
+      securityFactory,
     );
     try {
       mongo.connect();
@@ -34,26 +35,20 @@ describe('Factories at infra', () => {
   });
 
   it('should be able to reuse instance of security factories', async (done) => {
-    const instance = await factories.ofSecurity();
-    await expect(
-      factories.ofSecurity()
-    ).resolves.toBe(instance);
+    const instance = factories.ofSecurity();
+    expect(factories.ofSecurity()).toBe(instance);
     done();
   });
 
   it('should be able to reuse instance of use-cases factories', async (done) => {
-    const instance = await factories.ofUseCases();
-    await expect(
-      factories.ofUseCases()
-    ).resolves.toBe(instance);
+    const instance = factories.ofUseCases();
+    expect(factories.ofUseCases()).toBe(instance);
     done();
   });
 
   it('should be able to reuse instance of controllers factories', async (done) => {
-    const instance = await factories.ofControllers();
-    await expect(
-      factories.ofControllers()
-    ).resolves.toBe(instance);
+    const instance = factories.ofControllers();
+    expect(factories.ofControllers()).toBe(instance);
     done();
   });
 });

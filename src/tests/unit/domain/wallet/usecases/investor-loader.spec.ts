@@ -3,6 +3,8 @@ import { InvestorNotFoundError } from '@errors/not-found';
 import { InvestorLoader } from '@domain/wallet/usecases';
 import { PopulatedInvestorData } from '@domain/wallet/usecases/dtos';
 
+import WalletModuleLoaders from '@mock/data-adapters/wallet-module-loaders';
+
 let asset: { id: string; ticker: string; name: string; };
 let opData: { id: string; date: Date; quantity: number; value: number; };
 let investorData: PopulatedInvestorData
@@ -10,11 +12,11 @@ let useCase: InvestorLoader;
 
 describe('Investor loader', () => {
   beforeAll(() => {
-    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
-    opData = { id: 'operationId', date: new Date(), quantity: 100, value: -2345 };
-    const owner = { id: 'myID', name: 'My Name' };
-    const wallet = { id: 'walletId', name: 'My Wallet', owner };
-    const position = { id: 'positionId', wallet, asset};
+    const loader = new WalletModuleLoaders();
+    asset = loader.asset;
+    const { id, date, quantity, value } = loader.operation;
+    opData = { id, date, quantity, value };
+    const { owner, wallet, position } = loader;
     investorData = {
       ...owner,
       wallets: [{
@@ -28,10 +30,7 @@ describe('Investor loader', () => {
         }],
       }],
     };
-    useCase = new InvestorLoader(id => {
-      if (id === investorData.id) return investorData;
-      throw new InvestorNotFoundError(id);
-    });
+    useCase = new InvestorLoader(loader.loadInvestor.bind(loader));
   });
 
   it('should be able to load investor', async done => {

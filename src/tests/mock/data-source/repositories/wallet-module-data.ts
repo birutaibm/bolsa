@@ -1,33 +1,39 @@
-import { InvestorData, OperationData, PositionData, WalletData } from "@gateway/data/contracts";
+import { datatype, date, finance, name } from 'faker';
 
-export const operations: OperationData[] = [{
+import {
+  InvestorData, OperationData, PositionData, WalletData
+} from '@gateway/data/contracts';
+
+import { assets } from './price-data';
+
+export const investors: InvestorData[] = [{
+  id: '1', // from user id
+  name: name.findName(),
+  walletIds: ['0'],
+}];
+
+export const wallets: WalletData[] = [{
   id: '0',
-  date: new Date(),
-  quantity: 100,
-  value: -2345,
-  positionId: '0',
+  name: finance.accountName(),
+  ownerId: investors[0].id,
+  positionIds: ['0'],
 }];
 
 export const positions: PositionData[] = [{
   id: '0',
   asset: {
-    id: '0',
-    ticker: 'BBAS3',
-    name: 'Banco do Brasil',
+    id: assets[0].id,
+    ticker: assets[0].ticker,
+    name: assets[0].name || assets[0].ticker,
   },
-  walletId: '0',
+  walletId: wallets[0].id,
   operationIds: ['0'],
 }];
 
-export const wallets: WalletData[] = [{
+export const operations: OperationData[] = [{
   id: '0',
-  name: 'Test Existent Wallet',
-  ownerId: '1',
-  positionIds: ['0'],
-}];
-
-export const investors: InvestorData[] = [{
-  id: '1',
-  name: 'Investor Name',
-  walletIds: ['0'],
+  date: date.past(),
+  quantity: datatype.number(),
+  value: -1 * Number(finance.amount()),
+  positionId: positions[0].id,
 }];

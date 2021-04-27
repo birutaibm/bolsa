@@ -1,27 +1,28 @@
-import { SymbolDictionaryEntry } from '@domain/price/entities';
-import { ExternalSymbolRegister } from '@domain/price/usecases/external-symbol-register';
 import { InvalidSymbolDictionaryEntryError } from '@errors/invalid-input';
 
+import { SymbolDictionaryEntry } from '@domain/price/entities';
+import { ExternalSymbolRegister } from '@domain/price/usecases/external-symbol-register';
+
+import { ExternalSymbolRegisterFunctionalities } from '@mock/data-adapters/external-symbol-register-functionalities';
+
+const symbol00 = 'ITUB3.SAO';
+const symbol01 = 'BBAS3.SAO';
+const symbol10 = 'PETR4.SAO';
+const ticker00 = 'ITUB3';
+const ticker01 = 'BBAS3';
+const ticker10 = 'PETR4';
+const source0 = 'banks';
+const source1 = 'commodities';
+const invalid = 'invalid';
 const reqFunValues = {
-  banks: ['ITUB3.SAO', 'BBAS3.SAO'],
-  commodities: ['PETR4.SAO', 'VALE4.SAO'],
+  [source0]: [symbol00, symbol01],
+  [source1]: [symbol10],
 };
 let symbolRegister: ExternalSymbolRegister;
 
 describe('ExternalSymbolRegister', () => {
   beforeAll(() => {
-    const reqFun = {
-      getKnownSources: () => Object.keys(reqFunValues),
-      getWorker: (source: string) => {
-        if (!reqFunValues[source])
-          throw new Error();
-        return {
-          getValidSymbols: async () => reqFunValues[source],
-          register: async (info: SymbolDictionaryEntry) =>
-            ({...info, id: info.ticker}),
-        };
-      },
-    };
+    const reqFun = new ExternalSymbolRegisterFunctionalities(reqFunValues);
     symbolRegister = new ExternalSymbolRegister(reqFun);
   });
 
@@ -34,9 +35,9 @@ describe('ExternalSymbolRegister', () => {
 
   it('should be able to registry a valid entry', async (done) => {
     const info: SymbolDictionaryEntry = {
-      source: 'banks',
-      externalSymbol: 'ITUB3.SAO',
-      ticker: 'ITUB3',
+      source: source0,
+      externalSymbol: symbol00,
+      ticker: ticker00,
     };
     await expect(
       symbolRegister.registry(info)
@@ -46,9 +47,9 @@ describe('ExternalSymbolRegister', () => {
 
   it('should not be able to registry an entry with invalid symbol', async (done) => {
     const info: SymbolDictionaryEntry = {
-      source: 'banks',
-      externalSymbol: 'invalid',
-      ticker: 'ITUB3',
+      source: source0,
+      externalSymbol: invalid,
+      ticker: ticker00,
     };
     await expect(
       symbolRegister.registry(info)
@@ -58,9 +59,9 @@ describe('ExternalSymbolRegister', () => {
 
   it('should not be able to registry an entry with invalid source', async (done) => {
     const info: SymbolDictionaryEntry = {
-      source: 'invalid',
-      externalSymbol: 'ITUB3.SAO',
-      ticker: 'ITUB3',
+      source: invalid,
+      externalSymbol: symbol00,
+      ticker: ticker00,
     };
     await expect(
       symbolRegister.registry(info)
@@ -70,9 +71,9 @@ describe('ExternalSymbolRegister', () => {
 
   it('should not be able to registry an invalid entry', async (done) => {
     const info: SymbolDictionaryEntry = {
-      source: 'commodities',
-      externalSymbol: 'ITUB3.SAO',
-      ticker: 'PETR4',
+      source: source1,
+      externalSymbol: symbol00,
+      ticker: ticker10,
     };
     await expect(
       symbolRegister.registry(info)
@@ -82,17 +83,17 @@ describe('ExternalSymbolRegister', () => {
 
   it('should be able to registry a valid dictionary', async (done) => {
     const info = [{
-      source: 'banks',
-      externalSymbol: 'ITUB3.SAO',
-      ticker: 'ITUB3',
+      source: source0,
+      externalSymbol: symbol00,
+      ticker: ticker00,
     }, {
-      source: 'banks',
-      externalSymbol: 'BBAS3.SAO',
-      ticker: 'BBAS3',
+      source: source0,
+      externalSymbol: symbol01,
+      ticker: ticker01,
     }, {
-      source: 'commodities',
-      externalSymbol: 'PETR4.SAO',
-      ticker: 'PETR4',
+      source: source1,
+      externalSymbol: symbol10,
+      ticker: ticker10,
     }];
     const response = await symbolRegister.registryAll(info);
     expect(response.length).toEqual(info.length);
@@ -104,22 +105,22 @@ describe('ExternalSymbolRegister', () => {
 
   it('should be able to registry all valid entries of a dictionary', async (done) => {
     const valid = [{
-      source: 'banks',
-      externalSymbol: 'ITUB3.SAO',
-      ticker: 'ITUB3',
+      source: source0,
+      externalSymbol: symbol00,
+      ticker: ticker00,
     }, {
-      source: 'banks',
-      externalSymbol: 'BBAS3.SAO',
-      ticker: 'BBAS3',
+      source: source0,
+      externalSymbol: symbol01,
+      ticker: ticker01,
     }, {
-      source: 'commodities',
-      externalSymbol: 'PETR4.SAO',
-      ticker: 'PETR4',
+      source: source1,
+      externalSymbol: symbol10,
+      ticker: ticker10,
     }];
     const invalid = [{
-      source: 'commodities',
-      externalSymbol: 'ITUB3.SAO',
-      ticker: 'PETR4',
+      source: source1,
+      externalSymbol: symbol00,
+      ticker: ticker10,
     }];
     const response = await symbolRegister.registryAll([...invalid, ...valid]);
     expect(response.length).toEqual(valid.length);

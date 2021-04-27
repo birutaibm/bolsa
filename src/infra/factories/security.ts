@@ -2,7 +2,7 @@ import { SingletonFactory } from '@utils/factory';
 import Security, { JwtConfig } from '@gateway/security';
 import { env } from '@infra/environment';
 
-const securityFactory = new SingletonFactory(
+export const securityFactory = new SingletonFactory(
   () => {
     const jwtConfig: JwtConfig = {
       publicKey: env.jwt.publicKey,
@@ -15,5 +15,3 @@ const securityFactory = new SingletonFactory(
     return new Security(10, jwtConfig);
   }
 );
-
-export default securityFactory;

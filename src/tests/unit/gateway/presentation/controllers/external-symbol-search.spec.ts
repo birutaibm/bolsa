@@ -1,6 +1,7 @@
 import { ExternalSymbolSearch, SearchResult } from '@domain/price/usecases';
 import { Params } from '@gateway/presentation/contracts';
 import { ExternalSymbolSearchController } from '@gateway/presentation/controllers';
+import { datatype } from 'faker';
 
 let workingController: ExternalSymbolSearchController;
 let emptyController: ExternalSymbolSearchController;
@@ -11,13 +12,11 @@ let result: SearchResult;
 
 describe('Load last price controller', () => {
   beforeAll(() => {
-    ticker = 'ticker';
+    ticker = datatype.string();
     result = {source: {symbol: {}}};
     const workingLoader = {
       checkThereIsSomeExternal: () => true,
-      getExternalSymbols: () => [
-        Promise.resolve(result),
-      ],
+      getExternalSymbols: () => [ result ],
     };
     const workingUseCase = new ExternalSymbolSearch(workingLoader);
     workingController = new ExternalSymbolSearchController(workingUseCase);

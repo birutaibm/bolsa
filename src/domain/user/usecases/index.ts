@@ -1,4 +1,4 @@
-export { default as Encoder } from './encoder';
+export * from './dependencies';
 export * from './dto';
 export { default as UserLoader } from './user-loader';
 export { default as UserCreator } from './user-creator';

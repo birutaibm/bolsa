@@ -5,7 +5,7 @@ import { Persisted } from '@utils/types';
 import { PositionCreator } from '@domain/wallet/usecases';
 import { AssetData, PopulatedWalletData } from '@domain/wallet/usecases/dtos';
 
-import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-savers';
 
 let investorId: string;
 let walletData: Persisted<PopulatedWalletData>;
@@ -23,7 +23,7 @@ describe('Position creator', () => {
 
   it('should be able create position', async done => {
     const position = await useCase.create({
-      assetId: 'assetId', walletId: walletData.id, isLogged: () => true
+      assetId: asset.id, walletId: walletData.id, isLogged: () => true
     });
     expect(position.asset).toEqual(expect.objectContaining(asset));
     expect(position.wallet.name).toEqual(walletData.name);
@@ -36,7 +36,7 @@ describe('Position creator', () => {
   it('should not be able create position without been logged', async done => {
     await expect(
       useCase.create({
-        assetId: 'assetId', walletId: walletData.id, isLogged: () => false
+        assetId: asset.id, walletId: walletData.id, isLogged: () => false
       })
     ).rejects.toBeInstanceOf(SignInRequiredError);
     done();
@@ -46,7 +46,7 @@ describe('Position creator', () => {
     const id = 'nonWalletId';
     await expect(
       useCase.create({
-        assetId: 'assetId', walletId: id, isLogged: () => true
+        assetId: asset.id, walletId: id, isLogged: () => true
       })
     ).rejects.toBeInstanceOf(WalletNotFoundError);
     done();
@@ -56,7 +56,7 @@ describe('Position creator', () => {
     const walletName = 'nonWallet';
     await expect(
       useCase.create({
-        assetId: 'assetId', walletName, investorId, isLogged: () => true
+        assetId: asset.id, walletName, investorId, isLogged: () => true
       })
     ).resolves.toEqual(expect.objectContaining({
       wallet: expect.objectContaining({ name: walletName })

@@ -5,11 +5,17 @@ import {
 } from '@errors/none-external-symbol-repository';
 
 import {
-  ExternalSymbolSearch, SearchResult, RequiredFunctionalities
+  ExternalSymbolSearch, RequiredFunctionalities
 } from '@domain/price/usecases/external-symbol-search';
 
-let ticker: string;
-let optimisticResult: SearchResult;
+const ticker = 'ITUB4';
+const optimisticResult = {
+  externalSource: {
+    'ITUB4.SAO': {
+      name: 'Itaú Unibanco SA',
+    },
+  },
+};
 let noExternals: RequiredFunctionalities;
 let goodExternals: RequiredFunctionalities;
 let badExternals: RequiredFunctionalities;
@@ -17,19 +23,9 @@ let mixedExternals: RequiredFunctionalities;
 
 describe('ExternalSymbolSearch', () => {
   beforeAll(() => {
-    ticker = 'ITUB4';
-    optimisticResult = {
-      externalSource: {
-        'ITUB4.SAO': {
-          name: 'Itaú Unibanco SA',
-        },
-      },
-    };
-    const optimisticPromise: Promise<SearchResult> = new Promise(
-      (resolve, reject) => resolve(optimisticResult)
-    );
-    const pessimisticPromise: Promise<SearchResult> = new Promise(
-      (resolve, reject) => reject(new ExternalSymbolNotFoundError('externalSource', ticker))
+    const optimisticPromise = Promise.resolve(optimisticResult);
+    const pessimisticPromise = Promise.reject(
+      new ExternalSymbolNotFoundError('externalSource', ticker)
     );
     noExternals = {
       checkThereIsSomeExternal: () => false,

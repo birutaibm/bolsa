@@ -1,3 +1,5 @@
+import { company, datatype, finance, name } from 'faker';
+
 import { Persisted } from '@utils/types';
 
 import {
@@ -5,6 +7,8 @@ import {
 } from '@domain/wallet/entities';
 
 import { positionView } from '@gateway/presentation/view/position';
+
+import { fakeTicker } from '@mock/price';
 
 let id: string;
 let walletName: string;
@@ -17,18 +21,22 @@ let date: Date;
 let quantity: number;
 let value: number;
 
-describe('Wallet view', () => {
+describe('Position view', () => {
   beforeAll(() => {
-    id = 'walletId';
-    walletName = 'My Wallet';
-    investorId = 'investorId';
-    investorName = 'My Name';
+    id = datatype.number().toString();
+    walletName = finance.accountName();
+    investorId = datatype.hexaDecimal(24);
+    investorName = name.findName();
     owner = new Investor(investorId, investorName);
-    wallet = new Wallet('walletId', walletName, owner);
-    asset = { id: 'assetId', ticker: 'ITUB3', name: 'Itaú Unibanco SA' };
+    wallet = new Wallet(datatype.number().toString(), walletName, owner);
+    asset = {
+      id: datatype.hexaDecimal(24),
+      ticker: fakeTicker(),
+      name: company.companyName(),
+    };
     date = new Date();
-    quantity = 100;
-    value = -2345;
+    quantity = datatype.number();
+    value = -1 * Number(finance.amount());
   });
 
   it('should be able to format empty position data', () => {
@@ -42,7 +50,7 @@ describe('Wallet view', () => {
 
   it('should be able to format filled position data', () => {
     const position = new Position(id, asset, wallet);
-    new Operation('operationId', date, quantity, value, position);
+    new Operation(datatype.number().toString(), date, quantity, value, position);
     expect(positionView(position)).toEqual(expect.objectContaining({
       id, asset, wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })

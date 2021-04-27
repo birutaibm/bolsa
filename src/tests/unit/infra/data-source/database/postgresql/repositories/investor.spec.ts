@@ -1,7 +1,7 @@
 import { AssetNotFoundError, InvestorNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
-import { InvestorData, RepositoryChangeCommandExecutor, WalletData } from '@gateway/data/contracts';
+import { InvestorData, WalletData } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -17,6 +17,7 @@ let investors: string[];
 
 describe('Postgre investor repository', () => {
   beforeAll(async done => {
+    investors = [];
     try {
       db = new PostgreSQL(env.postgre);
       dto = {
@@ -29,7 +30,6 @@ describe('Postgre investor repository', () => {
         })),
       );
       repo = factories.investors.make();
-      investors = [];
     } catch (error) {
       console.error(error);
       done(error);

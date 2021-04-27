@@ -1,3 +1,5 @@
+import { datatype, date, finance } from 'faker';
+
 import { PositionNotFoundError } from '@errors/not-found';
 import { SignInRequiredError } from '@errors/sign-in-required';
 import { Persisted } from '@utils/types';
@@ -5,10 +7,10 @@ import { Persisted } from '@utils/types';
 import { OperationCreator } from '@domain/wallet/usecases';
 import { PopulatedPositionData } from '@domain/wallet/usecases/dtos';
 
-import WalletModuleSavers from '@mock/data-adapters/wallet-module-saver';
+import WalletModuleSavers from '@mock/data-adapters/wallet-module-savers';
 
 let asset: { id: string; ticker: string; name: string; };
-let opData: { id: string; date: Date; quantity: number; value: number; };
+let opData: { date: Date; quantity: number; value: number; };
 let positionData: Persisted<PopulatedPositionData>
 let useCase: OperationCreator;
 
@@ -16,7 +18,7 @@ describe('Operation creator', () => {
   beforeAll(() => {
     const saver = new WalletModuleSavers();
     asset = saver.asset;
-    opData = { id: 'operationId', date: new Date(), quantity: 100, value: -2345 };
+    opData = { date: date.recent(), quantity: -1 * datatype.number({min: 1}), value: Number(finance.amount()) };
     positionData = {
       ...saver.position,
       operations: [],

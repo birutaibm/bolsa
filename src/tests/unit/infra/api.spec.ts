@@ -1,27 +1,53 @@
 import request from 'supertest';
+import { datatype, date, finance, internet, name as user } from 'faker';
 
-import { Factory, SingletonFactory } from '@utils/factory';
+import { AssetData } from '@gateway/data/contracts';
+
+import { Asset } from '@infra/data-source/model';
 import { Factories } from '@infra/factories';
-import { ServerBuilder } from '@infra/server';
+import { Server, ServerBuilder } from '@infra/server';
 
 import {
-  FakeExternalPriceRepository,
-  FakePriceRepository, FakeUserRepository, FakeWalletRepository, FakeInvestorRepository, FakePositionRepository, FakeOperationRepository
-} from '@mock/data-source/repositories';
-import { RepositoryFactories } from '@gateway/factories';
+  investors, wallets, positions, operations
+} from '@mock/data-source/repositories/wallet-module-data';
+import {
+  assets, externalSourceName, externalSourceSymbols
+} from '@mock/data-source/repositories/price-data';
+import { mockedServerBuilder } from '@mock/factories';
+import { users } from '@mock/data-source/repositories/users-data';
 
+let symbol: string;
+let investorId: string;
+let walletId: string;
+let investorName: string;
+let walletName: string;
+let positionId: string;
+let positionAsset: AssetData;
+let operationId: string;
+let asset: Asset;
+let value: number;
+let quantity: number;
 let app: ServerBuilder['app'];
-let factories: Factories;
+let server: Server;
 
 describe('API', () => {
   beforeAll(async done => {
-    const repositories = mockRepositories();
-    factories = new Factories(repositories.make());
-    await mockSecurity();
-    const builder = new ServerBuilder().withRestAPI().withRepositories(repositories);
+    investorId = investors[0].id;
+    walletId = wallets[0].id;
+    investorName = investors[0].name;
+    walletName = wallets[0].name;
+    positionId = positions[0].id;
+    positionAsset = positions[0].asset;
+    operationId = operations[0].id;
+    value = operations[0].value;
+    quantity = operations[0].quantity;
+    asset = assets[0];
+    symbol = Object.keys(externalSourceSymbols)[0];
+    const builder = mockedServerBuilder()
+      .withRestAPI();
     app = builder.app;
     try {
-      builder.build();
+      server = await builder.build();
       done();
     } catch (error) {
       done(error);
@@ -29,19 +55,18 @@ describe('API', () => {
   });
 
   it('should be able to create user', async (done) => {
+    const userName = user.findName();
+    const password = internet.password();
     request(app)
       .post('/api/users')
-      .send({
-        userName: 'meu usuário',
-        password: 'minha senha',
-      })
+      .send({ userName, password })
       .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(201)
       .end((err, res) => {
         if (err) return done(err);
         expect(res.body).toBeInstanceOf(Object);
-        expect(res.body.userName).toBe('meu usuário');
+        expect(res.body.userName).toBe(userName);
         expect(res.body.role).toBe('USER');
         expect(res.body.password).toBeUndefined();
         expect(res.body.passHash).toBeUndefined();
@@ -51,16 +76,10 @@ describe('API', () => {
   });
 
   it('should be able to sign-in', async (done) => {
-    await (await factories.ofUseCases()).user.userCreator.make().create(
-      'eu mesmo',
-      'minha senha',
-    );
+    const { userName, passHash: password } = users[0];
     request(app)
       .post('/api/sessions')
-      .send({
-        userName: 'eu mesmo',
-        password: 'minha senha',
-      })
+      .send({ userName, password })
       .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(201)
@@ -73,19 +92,27 @@ describe('API', () => {
       });
   });
 
-  it('should be able to access ITUB3 symbol route', async (done) => {
-    const response = await request(app).get('/api/symbols/ITUB3');
+  it('should be able to access a symbol route', async (done) => {
+    const response = await request(app).get(`/api/symbols/${symbol}`);
+    const values = Object.keys(externalSourceSymbols[symbol]).reduce(
+      (acc, key) => ({ ...acc, [key]: expect.objectContaining({}) }),
+      {},
+    );
     expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      [externalSourceName]: values
+    });
     done();
   });
 
   it('should be able to post symbol when logged in as admin', async (done) => {
+    const req = {
+      [externalSourceName]: Object.keys(externalSourceSymbols[symbol])[0],
+    };
     request(app)
-      .put('/api/symbols/ITUB3')
+      .put(`/api/symbols/${symbol}`)
       .set('Authorization', 'Token adminToken')
-      .send({
-        'external source': 'ITUB3.SAO',
-      })
+      .send(req)
       .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(201)
@@ -98,217 +125,14 @@ describe('API', () => {
       });
   });
 
-  it('should be able to load operation', async (done) => {
-    request(app)
-      .get('/api/operations/0')
-      .set('Authorization', 'Token adminToken')
-      .set("Accept", "application/json charset=utf-8")
-      .expect("Content-Type", /json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          value: -2345,
-          quantity: 100,
-        }));
-        done();
-      });
-  });
-
-  it('should be able to create operation', async (done) => {
-    request(app)
-      .post('/api/operations')
-      .set('Authorization', 'Token adminToken')
-      .set("Accept", "application/json charset=utf-8")
-      .send({
-        date: '2021-03-24',
-        quantity: '100',
-        value: '-1234.56',
-        positionId: '0',
-      })
-      .expect("Content-Type", /json/)
-      .expect(201)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          value: -1234.56,
-          quantity: 100,
-        }));
-        done();
-      });
-  });
-
-  it('should be able to load position', async (done) => {
-    request(app)
-      .get('/api/positions/0')
-      .set('Authorization', 'Token adminToken')
-      .set("Accept", "application/json charset=utf-8")
-      .expect("Content-Type", /json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          wallet: expect.objectContaining({
-            name: 'Test Existent Wallet',
-            owner: expect.objectContaining({ name: 'Investor Name' }),
-          }),
-          asset: expect.objectContaining({
-            ticker: 'BBAS3',
-            name: 'Banco do Brasil',
-          }),
-        }));
-        expect(res.body.operations).toEqual(expect.arrayContaining([
-          expect.objectContaining({
-            value: -2345,
-            quantity: 100,
-          })
-        ]));
-        done();
-      });
-  });
-
-  it('should be able to create position', async (done) => {
-    request(app)
-      .post('/api/positions')
-      .set('Authorization', 'Token adminToken')
-      .set("Accept", "application/json charset=utf-8")
-      .send({
-        walletId: '0',
-        assetId: '0',
-      })
-      .expect("Content-Type", /json/)
-      .expect(201)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          wallet: expect.objectContaining({
-            name: 'Test Existent Wallet',
-            owner: expect.objectContaining({ name: 'Investor Name' }),
-          }),
-          asset: expect.objectContaining({
-            ticker: 'BBAS3',
-            name: 'Banco do Brasil',
-          }),
-          operations: [],
-        }));
-        done();
-      });
-  });
-
-  it('should be able to load wallet', async (done) => {
-    request(app)
-      .get('/api/wallets/0')
-      .set('Authorization', 'Token adminToken')
-      .set("Accept", "application/json charset=utf-8")
-      .expect("Content-Type", /json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          name: 'Test Existent Wallet',
-          owner: expect.objectContaining({ name: 'Investor Name' }),
-        }));
-        expect(res.body.positions).toEqual(expect.arrayContaining([
-          expect.objectContaining({
-            asset: expect.objectContaining({
-              ticker: 'BBAS3',
-              name: 'Banco do Brasil',
-            }),
-            operations: expect.arrayContaining([
-              expect.objectContaining({
-                value: -2345,
-                quantity: 100,
-              })
-            ]),
-          })
-        ]));
-        done();
-      });
-  });
-
-  it('should be able to create wallet', async (done) => {
-    request(app)
-      .post('/api/wallets')
-      .set('Authorization', 'Token adminToken')
-      .set("Accept", "application/json charset=utf-8")
-      .send({
-        name: 'My Wallet', investorId: '1',
-      })
-      .expect("Content-Type", /json/)
-      .expect(201)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          name: 'My Wallet',
-          owner: expect.objectContaining({ name: 'Investor Name' }),
-          positions: [],
-        }));
-        done();
-      });
-  });
-
-  it('should be able to load investor', async (done) => {
-    request(app)
-      .get('/api/investors/1')
-      .set('Authorization', 'Token adminToken')
-      .set("Accept", "application/json charset=utf-8")
-      .expect("Content-Type", /json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          name: 'Investor Name',
-          wallets: expect.arrayContaining([expect.objectContaining({
-            name: 'Test Existent Wallet',
-            positions: expect.arrayContaining([
-              expect.objectContaining({
-                asset: expect.objectContaining({
-                  ticker: 'BBAS3',
-                  name: 'Banco do Brasil',
-                }),
-                operations: expect.arrayContaining([
-                  expect.objectContaining({
-                    value: -2345,
-                    quantity: 100,
-                  })
-                ]),
-              })
-            ])
-          })]),
-        }));
-        done();
-      });
-  });
-
-  it('should be able to create investor', async (done) => {
-    request(app)
-      .post('/api/investors')
-      .set('Authorization', 'Token userToken')
-      .set("Accept", "application/json charset=utf-8")
-      .send({
-        id: '0',
-        name: 'My Own Name'
-      })
-      .expect("Content-Type", /json/)
-      .expect(201)
-      .end((err, res) => {
-        if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          name: 'My Own Name',
-          wallets: [],
-          id: '0',
-        }));
-        done();
-      });
-  });
-
   it('should not be able to post symbol when logged in as user', async (done) => {
+    const req = {
+      [externalSourceName]: Object.keys(externalSourceSymbols[symbol])[0],
+    };
     request(app)
-      .put('/api/symbols/VALE3')
+      .put(`/api/symbols/${symbol}`)
       .set('Authorization', 'Token userToken')
-      .send({
-        'external source': 'VALE3.SAO',
-      })
+      .send(req)
       .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(401)
@@ -320,43 +144,183 @@ describe('API', () => {
       });
   });
 
-  it('should be able to access ITUB4 last price route', async (done) => {
-    const res = await request(app).get('/api/price/last/ITUB4');
+  it('should be able to access a last price route', async (done) => {
+    const res = await request(app).get(`/api/price/last/${asset.ticker}`);
     expect(res.status).toEqual(200);
     done();
   });
-});
 
-async function mockSecurity() {
-  const security = (await factories.ofSecurity()).make();
-  jest.spyOn(security, 'verifyToken').mockImplementation(token => {
-    switch (token) {
-      case 'userToken':
-        return { id: '0', userName: 'testUser', role: 'USER' };
-      case 'adminToken':
-        return { id: '1', userName: 'testAdmin', role: 'ADMIN' };
-      default:
-        console.log(token);
-        return {};
-    }
+  it('should be able to load operation', async (done) => {
+    request(app)
+      .get(`/api/operations/${operationId}`)
+      .set('Authorization', 'Token adminToken')
+      .set("Accept", "application/json charset=utf-8")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({ value, quantity, }));
+        done();
+      });
   });
-}
 
-function mockRepositories(): Factory<RepositoryFactories> {
-  const prices = new SingletonFactory(() => ({
-    internal: new FakePriceRepository(),
-    externals: [new FakeExternalPriceRepository()],
-  }));
-  const factories = {
-    disconnectAll: async () => [],
-    prices,
-    users: new SingletonFactory(() => new FakeUserRepository()),
-    investors: new SingletonFactory(() => new FakeInvestorRepository()),
-    wallets: new SingletonFactory(() => new FakeWalletRepository()),
-    positions: new SingletonFactory(() => new FakePositionRepository(
-      prices.make().internal
-    )),
-    operations: new SingletonFactory(() => new FakeOperationRepository()),
-  };
-  return new SingletonFactory(() => factories);
-}
+  it('should be able to create operation', async (done) => {
+    const req = {
+      date: date.recent().toISOString(),
+      quantity: datatype.number().toString(),
+      value: `-${finance.amount()}`,
+      positionId: positionId,
+    };
+    request(app)
+      .post('/api/operations')
+      .set('Authorization', 'Token adminToken')
+      .set("Accept", "application/json charset=utf-8")
+      .send(req)
+      .expect("Content-Type", /json/)
+      .expect(201)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({
+          date: req.date,
+          value: Number(req.value),
+          quantity: Number(req.quantity),
+        }));
+        done();
+      });
+  });
+
+  it('should be able to load position', async (done) => {
+    request(app)
+      .get(`/api/positions/${positionId}`)
+      .set('Authorization', 'Token adminToken')
+      .set("Accept", "application/json charset=utf-8")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({
+          wallet: expect.objectContaining({
+            name: walletName,
+            owner: expect.objectContaining({ name: investorName }),
+          }),
+          asset: positionAsset,
+        }));
+        expect(res.body.operations).toEqual(expect.arrayContaining([
+          expect.objectContaining({ value, quantity, })
+        ]));
+        done();
+      });
+  });
+
+  it('should be able to create position', async (done) => {
+    request(app)
+      .post('/api/positions')
+      .set('Authorization', 'Token adminToken')
+      .set("Accept", "application/json charset=utf-8")
+      .send({ walletId, assetId: asset.id, })
+      .expect("Content-Type", /json/)
+      .expect(201)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({
+          wallet: expect.objectContaining({
+            name: walletName,
+            owner: expect.objectContaining({ name: investorName }),
+          }),
+          asset: positionAsset,
+          operations: [],
+        }));
+        done();
+      });
+  });
+
+  it('should be able to load wallet', async (done) => {
+    request(app)
+      .get(`/api/wallets/${walletId}`)
+      .set('Authorization', 'Token adminToken')
+      .set("Accept", "application/json charset=utf-8")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({
+          name: walletName,
+          owner: expect.objectContaining({ name: investorName }),
+        }));
+        expect(res.body.positions).toEqual(expect.arrayContaining([
+          expect.objectContaining({
+            asset: positionAsset,
+            operations: expect.arrayContaining([
+              expect.objectContaining({ value, quantity, })
+            ]),
+          })
+        ]));
+        done();
+      });
+  });
+
+  it('should be able to create wallet', async (done) => {
+    const name = finance.accountName();
+    request(app)
+      .post('/api/wallets')
+      .set('Authorization', 'Token adminToken')
+      .set("Accept", "application/json charset=utf-8")
+      .send({ name, investorId, })
+      .expect("Content-Type", /json/)
+      .expect(201)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({
+          name, positions: [],
+          owner: expect.objectContaining({ name: investorName }),
+        }));
+        done();
+      });
+  });
+
+  it('should be able to load investor', async (done) => {
+    request(app)
+      .get(`/api/investors/${investorId}`)
+      .set('Authorization', 'Token adminToken')
+      .set("Accept", "application/json charset=utf-8")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({
+          name: investorName,
+          wallets: expect.arrayContaining([expect.objectContaining({
+            name: walletName,
+            positions: expect.arrayContaining([
+              expect.objectContaining({
+                asset: positionAsset,
+                operations: expect.arrayContaining([
+                  expect.objectContaining({value, quantity, })
+                ]),
+              })
+            ])
+          })]),
+        }));
+        done();
+      });
+  });
+
+  it('should be able to create investor', async (done) => {
+    const id = '0';
+    const name = user.findName();
+    request(app)
+      .post('/api/investors')
+      .set('Authorization', 'Token userToken')
+      .set("Accept", "application/json charset=utf-8")
+      .send({ id, name })
+      .expect("Content-Type", /json/)
+      .expect(201)
+      .end((err, res) => {
+        if (err) return done(err);
+        expect(res.body).toEqual(expect.objectContaining({
+          id, name, wallets: [],
+        }));
+        done();
+      });
+  });
+});

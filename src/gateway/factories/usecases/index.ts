@@ -3,7 +3,7 @@ import { Factory } from '@utils/factory';
 import {
   RepositoryFactories
 } from '@gateway/factories';
-import Security from '@gateway/security';
+import { ISecurity } from '@gateway/security';
 
 import createPriceUseCasesFactories from './price';
 import createUserUseCasesFactories from './user';
@@ -13,7 +13,7 @@ export function createUseCasesFactories(
   {
     prices, users, investors, wallets, positions, operations,
   }: RepositoryFactories,
-  security: Factory<Security>,
+  security: Factory<ISecurity>,
 ) {
   const priceUseCases = createPriceUseCasesFactories(prices.make());
   const userUseCases = createUserUseCasesFactories(users.make(), security.make());

@@ -1,10 +1,14 @@
 import { AssetNotFoundError } from '@errors/not-found';
 import { PriceUnavailableError } from '@errors/price-unavailable';
 
+import { MayBePromise } from '@utils/types';
+
 import { Price } from '@domain/price/entities';
 import { LastPriceLoader } from '@domain/price/usecases/last-price-loader';
 
-type LoadFn = (ticker: string) => Promise<Price[]>;
+import { fakePrice, fakeTicker } from '@mock/price';
+
+type LoadFn = (ticker: string) => MayBePromise<Price[]>;
 
 let ticker: string;
 let older: Price;
@@ -20,29 +24,13 @@ describe('LastPriceLoader', () => {
       date.setDate(date.getDate()+1);
       return date;
     };
-    ticker = 'ITUB4';
-    older = {
-      ticker,
-      name: ticker,
-      date: new Date(),
-      min: 12.34,
-      open: 13.24,
-      close: 13.42,
-      max: 14.32,
-    };
-    newer = {
-      ticker,
-      name: ticker,
-      date: nextDay(new Date()),
-      min: 12.34,
-      open: 13.24,
-      close: 13.42,
-      max: 14.32,
-    };
-    doNotLoad = async () => {throw new Error("Can not load anything")};
-    loadEmpty = async () => [];
-    load1 = async (ticker: string) => [older];
-    load2 = async (ticker: string) => [newer];
+    ticker = fakeTicker();
+    older = { ...fakePrice(), ticker, name: ticker };
+    newer = { ...fakePrice({date: nextDay(older.date)}), ticker, name: ticker };
+    doNotLoad = () => Promise.reject(new Error("Can not load anything"));
+    loadEmpty = () => [];
+    load1 = () => [older];
+    load2 = () => [newer];
   });
 
   it('should reject with PriceUnavailableError if there is no load function', async (done) => {

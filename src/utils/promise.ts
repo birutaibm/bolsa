@@ -1,4 +1,5 @@
 import { MultipleErrors } from "@errors/multiple-errors";
+import { MayBePromise } from "./types";
 
 type Results<T> = {
   resolved: T[];
@@ -15,7 +16,7 @@ export const promise = {
     }
   },
 
-  async all<T>(promises: Array<Promise<T>>): Promise<Results<T>> {
+  async all<T>(promises: Array<MayBePromise<T>>): Promise<Results<T>> {
     if (promises.length === 0) {
       return Promise.resolve({resolved: [], rejected: []});
     };
@@ -36,16 +37,23 @@ export const promise = {
           }
         }
       };
-      promises.forEach((p, i) => p.then(
-        result => {
-          resolved[i] = result;
+      promises.forEach((p, i) => {
+        if (p instanceof Promise) {
+          p.then(
+            result => {
+              resolved[i] = result;
+              finishStep();
+            },
+            error => {
+              rejected[i] = error;
+              finishStep();
+            },
+          );
+        } else {
+          resolved[i] = p;
           finishStep();
-        },
-        error => {
-          rejected[i] = error;
-          finishStep();
-        },
-      ));
+        }
+      });
     });
   }
 };

@@ -6,50 +6,40 @@ import { Authorization } from '@domain/user/usecases';
 import { OperationLoader, WalletLoader } from '@domain/wallet/usecases';
 
 import { OperationLoaderController } from '@gateway/presentation/controllers';
+import WalletModuleLoaders from '@mock/data-adapters/wallet-module-loaders';
 
 let date: Date;
 let quantity: number;
 let value: number;
 let operationId: string;
-let positionId: string;
 let investorId: string;
+let walletName: string;
 let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
+let invalid: string;
 let operationLoader: OperationLoader;
 let controller: OperationLoaderController;
 
-describe('Position loader controller', () => {
+describe('Operation loader controller', () => {
   beforeAll(() => {
-    date = new Date();
-    quantity = 100;
-    value = -2345;
-    operationId = 'operationId';
-    positionId = 'positionId'
+    const loader = new WalletModuleLoaders();
+    const {operation} = loader;
+    date = operation.date;
+    quantity = operation.quantity;
+    value = operation.value;
+    operationId = operation.id;
     authorization = 'Token ',
-    investorId = 'myId';
-    owner = { id: investorId, name: 'My Name' };
-    asset = {id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
-    operationLoader = new OperationLoader((id, isLoggedUserId) => {
-      if (id === 'Invalid id in db rules') {
-        throw new Error("");
-      } else if (id !== operationId) {
-        throw new OperationNotFoundError(id);
-      }
-      if (!isLoggedUserId(owner.id)) {
-        throw new SignInRequiredError();
-      }
-      return {
-        id, date, quantity, value, position: {
-          id: positionId, asset,
-          wallet: { id: 'walletId', name: 'My Wallet', owner },
-        }
-      };
-    });
+    owner = loader.owner;
+    investorId = owner.id;
+    asset = loader.asset;
+    invalid = loader.invalidInDB;
+    walletName = loader.wallet.name;
+    operationLoader = new OperationLoader(loader.loadOperation.bind(loader));
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     controller = new OperationLoaderController(
-      operationLoader, new Authorization(() => loggedUser),
+      operationLoader, new Authorization({verifyToken: () => loggedUser}),
     );
   });
 
@@ -62,7 +52,7 @@ describe('Position loader controller', () => {
       id: operationId, date: date.toISOString(), quantity, value,
       position: expect.objectContaining({
         asset, wallet: expect.objectContaining({
-          name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
+          name: walletName, owner: expect.objectContaining({name: owner.name})
         }),
       }),
     });
@@ -122,7 +112,7 @@ describe('Position loader controller', () => {
 
   it('should be able to repass unknown server error', async done => {
     const params = {
-      id: 'Invalid id in db rules',
+      id: invalid,
       authorization,
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});

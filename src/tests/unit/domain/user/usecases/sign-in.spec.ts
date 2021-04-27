@@ -1,8 +1,11 @@
-import { InvalidUserPasswordError } from '@errors/invalid-input';
-import { UserNotFoundError } from '@errors/not-found';
+import { internet, name } from 'faker';
 
-import { Role } from '@domain/user/entities/user';
-import { UserLoader, SignIn, Encoder } from '@domain/user/usecases';
+import { InvalidUserPasswordError } from '@errors/invalid-input';
+
+import { UserLoader, SignIn } from '@domain/user/usecases';
+
+import { encoder, tokenCreator, tokenVerifier } from '@mock/security';
+import loadPersistedUserDataFromUsername from '@mock/data-adapters/load-persisted-user-data-from-username';
 
 let createToken: (payload: object) => string;
 let loader: UserLoader;
@@ -12,31 +15,22 @@ let user: string;
 
 describe('SignIn', () => {
   beforeAll(async (done) => {
-    createToken = user => JSON.stringify(user);
-    const encoder: Encoder = {
-      encode: plain => Promise.resolve(plain),
-      verify: (plain, encoded) => plain === encoded,
-    }
-    password = 'password';
-    user = 'Rafael Arantes'
-    const getUserFromUsername = async userName => {
-      if (userName === user)
-        return {
-          id: '0',
-          userName,
-          role: 'USER' as Role,
-          passHash: password,
-        };
-      throw new UserNotFoundError(userName);
-    };
-    loader = new UserLoader(getUserFromUsername, encoder);
-    useCase = new SignIn(createToken, loader);
+    password = internet.password();
+    user = name.findName();
+    loader = new UserLoader(
+      loadPersistedUserDataFromUsername.withUsers({
+        id: '0',
+        userName: user,
+        role: 'USER',
+        passHash: password,
+      }), encoder);
+    useCase = new SignIn(tokenCreator, loader);
     done();
   });
 
   it('should be able to signIn with correct credentials', async done => {
-    const payload = await useCase.signIn(user, password);
-    const json = JSON.parse(payload);
+    const token = await useCase.signIn(user, password);
+    const json = tokenVerifier.compatibleWithCreator().verifyToken(token);
     expect(json).toEqual(expect.objectContaining({userName: user, role: 'USER'}));
     done();
   });
@@ -57,8 +51,7 @@ describe('SignIn', () => {
 
   it('should repass any unpredicted error, without change it', async done => {
     const error = new Error("I'm an unpredictable error!");
-    const createToken = () => {throw error};
-    const useCase = new SignIn(createToken, loader);
+    const useCase = new SignIn({ createToken() {throw error} }, loader);
     await expect(
       useCase.signIn(user, password)
     ).rejects.toBe(error);

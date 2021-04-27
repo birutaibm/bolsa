@@ -1,8 +1,15 @@
-import { InvestorNotFoundError, OperationNotFoundError, PositionNotFoundError, WalletNotFoundError } from '@errors/not-found';
-import { SignInRequiredError } from '@errors/sign-in-required';
+import { datatype, date, finance, name } from 'faker';
+
+import {
+  InvestorNotFoundError, OperationNotFoundError, PositionNotFoundError,
+  WalletNotFoundError
+} from '@errors/not-found';
 
 import { WalletDependencies } from '@gateway/data/adapters';
-import { InvestorCreationData, OperationData, PersistedWalletData, PositionWithWalletData } from '@gateway/data/contracts';
+import {
+  InvestorCreationData, OperationData, PersistedWalletData,
+  PositionWithWalletData
+} from '@gateway/data/contracts';
 
 import {
   executor,
@@ -10,37 +17,38 @@ import {
   FakePriceRepository, FakeWalletRepository
 } from '@mock/data-source/repositories';
 
-let investor: InvestorCreationData;
-let otherInvestor: InvestorCreationData;
-let wallet: PersistedWalletData;
-let position: PositionWithWalletData;
-let opData: { date: Date; quantity: number; value: number; };
-let operation: OperationData;
+import {
+  investors, wallets, positions, operations
+} from '@mock/data-source/repositories/wallet-module-data';
+import { Persisted } from '@utils/types';
+
+type Named = { id: string; name: string; };
+
+let investor: Named;
+let wallet: Named;
+let position: Persisted<{}>;
+let operation: { id: string; date: Date; quantity: number; value: number; };
 let adapter: WalletDependencies;
 
 describe('Wallet module dependencies adapter', () => {
   beforeAll(async done => {
-    investor = { id: 'myId', name: 'My Name'};
-    otherInvestor = { id: 'othersId', name: 'Other Name'};
-    const investors = new FakeInvestorRepository();
-    const wallets = new FakeWalletRepository();
-    const positions = new FakePositionRepository(new FakePriceRepository());
-    const operations = new FakeOperationRepository();
-    await executor.append(investors.saveNewInvestor(investor));
-    await executor.append(investors.saveNewInvestor(otherInvestor));
-    wallet = await executor.append(wallets.saveNewWallet(
-      'My wallet', investor.id
-    ));
-    position = await executor.append(positions.saveNewPosition('0', wallet.id));
-    opData = { date: new Date(), quantity: 100, value: -2345 };
-    operation = await executor.append(operations.saveNewOperation(
-      {...opData, positionId: position.id}
-    ));
+    operation = {
+      id: operations[0].id,
+      date: operations[0].date,
+      quantity: operations[0].quantity,
+      value: operations[0].value,
+    };
+    let aux: any = positions.find(position => position.id === operations[0].positionId);
+    position = { id: aux.id };
+    aux = wallets.find(wallet => wallet.id === aux.walletId);
+    wallet = { id: aux.id, name: aux.name };
+    aux = investors.find(investor => investor.id === aux.ownerId);
+    investor = { id: aux.id, name: aux.name };
     adapter = new WalletDependencies(
-      investors,
-      wallets,
-      positions,
-      operations,
+      new FakeInvestorRepository(),
+      new FakeWalletRepository(),
+      new FakePositionRepository(new FakePriceRepository()),
+      new FakeOperationRepository(),
     );
     done();
   });
@@ -48,16 +56,16 @@ describe('Wallet module dependencies adapter', () => {
   it('should be able to load operation', async done => {
     await expect(
       adapter.operationLoader(operation.id, () => true)
-    ).resolves.toEqual(expect.objectContaining(opData));
+    ).resolves.toEqual(expect.objectContaining(operation));
     done();
   });
 
   it('should be able to load position', async done => {
     await expect(
       adapter.positionLoader(position.id, () => true)
-    ).resolves.toEqual(expect.objectContaining({operations: [
-      expect.objectContaining(opData),
-    ]}));
+    ).resolves.toEqual(expect.objectContaining(
+      { operations: [ expect.objectContaining(operation) ] }
+    ));
     done();
   });
 

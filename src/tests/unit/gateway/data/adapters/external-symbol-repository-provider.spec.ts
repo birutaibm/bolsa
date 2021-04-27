@@ -1,6 +1,9 @@
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
+
 import { ExternalSymbolRepositoryProvider } from '@gateway/data/adapters';
-import { RegistryExternalSymbolRepository, SearchExternalSymbolRepository } from '@gateway/data/contracts';
+import {
+  RegistryExternalSymbolRepository, SearchExternalSymbolRepository
+} from '@gateway/data/contracts';
 
 let searchEmpty: SearchExternalSymbolRepository;
 let searchData: SearchExternalSymbolRepository;
@@ -12,14 +15,14 @@ describe('SearchExternalSymbolRepositories', () => {
   beforeAll(() => {
     searchEmpty = {
       name: 'Empty',
-      getExternalSymbols: async () => ({}),
+      getExternalSymbols: () => ({}),
     };
     searchData = {
       name: 'No data',
-      getExternalSymbols: async ticker => ({ [ticker]: {} }),
+      getExternalSymbols: ticker => ({ [ticker]: {} }),
     };
     registry = {
-      registryExternalSymbol: async entry => ({...entry, id: entry.ticker}),
+      registryExternalSymbol: entry => ({...entry, id: entry.ticker}),
     };
     searchAll = [ searchEmpty, searchData ];
     adapter = new ExternalSymbolRepositoryProvider(registry, searchAll);

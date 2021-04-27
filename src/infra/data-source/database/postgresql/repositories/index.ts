@@ -21,7 +21,7 @@ export default async function createFactories(
       );
       CREATE TABLE IF NOT EXISTS wallets (
         id serial PRIMARY KEY,
-        name VARCHAR(50) UNIQUE NOT NULL,
+        name VARCHAR(50) NOT NULL,
         owner_id CHAR(24) NOT NULL,
         created_on TIMESTAMP NOT NULL,
         FOREIGN KEY (owner_id) REFERENCES investors (id)

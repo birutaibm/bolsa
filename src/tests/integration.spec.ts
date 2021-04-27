@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import faker from 'faker';
 
 import { MayBePromise } from '@utils/types';
 
@@ -7,7 +8,7 @@ import { ServerBuilder, Server } from '@infra/server';
 import { RepositoryFactoriesBuilder } from '@infra/data-source';
 import { PostgreSQL } from '@infra/data-source/database';
 import { env } from '@infra/environment';
-import { Factories } from '@infra/factories';
+import { securityFactory } from '@infra/factories';
 
 let api: AxiosInstance;
 let server: Server;
@@ -25,6 +26,7 @@ describe('Server', () => {
       postgre = repositories.getPostgreSQL();
       server = await new ServerBuilder()
         .withRepositories(repositories.asSingletonFactory())
+        .withSecurity(securityFactory)
         .withRestAPI()
         .withGraphQL()
         .build();
@@ -169,23 +171,10 @@ describe('Server', () => {
   });
 });
 
-function string(chars: number): string {
-  const numbers: number[] = [];
-  while (numbers.length < chars) {
-    let code = Math.floor(Math.random() * 53) + 32;
-    if (code !== 32) {
-      code += 32;
-      if (code > 90) code += 6;
-    }
-    numbers.push(code);
-  }
-  return String.fromCharCode(...numbers);
-}
-
 async function createUser() {
   const user = {
-    userName: string(15),
-    password: string(15),
+    userName: faker.internet.email(),
+    password: faker.internet.password(),
     role: 'ADMIN',
   };
   clearFunctions.push(() => Users.deleteOne({ userName: user.userName }));
@@ -212,7 +201,10 @@ async function createAsset(token: string) {
 }
 
 async function createInvestor(token: string, id: string) {
-  const data = { name: 'Investor Name', id };
+  const data = {
+    name: faker.name.findName(),
+    id,
+  };
   const response = await api.post(
     '/api/investors',
     data,
@@ -229,18 +221,19 @@ async function createInvestor(token: string, id: string) {
 }
 
 async function createWallet(token: string, investorId: string) {
-  const data = { name: string(15), investorId };
+  const data = {
+    name: faker.finance.accountName(),
+    investorId,
+  };
   const response = await api.post(
     '/api/wallets',
     data,
     { headers: { authorization: `Token ${token}` } }
   );
-  clearFunctions.push(() => {
-    postgre.query({
-      text: 'DELETE FROM wallets WHERE id = $1',
-      values: [response.data.id]
-    });
-  });
+  clearFunctions.push(() => postgre.query({
+    text: 'DELETE FROM wallets WHERE id = $1',
+    values: [response.data.id]
+  }));
   return {
     response: { status: response.status, data: response.data },
     data
@@ -254,12 +247,10 @@ async function createPosition(token: string, walletId: string, assetId: string) 
     data,
     { headers: { authorization: `Token ${token}` } }
   );
-  clearFunctions.push(() => {
-    postgre.query({
-      text: 'DELETE FROM positions WHERE id = $1',
-      values: [response.data.id]
-    });
-  });
+  clearFunctions.push(() => postgre.query({
+    text: 'DELETE FROM positions WHERE id = $1',
+    values: [response.data.id]
+  }));
   return {
     response: { status: response.status, data: response.data },
     data
@@ -268,9 +259,9 @@ async function createPosition(token: string, walletId: string, assetId: string) 
 
 async function createOperation(token: string, positionId: string) {
   const data = {
-    date: new Date().toISOString(),
-    quantity: '100',
-    value: '-2345.00',
+    date: faker.date.recent().toISOString(),
+    quantity: String(-1 * faker.datatype.number({min: 1})),
+    value: faker.finance.amount(1),
     positionId,
   };
   const response = await api.post(
@@ -278,12 +269,10 @@ async function createOperation(token: string, positionId: string) {
     data,
     { headers: { authorization: `Token ${token}` } }
   );
-  clearFunctions.push(() => {
-    postgre.query({
-      text: 'DELETE FROM operations WHERE id = $1',
-      values: [response.data.id]
-    });
-  });
+  clearFunctions.push(() => postgre.query({
+    text: 'DELETE FROM operations WHERE id = $1',
+    values: [response.data.id]
+  }));
   return {
     response: { status: response.status, data: response.data },
     data
@@ -292,13 +281,13 @@ async function createOperation(token: string, positionId: string) {
 
 async function createOperationAndDependencies(userId: string, assetId: string, token: string) {
   const data = {
-    date: new Date().toISOString(),
-    quantity: '100',
-    value: '-2345.00',
+    date: faker.date.recent().toISOString(),
+    quantity: String(-1 * faker.datatype.number({min: 1})),
+    value: faker.finance.amount(),
     assetId,
-    walletName: string(15),
+    walletName: faker.finance.accountName(),
     userId,
-    investorName: string(15),
+    investorName: faker.name.findName(),
   };
   const response = await api.post(
     '/api/operations',

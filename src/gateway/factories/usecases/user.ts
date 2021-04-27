@@ -1,12 +1,11 @@
 import { SingletonFactory } from '@utils/factory';
 import { Authorization, UserLoader, UserCreator, SignIn } from '@domain/user/usecases';
 import { UserRepository } from '@gateway/data/contracts';
-import Security from '@gateway/security';
-import { createVerifyToken } from '@gateway/data/adapters';
+import { ISecurity } from '@gateway/security';
 
 export default function createUserUseCasesFactories(
   repository: UserRepository,
-  security: Security,
+  security: ISecurity,
 ) {
   const userLoader = new SingletonFactory(() => new UserLoader(
     username => repository.getUserFromUsername(username),
@@ -17,11 +16,11 @@ export default function createUserUseCasesFactories(
     security,
   ));
   const signIn = new SingletonFactory(() => new SignIn(
-    payload => security.createToken(payload),
+    security,
     userLoader.make(),
   ));
   const authorization = new SingletonFactory(
-    () => new Authorization(createVerifyToken(security))
+    () => new Authorization(security)
   );
 
   return {

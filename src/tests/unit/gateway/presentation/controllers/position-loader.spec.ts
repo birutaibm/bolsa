@@ -1,14 +1,15 @@
-import { PositionNotFoundError } from '@errors/not-found';
-import { SignInRequiredError } from '@errors/sign-in-required';
-
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
 import { PositionLoader } from '@domain/wallet/usecases';
 
 import { PositionLoaderController } from '@gateway/presentation/controllers';
 
+import WalletModuleLoaders from '@mock/data-adapters/wallet-module-loaders';
+
 let positionId: string;
 let investorId: string;
+let walletName: string;
+let invalid: string;
 let asset: { id: string; ticker: string; name: string; };
 let owner: { id: string; name: string; };
 let loggedUser: { id: string; role: Role; userName: string; };
@@ -18,28 +19,18 @@ let controller: PositionLoaderController;
 
 describe('Position loader controller', () => {
   beforeAll(() => {
-    positionId = 'positionId'
+    const loader = new WalletModuleLoaders();
+    positionId = loader.position.id;
+    owner = loader.owner;
+    asset = loader.asset;
+    walletName = loader.wallet.name;
+    invalid = loader.invalidInDB;
     authorization = 'Token ',
-    investorId = 'myId';
-    owner = { id: investorId, name: 'My Name' };
-    asset = { id: 'assetId', name: 'Itaú Unibanco SA', ticker: 'ITUB3'};
-    positionLoader = new PositionLoader((id, isLoggedUserId) => {
-      if (id === 'Invalid id in db rules') {
-        throw new Error("");
-      } else if (id !== positionId) {
-        throw new PositionNotFoundError(id);
-      }
-      if (!isLoggedUserId(owner.id)) {
-        throw new SignInRequiredError();
-      }
-      return {
-        id, asset, operations: [],
-        wallet: { id: 'walletId', name: 'My Wallet', owner },
-      };
-    });
+    investorId = owner.id;
+    positionLoader = new PositionLoader(loader.loadPosition.bind(loader));
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     controller = new PositionLoaderController(
-      positionLoader, new Authorization(() => loggedUser),
+      positionLoader, new Authorization({verifyToken: () => loggedUser}),
     );
   });
 
@@ -49,9 +40,9 @@ describe('Position loader controller', () => {
       authorization,
     };
     const result = expect.objectContaining({
-      id: positionId, asset, operations: [],
+      id: positionId, asset, operations: expect.arrayContaining([]),
       wallet: expect.objectContaining({
-        name: 'My Wallet', owner: expect.objectContaining({name: owner.name})
+        name: walletName, owner: expect.objectContaining({name: owner.name})
       }),
     });
     await expect(
@@ -110,7 +101,7 @@ describe('Position loader controller', () => {
 
   it('should be able to repass unknown server error', async done => {
     const params = {
-      id: 'Invalid id in db rules',
+      id: invalid,
       authorization,
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});

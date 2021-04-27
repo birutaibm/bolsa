@@ -1,14 +1,14 @@
-import { WalletNotFoundError } from '@errors/not-found';
-import { SignInRequiredError } from '@errors/sign-in-required';
-
 import { Role } from '@domain/user/entities/user';
 import { Authorization } from '@domain/user/usecases';
 import { WalletLoader } from '@domain/wallet/usecases';
 
 import { WalletLoaderController } from '@gateway/presentation/controllers';
+import WalletModuleLoaders from '@mock/data-adapters/wallet-module-loaders';
 
-let walletId: string;
 let investorId: string;
+let walletId: string;
+let walletName: string;
+let invalid: string;
 let owner: { id: string; name: string; };
 let loggedUser: { id: string; role: Role; userName: string; };
 let authorization: string;
@@ -17,24 +17,17 @@ let controller: WalletLoaderController;
 
 describe('Wallet loader controller', () => {
   beforeAll(() => {
-    walletId = 'walletId'
-    authorization = 'Token ',
-    investorId = 'myId';
-    owner = { id: investorId, name: 'My Name' };
-    walletLoader = new WalletLoader((id, isLogged) => {
-      if (id === 'Invalid id in db rules') {
-        throw new Error("");
-      } else if (id !== walletId) {
-        throw new WalletNotFoundError(id);
-      }
-      if (!isLogged(owner.id)) {
-        throw new SignInRequiredError();
-      }
-      return { id, name: 'My Wallet', positions: [], owner };
-    });
+    authorization = 'Token ';
+    const loader = new WalletModuleLoaders();
+    invalid = loader.invalidInDB;
+    walletId = loader.wallet.id;
+    walletName = loader.wallet.name;
+    owner = loader.owner;
+    investorId = owner.id;
+    walletLoader = new WalletLoader(loader.loadWallet.bind(loader));
     loggedUser = { id: investorId, userName: 'anybody', role: 'USER' };
     controller = new WalletLoaderController(
-      walletLoader, new Authorization(() => loggedUser),
+      walletLoader, new Authorization({verifyToken: () => loggedUser}),
     );
   });
 
@@ -44,7 +37,7 @@ describe('Wallet loader controller', () => {
       authorization,
     };
     const result = expect.objectContaining({
-      id: walletId, name: 'My Wallet', positions: [],
+      id: walletId, name: walletName, positions: expect.arrayContaining([]),
       owner: expect.objectContaining({name: owner.name}),
     });
     await expect(
@@ -103,7 +96,7 @@ describe('Wallet loader controller', () => {
 
   it('should be able to repass unknown server error', async done => {
     const params = {
-      id: 'Invalid id in db rules',
+      id: invalid,
       authorization,
     };
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});

@@ -1,37 +1,18 @@
 import request from 'supertest';
 
-import { SingletonFactory } from '@utils/factory';
-import { Factories } from '@infra/factories';
 import { ServerBuilder } from '@infra/server';
 
+import { mockedServerBuilder } from '@mock/factories';
 import {
-  FakeExternalPriceRepository,
-  FakePriceRepository, FakeUserRepository, FakeWalletRepository,
-  FakeInvestorRepository, FakeOperationRepository, FakePositionRepository,
-} from '@mock/data-source/repositories';
+  assets, externalSourceName, externalSourceSymbols
+} from '@mock/data-source/repositories/price-data';
 
 let app: ServerBuilder['app'];
-let factories: Factories;
 
 describe('GraphQL', () => {
   beforeAll(async done => {
-    const prices = new SingletonFactory(() => ({
-      internal: new FakePriceRepository(),
-      externals: [new FakeExternalPriceRepository()],
-    }));
-    const repositories = new SingletonFactory(() => ({
-      disconnectAll: async () => [],
-      prices,
-      users: new SingletonFactory(() => new FakeUserRepository()),
-      investors: new SingletonFactory(() => new FakeInvestorRepository()),
-      wallets: new SingletonFactory(() => new FakeWalletRepository()),
-      positions: new SingletonFactory(() => new FakePositionRepository(
-        prices.make().internal
-      )),
-      operations: new SingletonFactory(() => new FakeOperationRepository()),
-    }));
-    factories = new Factories(repositories.make());
-    const builder = new ServerBuilder().withGraphQL().withRepositories(repositories);
+    const builder = mockedServerBuilder()
+      .withGraphQL();
     app = builder.app;
     try {
       builder.build();
@@ -42,27 +23,19 @@ describe('GraphQL', () => {
   });
 
   it('should be able to post symbol when logged in as admin', async (done) => {
-    const security = (await factories.ofSecurity()).make();
-    jest.spyOn(security, 'verifyToken').mockImplementationOnce(token => {
-      if (token === 'validToken')
-        return {
-          id: '0',
-          userName: 'anyone',
-          role: 'ADMIN',
-        };
-      return {};
-    });
+    const ticker = Object.keys(externalSourceSymbols)[0];
+    const symbol = Object.keys(externalSourceSymbols[ticker])[0];
+    const query = `mutation {
+      symbolRegister(ticker: "${ticker}", symbols: [{
+        source: "${externalSourceName}",
+        symbol: "${symbol}"
+      }])
+    }`;
+    console.log(query);
     request(app)
       .post('/graphql')
-      .set('Authorization', 'Token validToken')
-      .send({
-        query: `mutation {
-          symbolRegister(ticker: "ITUB3", symbols: [{
-            source: "external source",
-            symbol: "ITUB3.SAO"
-          }])
-        }`
-      })
+      .set('Authorization', 'Token adminToken')
+      .send({ query })
       .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(200)
@@ -76,25 +49,18 @@ describe('GraphQL', () => {
   });
 
   it('should not be able to post symbol when logged in as user', async (done) => {
-    const security = (await factories.ofSecurity()).make();
-    jest.spyOn(security, 'verifyToken').mockImplementationOnce(token => {
-      if (token === 'validToken')
-        return {
-          role: 'USER',
-        };
-      return {};
-    });
+    const ticker = Object.keys(externalSourceSymbols)[0];
+    const symbol = Object.keys(externalSourceSymbols[ticker])[0];
+    const query = `mutation {
+      symbolRegister(ticker: "${ticker}", symbols: [{
+        source: "${externalSourceName}",
+        symbol: "${symbol}"
+      }])
+    }`;
     request(app)
       .post('/graphql')
-      .set('Authorization', 'Token validToken')
-      .send({
-        query: `mutation {
-          symbolRegister(ticker: "ITUB3", symbols: [{
-            source: "external source",
-            symbol: "ITUB3.SAO"
-          }])
-        }`
-      })
+      .set('Authorization', 'Token userToken')
+      .send({ query })
       .set("Accept", "application/json charset=utf-8")
       .expect("Content-Type", /json/)
       .expect(200)
@@ -106,12 +72,14 @@ describe('GraphQL', () => {
       });
   });
 
-  it('should be able to search ITUB3 symbol', async (done) => {
+  it('should be able to search symbol', async (done) => {
+    const ticker = Object.keys(externalSourceSymbols)[0];
+    const symbol = Object.keys(externalSourceSymbols[ticker])[0];
     request(app)
       .post('/graphql')
       .send({
         query: `{
-          symbolSearch(ticker: "ITUB3")
+          symbolSearch(ticker: "${ticker}")
         }`
       })
       .set("Accept", "application/json charset=utf-8")
@@ -121,7 +89,7 @@ describe('GraphQL', () => {
         if (err) return done(err);
         expect(res.body).toBeInstanceOf(Object);
         expect(res.body.data.symbolSearch).toBeInstanceOf(Object);
-        expect(res.body.data.symbolSearch['external source']['ITUB3.SAO']).toBeInstanceOf(Object);
+        expect(res.body.data.symbolSearch[externalSourceName][symbol]).toBeInstanceOf(Object);
         done();
       });
   });
@@ -131,7 +99,7 @@ describe('GraphQL', () => {
       .post('/graphql')
       .send({
         query: `{
-          lastPrice(ticker: "ITUB4") {
+          lastPrice(ticker: "${assets[0].ticker}") {
             ticker, name, date, open, close, min, max
           }
         }`

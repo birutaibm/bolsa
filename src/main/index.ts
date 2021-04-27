@@ -1,6 +1,7 @@
 import { ServerBuilder } from '@infra/server';
 import { RepositoryFactoriesBuilder } from '@infra/data-source';
 import { env } from '@infra/environment';
+import { securityFactory } from '@infra/factories';
 
 new ServerBuilder()
   .withRepositories(new RepositoryFactoriesBuilder()
@@ -8,7 +9,8 @@ new ServerBuilder()
     .withAlphavantage(env.externalPrices.alphavantageKey)
     .withPostgre(env.postgre)
     .asSingletonFactory()
-  ).withRestAPI()
+  ).withSecurity(securityFactory)
+  .withRestAPI()
   .withGraphQL()
   .build()
 .then(server =>

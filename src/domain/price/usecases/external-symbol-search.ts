@@ -1,5 +1,6 @@
 import { NoneExternalSymbolRepository } from '@errors/none-external-symbol-repository';
 import { promise } from '@utils/promise';
+import { MayBePromise } from '@utils/types';
 
 export type SearchResult = {
   [source: string]: SymbolInfo;
@@ -15,7 +16,7 @@ type StringMap = {
 
 export interface RequiredFunctionalities {
   checkThereIsSomeExternal(): boolean;
-  getExternalSymbols(ticker: string): Promise<SearchResult>[];
+  getExternalSymbols(ticker: string): MayBePromise<SearchResult>[];
 }
 
 export class ExternalSymbolSearch {
