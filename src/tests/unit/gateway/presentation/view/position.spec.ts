@@ -42,20 +42,43 @@ describe('Position view', () => {
   it('should be able to format empty position data', () => {
     const position = positionView(new Position(id, asset, wallet));
     expect(position).toEqual(expect.objectContaining({
-      id, asset, wallet: expect.objectContaining({
+      id, asset, quantity: 0,
+      wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
     }));
     expect(position).not.toEqual(expect.objectContaining({
       open: expect.anything(),
     }));
+    expect(position).not.toEqual(expect.objectContaining({
+      close: expect.anything(),
+    }));
   });
 
   it('should be able to format filled position data', () => {
     const position = new Position(id, asset, wallet);
     new Operation(datatype.number().toString(), date, quantity, value, position);
-    expect(positionView(position)).toEqual(expect.objectContaining({
-      id, asset, open: date.toISOString(),
+    const view = positionView(position);
+    expect(view).toEqual(expect.objectContaining({
+      id, asset, open: date.toISOString(), quantity,
+      wallet: expect.objectContaining({
+        name: walletName, owner: expect.objectContaining({ name: investorName })
+      }),
+    }));
+    expect(view).not.toEqual(expect.objectContaining({
+      close: expect.anything(),
+    }));
+  });
+
+  it('should be able to format closed position data', () => {
+    const position = new Position(id, asset, wallet);
+    const open = new Date(date);
+    open.setDate(date.getDate() - 1);
+    new Operation(datatype.number().toString(), open, quantity, value, position);
+    new Operation(datatype.number().toString(), date, -quantity, value, position);
+    const view = positionView(position);
+    expect(view).toEqual(expect.objectContaining({
+      id, asset, open: open.toISOString(), quantity: 0, close: date.toISOString(),
       wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
