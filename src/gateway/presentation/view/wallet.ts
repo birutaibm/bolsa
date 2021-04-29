@@ -8,7 +8,17 @@ function positionsSummary(
       if (oldest === undefined) return current;
       return oldest.getTime() < current.getTime() ? oldest : current;
     }, undefined);
-  const summary: PositionsSummary = {};
+  const summary: PositionsSummary = {
+    positions: positions.map(position => {
+      const operations = position.getOperations();
+      const quantity = operations.reduce((acc, { quantity }) => acc + quantity, 0);
+      return { id: position.id, quantity };
+    }).reduce((acc: PositionsSummary['positions'], {id, quantity}) => {
+      return quantity === 0
+        ? { ...acc, closed: [...acc.closed, id]}
+        : { ...acc, opened: [...acc.opened, id]}
+    }, {opened: [], closed: []}),
+  };
   if (open) {
     summary.open = open.toISOString();
   }
@@ -19,7 +29,6 @@ export function walletView(entity: WalletEntity): WalletView {
   return {
     id: entity.id, name: entity.name,
     owner: { id: entity.owner.id, name: entity.owner.name },
-    positions: entity.getPositions().map(position => position.id),
     ...positionsSummary(entity.getPositions()),
   };
 }
@@ -28,9 +37,7 @@ type WalletEntity = WalletBase & {
   getPositions: () => PositionEntity[];
 };
 
-type WalletView = WalletBase & PositionsSummary & {
-  positions: string[]; // Id
-};
+type WalletView = WalletBase & PositionsSummary;
 
 type WalletBase = {
   id: string;
@@ -43,6 +50,10 @@ type WalletBase = {
 
 type PositionsSummary = {
   open?: string;
+  positions: {
+    opened: string[]; // Id
+    closed: string[]; // Id
+  }
 }
 
 type PositionEntity = {

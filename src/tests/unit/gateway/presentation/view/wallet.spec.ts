@@ -40,7 +40,7 @@ describe('Wallet view', () => {
     const wallet = new Wallet(id, name, owner);
     expect(walletView(wallet)).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
-      positions: [],
+      positions: {closed: [], opened: []},
     }));
   });
 
@@ -51,7 +51,7 @@ describe('Wallet view', () => {
     expect(view).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
     }));
-    expect(view.positions.length).toBe(1);
+    expect(view.positions.closed.length).toBe(1);
   });
 
   it('should be able to format filled wallet data', () => {
@@ -62,7 +62,7 @@ describe('Wallet view', () => {
     expect(view).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
     }));
-    expect(view.positions.length).toBe(1);
+    expect(view.positions.opened.length).toBe(1);
     expect(view.open).toEqual(date.toISOString());
   });
 });
