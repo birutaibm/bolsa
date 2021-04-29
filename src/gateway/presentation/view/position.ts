@@ -3,6 +3,12 @@ function operationsSummary(
 ): OperationsSummary {
   const summary: OperationsSummary = {
     quantity: operations.reduce((acc, {quantity}) => acc + quantity, 0),
+    monetary: operations.reduce(
+      (acc, {value}) => value < 0
+        ? {...acc, totalSpend: acc.totalSpend - value}
+        : {...acc, totalReceived: acc.totalReceived + value},
+      {totalSpend: 0, totalReceived: 0}
+    ),
   };
   const operation = operations.pop();
   if (operation) {
@@ -37,6 +43,10 @@ type OperationsSummary = {
   open?: string;
   close?: string;
   quantity: number;
+  monetary: {
+    totalSpend: number;
+    totalReceived: number;
+  }
 }
 
 type PositionEntity = PositionBase & {

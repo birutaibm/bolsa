@@ -42,7 +42,7 @@ describe('Position view', () => {
   it('should be able to format empty position data', () => {
     const position = positionView(new Position(id, asset, wallet));
     expect(position).toEqual(expect.objectContaining({
-      id, asset, quantity: 0,
+      id, asset, quantity: 0, monetary: {totalSpend: 0, totalReceived: 0},
       wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
@@ -68,6 +68,8 @@ describe('Position view', () => {
     expect(view).not.toEqual(expect.objectContaining({
       close: expect.anything(),
     }));
+    expect(view.monetary.totalSpend).toBeGreaterThan(0);
+    expect(view.monetary.totalReceived).toBe(0);
   });
 
   it('should be able to format closed position data', () => {
@@ -75,7 +77,7 @@ describe('Position view', () => {
     const open = new Date(date);
     open.setDate(date.getDate() - 1);
     new Operation(datatype.number().toString(), open, quantity, value, position);
-    new Operation(datatype.number().toString(), date, -quantity, value, position);
+    new Operation(datatype.number().toString(), date, -quantity, -value, position);
     const view = positionView(position);
     expect(view).toEqual(expect.objectContaining({
       id, asset, open: open.toISOString(), quantity: 0, close: date.toISOString(),
@@ -83,5 +85,7 @@ describe('Position view', () => {
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
     }));
+    expect(view.monetary.totalSpend).toBeGreaterThan(0);
+    expect(view.monetary.totalReceived).toEqual(view.monetary.totalSpend);
   });
 });
