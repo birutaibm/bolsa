@@ -1,27 +1,30 @@
 function positionsSummary(
   positions: ReturnType<WalletEntity['getPositions']>
 ): PositionsSummary {
-  const open = positions
-    .flatMap(position => position.getOperations())
-    .map(operation => operation.date)
-    .reduce((oldest: Date | undefined, current: Date) => {
-      if (oldest === undefined) return current;
-      return oldest.getTime() < current.getTime() ? oldest : current;
-    }, undefined);
   const summary: PositionsSummary = {
-    positions: positions.map(position => {
-      const operations = position.getOperations();
-      const quantity = operations.reduce((acc, { quantity }) => acc + quantity, 0);
-      return { id: position.id, quantity };
-    }).reduce((acc: PositionsSummary['positions'], {id, quantity}) => {
-      return quantity === 0
-        ? { ...acc, closed: [...acc.closed, id]}
-        : { ...acc, opened: [...acc.opened, id]}
-    }, {opened: [], closed: []}),
+    positions: {opened: [], closed: []},
+    monetary: {totalSpend: 0, totalReceived: 0},
   };
+  const operations = positions.flatMap(position => position.getOperations());
+  const open = operations.reduce((oldest: Date | undefined, {date: current}) => {
+    if (oldest === undefined) return current;
+    return oldest.getTime() < current.getTime() ? oldest : current;
+  }, undefined);
+  summary.monetary = operations.reduce((acc, {value}) => {
+    return value < 0
+      ? {...acc, totalSpend: acc.totalSpend - value}
+      : {...acc, totalReceived: acc.totalReceived + value};
+  }, summary.monetary);
   if (open) {
     summary.open = open.toISOString();
   }
+  summary.positions = positions.reduce((acc, position) => {
+    const operations = position.getOperations();
+    const quantity = operations.reduce((acc, { quantity }) => acc + quantity, 0);
+    return quantity === 0
+      ? { ...acc, closed: [ ...acc.closed, position.id ]}
+      : { ...acc, opened: [ ...acc.opened, position.id ]}
+  }, summary.positions);
   return summary;
 }
 
@@ -53,6 +56,10 @@ type PositionsSummary = {
   positions: {
     opened: string[]; // Id
     closed: string[]; // Id
+  }
+  monetary: {
+    totalSpend: number;
+    totalReceived: number;
   }
 }
 
