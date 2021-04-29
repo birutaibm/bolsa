@@ -63,5 +63,6 @@ describe('Wallet view', () => {
       id, name, owner: expect.objectContaining({ name: investorName }),
     }));
     expect(view.positions.length).toBe(1);
+    expect(view.open).toEqual(date.toISOString());
   });
 });
