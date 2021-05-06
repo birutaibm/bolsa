@@ -3,7 +3,7 @@ function positionsSummary(
 ): PositionsSummary {
   const summary: PositionsSummary = {
     positions: {opened: [], closed: []},
-    monetary: {totalSpend: 0, totalReceived: 0},
+    monetary: {totalSpend: 0, totalReceived: 0, totalLastPrice: 0},
   };
   const operations = positions.flatMap(position => position.getOperations());
   const open = operations.reduce((oldest: Date | undefined, {date: current}) => {
@@ -21,9 +21,15 @@ function positionsSummary(
   summary.positions = positions.reduce((acc, position) => {
     const operations = position.getOperations();
     const quantity = operations.reduce((acc, { quantity }) => acc + quantity, 0);
-    return quantity === 0
-      ? { ...acc, closed: [ ...acc.closed, position.id ]}
-      : { ...acc, opened: [ ...acc.opened, position.id ]}
+    if (quantity === 0) {
+      return { ...acc, closed: [ ...acc.closed, position.id ]};
+    } else {
+      const { lastPrice } = position.asset;
+      if (lastPrice) {
+        summary.monetary.totalLastPrice += quantity * lastPrice.price;
+      }
+      return { ...acc, opened: [ ...acc.opened, position.id ]};
+    }
   }, summary.positions);
   return summary;
 }
@@ -60,6 +66,7 @@ type PositionsSummary = {
   monetary: {
     totalSpend: number;
     totalReceived: number;
+    totalLastPrice: number;
   }
 }
 
@@ -78,4 +85,10 @@ type Asset = {
   id: string;
   ticker: string;
   name: string;
+  lastPrice?: LastPrice;
+};
+
+type LastPrice = {
+  date: Date;
+  price: number;
 };

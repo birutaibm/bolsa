@@ -30,6 +30,10 @@ describe('Wallet view', () => {
       id: datatype.hexaDecimal(24),
       ticker: fakeTicker(),
       name: company.companyName(),
+      lastPrice: {
+        date: new Date(),
+        price: Number(finance.amount()),
+      },
     };
     date = new Date();
     quantity = datatype.number();
@@ -41,7 +45,7 @@ describe('Wallet view', () => {
     expect(walletView(wallet)).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
       positions: {closed: [], opened: []},
-      monetary: {totalSpend: 0, totalReceived: 0},
+      monetary: {totalSpend: 0, totalReceived: 0, totalLastPrice: 0},
     }));
   });
 
@@ -51,7 +55,7 @@ describe('Wallet view', () => {
     const view = walletView(wallet);
     expect(view).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
-      monetary: {totalSpend: 0, totalReceived: 0},
+      monetary: {totalSpend: 0, totalReceived: 0, totalLastPrice: 0},
     }));
     expect(view.positions.closed.length).toBe(1);
   });
@@ -63,7 +67,11 @@ describe('Wallet view', () => {
     const view = walletView(wallet);
     expect(view).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
-      monetary: {totalSpend: -value, totalReceived: 0},
+      monetary: {
+        totalSpend: -value,
+        totalReceived: 0,
+        totalLastPrice: quantity * ( asset.lastPrice?.price || 0 )
+      },
     }));
     expect(view.positions.opened.length).toBe(1);
     expect(view.open).toEqual(date.toISOString());

@@ -37,7 +37,7 @@ describe('Position view', () => {
       lastPrice: {
         date: new Date(),
         price: Number(finance.amount()),
-      }
+      },
     };
     asset = { ...assetEntity, lastPrice: { ...assetEntity.lastPrice,
       date: assetEntity.lastPrice?.date.toISOString(),
