@@ -25,6 +25,9 @@ export const positions: PositionData[] = [{
     id: assets[0].id,
     ticker: assets[0].ticker,
     name: assets[0].name || assets[0].ticker,
+    lastPrice: assets[0].prices[0].date > assets[0].prices[1].date
+      ? {date: new Date(assets[0].prices[0].date), price: assets[0].prices[0].close}
+      : {date: new Date(assets[0].prices[1].date), price: assets[0].prices[1].close},
   },
   walletId: wallets[0].id,
   operationIds: ['0'],

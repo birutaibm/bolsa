@@ -30,7 +30,7 @@ describe('Postgre wallet repository', () => {
       };
       const factories = await db.createRepositoryFactories(
         new SingletonFactory(() => ({
-          loadAssetDataById: (id) => ({id, ticker: 'asset', name: 'asset'})
+          loadAssetDataById: (id) => ({id, ticker: 'asset', name: 'asset', prices: []})
         })),
       );
       repo = factories.wallets.make();

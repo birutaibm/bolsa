@@ -4,7 +4,7 @@ import {
 import { PriceUnavailableError } from '@errors/price-unavailable';
 import { Persisted } from '@utils/types';
 
-import { InternalPriceRepository } from '@gateway/data/contracts';
+import { AssetData, InternalPriceRepository } from '@gateway/data/contracts';
 import {
   AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO,
 } from '@gateway/data/dto';
@@ -74,7 +74,7 @@ export class MongoPriceRepository implements InternalPriceRepository {
     return adapter.toPriceDTOs(asset);
   }
 
-  async loadAssetDataById(id: string): Promise<{id: string; ticker: string; name: string;}> {
+  async loadAssetDataById(id: string): Promise<AssetData> {
     const asset = await Assets.findById(id);
     if (!asset) {
       throw new AssetNotFoundError(id);
@@ -83,6 +83,13 @@ export class MongoPriceRepository implements InternalPriceRepository {
       id: asset.id,
       ticker: asset.ticker,
       name: asset.name || asset.ticker,
+      prices: asset.prices.map(price => ({
+        date: new Date(price.date),
+        open: price.open,
+        close: price.close,
+        high: price.max,
+        low: price.min,
+      })),
     };
   }
 }

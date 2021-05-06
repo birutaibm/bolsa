@@ -32,7 +32,7 @@ class Functionalities implements RequiredFunctionalities {
     Object.keys(this.externals).forEach(name => {
       const data = this.externals[name][ticker];
       if (data) {
-        const func = () => {
+        const func = async () => {
           const { price } = data;
           if (!price) {
             throw new ExternalPriceLoaderError(name, 'Some generic external message');

@@ -15,7 +15,10 @@ export type PopulatedWalletData = WalletData & {
 };
 
 export type AssetData = {
-  ticker: string, name: string,
+  id: string, ticker: string, name: string, lastPrice?: {
+    date: Date;
+    price: number;
+  }
 }
 
 export type PositionData = {

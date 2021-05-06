@@ -37,12 +37,30 @@ export class FakePositionRepository implements PositionRepository<void> {
       .map(position => position.id);
   }
 
+  private loadAssetDataById(assetId: string): PositionData['asset'] {
+    const assetData = this.assets.loadAssetDataById(assetId)
+    const asset: PositionData['asset'] = {
+      id: assetData.id,
+      name: assetData.name,
+      ticker: assetData.ticker,
+    };
+    const price = assetData.prices.pop();
+    if (price) {
+      asset.lastPrice = assetData.prices.reduce(
+        (acc, value) => acc.date.getTime() > value.date.getTime()
+          ? acc : { date: value.date, price: value.close},
+        { date: price.date, price: price.close },
+      );
+    }
+    return asset;
+  }
+
   saveNewPosition(
     assetId: string, walletId: string
   ): RepositoryChangeCommand<PositionWithWalletData,void> {
     return () => {
       const id = String(positions.length);
-      const asset = this.assets.loadAssetDataById(assetId);
+      const asset = this.loadAssetDataById(assetId);
       const position: PositionData = { id, asset, walletId, operationIds: [] };
       const wallet = wallets.find(wallet => wallet.id === walletId);
       if (!wallet) {

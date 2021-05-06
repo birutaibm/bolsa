@@ -1,10 +1,9 @@
 import request from 'supertest';
 import { datatype, date, finance, internet, name as user } from 'faker';
 
-import { AssetData } from '@gateway/data/contracts';
+import { AssetData, PositionData } from '@gateway/data/contracts';
 
 import { Asset } from '@infra/data-source/model';
-import { Factories } from '@infra/factories';
 import { Server, ServerBuilder } from '@infra/server';
 
 import {
@@ -22,7 +21,7 @@ let walletId: string;
 let investorName: string;
 let walletName: string;
 let positionId: string;
-let positionAsset: AssetData;
+let positionAsset: object;
 let operationId: string;
 let asset: Asset;
 let value: number;
@@ -37,7 +36,13 @@ describe('API', () => {
     investorName = investors[0].name;
     walletName = wallets[0].name;
     positionId = positions[0].id;
-    positionAsset = positions[0].asset;
+    positionAsset = {
+      ...positions[0].asset,
+      lastPrice: {
+        ...positions[0].asset.lastPrice,
+        date: positions[0].asset.lastPrice?.date.toISOString(),
+      },
+    };
     operationId = operations[0].id;
     value = operations[0].value;
     quantity = operations[0].quantity;
@@ -198,13 +203,11 @@ describe('API', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          wallet: expect.objectContaining({
-            name: walletName,
-            owner: expect.objectContaining({ name: investorName }),
-          }),
-          asset: positionAsset,
+        expect(res.body.wallet).toEqual(expect.objectContaining({
+          name: walletName,
+          owner: expect.objectContaining({ name: investorName }),
         }));
+        expect(res.body.asset).toEqual(positionAsset);
         done();
       });
   });
@@ -219,13 +222,11 @@ describe('API', () => {
       .expect(201)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          wallet: expect.objectContaining({
-            name: walletName,
-            owner: expect.objectContaining({ name: investorName }),
-          }),
-          asset: positionAsset,
+        expect(res.body.wallet).toEqual(expect.objectContaining({
+          name: walletName,
+          owner: expect.objectContaining({ name: investorName }),
         }));
+        expect(res.body.asset).toEqual(positionAsset);
         done();
       });
   });
@@ -243,14 +244,10 @@ describe('API', () => {
           name: walletName,
           owner: expect.objectContaining({ name: investorName }),
         }));
-        expect(res.body.positions).toEqual(expect.arrayContaining([
-          expect.objectContaining({
-            asset: positionAsset,
-            operations: expect.arrayContaining([
-              expect.objectContaining({ value, quantity, })
-            ]),
-          })
-        ]));
+        expect(res.body.positions).toEqual({
+          opened: [positionId],
+          closed: expect.arrayContaining([]),
+        });
         done();
       });
   });
@@ -267,7 +264,7 @@ describe('API', () => {
       .end((err, res) => {
         if (err) return done(err);
         expect(res.body).toEqual(expect.objectContaining({
-          name, positions: [],
+          name, positions: {opened: [], closed: []},
           owner: expect.objectContaining({ name: investorName }),
         }));
         done();
@@ -283,9 +280,9 @@ describe('API', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toEqual(expect.objectContaining({
-          name: investorName,
-          wallets: expect.arrayContaining([expect.objectContaining({
+        expect(res.body.name).toEqual(investorName);
+        expect(res.body.wallets).toEqual(expect.arrayContaining([
+          expect.objectContaining({
             name: walletName,
             positions: expect.arrayContaining([
               expect.objectContaining({
@@ -295,8 +292,8 @@ describe('API', () => {
                 ]),
               })
             ])
-          })]),
-        }));
+          })
+        ]));
         done();
       });
   });

@@ -6,6 +6,10 @@ import Wallet from './wallet';
 export type Asset = {
   readonly ticker: string;
   readonly name: string;
+  readonly lastPrice?: {
+    readonly date: Date;
+    readonly price: number;
+  }
 };
 
 export default class Position {

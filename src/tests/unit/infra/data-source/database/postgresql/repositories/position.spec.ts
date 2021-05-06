@@ -1,7 +1,7 @@
 import { AssetNotFoundError, PositionNotFoundError } from '@errors/not-found';
 import { SingletonFactory } from '@utils/factory';
 
-import { AssetData, RepositoryChangeCommandExecutor } from '@gateway/data/contracts';
+import { AssetData } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -13,13 +13,13 @@ type InvestorData = {id: string;};
 let db: PostgreSQL;
 let repo: PostgrePositionRepository;
 let dto: {
-  asset: AssetData;
+  asset: Omit<AssetData, 'prices'>;
   walletId: string;
   operationIds: string[];
 };
 let investor: InvestorData;
 let wallet: WalletData;
-let asset: AssetData;
+let asset: Omit<AssetData, 'prices'>;
 let positions: string[];
 
 describe('Postgre position repository', () => {
@@ -48,7 +48,7 @@ describe('Postgre position repository', () => {
         new SingletonFactory(() => ({
           loadAssetDataById: async (id) => {
             if (id === asset.id) {
-              return asset;
+              return {...asset, prices: []};
             }
             throw new AssetNotFoundError(id);
           }
