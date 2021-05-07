@@ -1,29 +1,3 @@
-function operationsSummary(
-  operations: ReturnType<PositionEntity['getOperations']>
-): OperationsSummary {
-  const summary: OperationsSummary = {
-    quantity: operations.reduce((acc, {quantity}) => acc + quantity, 0),
-    monetary: operations.reduce(
-      (acc, {value}) => value < 0
-        ? {...acc, totalSpend: acc.totalSpend - value}
-        : {...acc, totalReceived: acc.totalReceived + value},
-      {totalSpend: 0, totalReceived: 0}
-    ),
-  };
-  const operation = operations.pop();
-  if (operation) {
-    summary.open = operations.reduce((acc, {date}) => {
-      return acc.getTime() < date.getTime() ? acc : date
-    }, operation.date).toISOString();
-    if (summary.quantity === 0) {
-      summary.close = operations.reduce((acc, {date}) => {
-        return acc.getTime() > date.getTime() ? acc : date
-      }, operation.date).toISOString();
-    }
-  }
-  return summary;
-}
-
 export function positionView(entity: PositionEntity): PositionView {
   const asset: Asset<LastPriceView> = {
     id: entity.asset.id,
@@ -44,21 +18,23 @@ export function positionView(entity: PositionEntity): PositionView {
         id: entity.wallet.owner.id, name: entity.wallet.owner.name,
       }
     },
-    ...operationsSummary(entity.getOperations()),
+    operations: entity.getOperations().map(operation => ({
+      id: operation.id,
+      date: operation.date.toISOString(),
+      quantity: operation.quantity,
+      value: operation.value,
+    })),
   };
 }
 
-type PositionView = PositionBase<LastPriceView> & OperationsSummary;
-
-type OperationsSummary = {
-  open?: string;
-  close?: string;
-  quantity: number;
-  monetary: {
-    totalSpend: number;
-    totalReceived: number;
-  }
-}
+type PositionView = PositionBase<LastPriceView> & {
+  operations: Array<{
+    id: string;
+    date: string;
+    quantity: number;
+    value: number;
+  }>;
+};
 
 type PositionEntity = PositionBase<LastPriceEntity> & {
   getOperations: () => Array<{

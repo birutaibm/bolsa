@@ -50,16 +50,11 @@ describe('Position view', () => {
   it('should be able to format empty position data', () => {
     const position = positionView(new Position(id, assetEntity, wallet));
     expect(position).toEqual(expect.objectContaining({
-      id, asset, quantity: 0, monetary: {totalSpend: 0, totalReceived: 0},
+      id, asset,
       wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
-    }));
-    expect(position).not.toEqual(expect.objectContaining({
-      open: expect.anything(),
-    }));
-    expect(position).not.toEqual(expect.objectContaining({
-      close: expect.anything(),
+      operations: [],
     }));
   });
 
@@ -68,32 +63,13 @@ describe('Position view', () => {
     new Operation(datatype.number().toString(), date, quantity, value, position);
     const view = positionView(position);
     expect(view).toEqual(expect.objectContaining({
-      id, asset, open: date.toISOString(), quantity,
+      id, asset,
       wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({ name: investorName })
       }),
+      operations: [expect.objectContaining({
+        date: date.toISOString(), quantity, value,
+      })],
     }));
-    expect(view).not.toEqual(expect.objectContaining({
-      close: expect.anything(),
-    }));
-    expect(view.monetary.totalSpend).toBeGreaterThan(0);
-    expect(view.monetary.totalReceived).toBe(0);
-  });
-
-  it('should be able to format closed position data', () => {
-    const position = new Position(id, assetEntity, wallet);
-    const open = new Date(date);
-    open.setDate(date.getDate() - 1);
-    new Operation(datatype.number().toString(), open, quantity, value, position);
-    new Operation(datatype.number().toString(), date, -quantity, -value, position);
-    const view = positionView(position);
-    expect(view).toEqual(expect.objectContaining({
-      id, asset, open: open.toISOString(), quantity: 0, close: date.toISOString(),
-      wallet: expect.objectContaining({
-        name: walletName, owner: expect.objectContaining({ name: investorName })
-      }),
-    }));
-    expect(view.monetary.totalSpend).toBeGreaterThan(0);
-    expect(view.monetary.totalReceived).toEqual(view.monetary.totalSpend);
   });
 });
