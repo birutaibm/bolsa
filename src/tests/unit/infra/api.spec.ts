@@ -284,14 +284,16 @@ describe('API', () => {
         expect(res.body.wallets).toEqual(expect.arrayContaining([
           expect.objectContaining({
             name: walletName,
-            positions: expect.arrayContaining([
-              expect.objectContaining({
-                asset: positionAsset,
-                operations: expect.arrayContaining([
-                  expect.objectContaining({value, quantity, })
-                ]),
-              })
-            ])
+            open: expect.stringContaining(''),
+            positions: {
+              opened: expect.arrayContaining([expect.stringContaining('')]),
+              closed: expect.arrayContaining([]),
+            },
+            monetary: {
+              totalSpend: expect.any(Number),
+              totalReceived: expect.any(Number),
+              totalLastPrice: expect.any(Number),
+            },
           })
         ]));
         done();
