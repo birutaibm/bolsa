@@ -50,8 +50,12 @@ describe('Load last price controller', () => {
 
   it('should be able to report error when asset not found', async done => {
     jest.spyOn(console, 'error').mockImplementationOnce(() => {});
+    let ticker = fakeTicker();
+    while (ticker === params.ticker) {
+      ticker = fakeTicker();
+    }
     await expect(
-      workingController.handle({ticker: fakeTicker()})
+      workingController.handle({ ticker })
     ).resolves.toEqual(expect.objectContaining({
       statusCode: 404,
       data: {

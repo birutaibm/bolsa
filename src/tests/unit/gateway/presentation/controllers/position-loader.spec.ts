@@ -40,7 +40,7 @@ describe('Position loader controller', () => {
       authorization,
     };
     const result = expect.objectContaining({
-      id: positionId, asset, operations: expect.arrayContaining([]),
+      id: positionId, asset,
       wallet: expect.objectContaining({
         name: walletName, owner: expect.objectContaining({name: owner.name})
       }),

@@ -31,7 +31,6 @@ describe('GraphQL', () => {
         symbol: "${symbol}"
       }])
     }`;
-    console.log(query);
     request(app)
       .post('/graphql')
       .set('Authorization', 'Token adminToken')

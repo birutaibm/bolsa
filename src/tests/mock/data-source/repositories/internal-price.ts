@@ -3,7 +3,7 @@ import {
 } from '@errors/not-found';
 import { Persisted } from '@utils/types';
 
-import { InternalPriceRepository } from '@gateway/data/contracts';
+import { AssetData, InternalPriceRepository } from '@gateway/data/contracts';
 import {
   AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO
 } from '@gateway/data/dto';
@@ -13,12 +13,21 @@ import { Asset, adapter } from '@infra/data-source/model/asset';
 import { assets } from './price-data';
 
 export class FakePriceRepository implements InternalPriceRepository {
-  loadAssetDataById(id: string): { id: string; ticker: string; name: string; } {
+  loadAssetDataById(id: string): AssetData {
     const asset = assets.find(asset => asset.id === id);
     if (!asset) {
       throw new AssetNotFoundError(id);
     }
-    return {id, ticker: asset.ticker, name: asset.name || asset.ticker};
+    return {
+      id, ticker: asset.ticker, name: asset.name || asset.ticker,
+      prices: asset.prices.map(price => ({
+        date: new Date(price.date),
+        open: price.open,
+        close: price.close,
+        high: price.max,
+        low: price.min,
+      })),
+    };
   }
 
   registryExternalSymbol(

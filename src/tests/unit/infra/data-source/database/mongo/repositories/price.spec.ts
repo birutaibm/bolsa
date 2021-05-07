@@ -191,7 +191,7 @@ describe('Mongo price repository', () => {
     });
     await expect(
       repo.loadAssetDataById(id)
-    ).resolves.toEqual({id, ticker, name});
+    ).resolves.toEqual(expect.objectContaining({id, ticker, name}));
     done();
   });
 
@@ -199,7 +199,7 @@ describe('Mongo price repository', () => {
     const { id } = await Assets.create({ticker});
     await expect(
       repo.loadAssetDataById(id)
-    ).resolves.toEqual({id, ticker, name: ticker});
+    ).resolves.toEqual(expect.objectContaining({id, ticker, name: ticker}));
     done();
   });
 

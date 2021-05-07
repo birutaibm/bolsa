@@ -1,10 +1,8 @@
 import { MayBePromise, Persisted } from '@utils/types';
 
-import { AssetData as AssetDTO } from '@domain/wallet/usecases/dtos';
+import { AssetData } from '@domain/wallet/usecases/dtos';
 
 import { RepositoryChangeCommand } from './repository-change-command';
-
-export type AssetData = Persisted<AssetDTO>;
 
 export type PositionData = {
   id: string;

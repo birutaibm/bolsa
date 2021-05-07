@@ -14,7 +14,8 @@ let name: string;
 let investorId: string;
 let investorName: string;
 let owner: Investor;
-let asset: Persisted<Asset>;
+let assetEntity: Persisted<Asset>;
+let asset: object;
 let date: Date;
 let quantity: number;
 let value: number;
@@ -26,11 +27,18 @@ describe('Wallet view', () => {
     investorId = datatype.hexaDecimal(24);
     investorName = user.findName();
     owner = new Investor(investorId, investorName);
-    asset = {
+    assetEntity = {
       id: datatype.hexaDecimal(24),
       ticker: fakeTicker(),
       name: company.companyName(),
+      lastPrice: {
+        date: new Date(),
+        price: Number(finance.amount()),
+      },
     };
+    asset = { ...assetEntity, lastPrice: { ...assetEntity.lastPrice,
+      date: assetEntity.lastPrice?.date.toISOString(),
+    }};
     date = new Date();
     quantity = datatype.number();
     value = -1 * Number(finance.amount());
@@ -46,25 +54,31 @@ describe('Wallet view', () => {
 
   it('should be able to format wallet data with empty position', () => {
     const wallet = new Wallet(id, name, owner);
-    new Position(datatype.number().toString(), asset, wallet);
-    expect(walletView(wallet)).toEqual(expect.objectContaining({
+    const positionId = datatype.number().toString();
+    new Position(positionId, assetEntity, wallet);
+    const view = walletView(wallet);
+    expect(view).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
       positions: [expect.objectContaining({
-        asset, operations: [],
+        id: positionId,
+        asset, quantity: 0, monetary: {totalSpend: 0, totalReceived: 0},
       })],
     }));
   });
 
   it('should be able to format filled wallet data', () => {
     const wallet = new Wallet(id, name, owner);
-    const position = new Position(datatype.number().toString(), asset, wallet);
+    const positionId = datatype.number().toString();
+    const position = new Position(positionId, assetEntity, wallet);
     new Operation(datatype.number().toString(), date, quantity, value, position);
-    expect(walletView(wallet)).toEqual(expect.objectContaining({
+    const view = walletView(wallet);
+    expect(view).toEqual(expect.objectContaining({
       id, name, owner: expect.objectContaining({ name: investorName }),
       positions: [expect.objectContaining({
-        asset, operations: [expect.objectContaining({
-          date: date.toISOString(), quantity, value,
-        })],
+        id: positionId,
+        asset, quantity,
+        open: date.toISOString(),
+        monetary: {totalSpend: -value, totalReceived: 0},
       })],
     }));
   });

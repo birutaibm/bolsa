@@ -2,12 +2,25 @@ import { MayBePromise, Persisted } from '@utils/types';
 
 import { AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO } from '@gateway/data/dto';
 
+export type AssetData = {
+  id: string;
+  ticker: string;
+  name: string;
+  prices: Array<{
+    date: Date;
+    open: number;
+    close: number;
+    low: number;
+    high: number;
+  }>;
+};
+
 export interface ExternalSymbolDictionary {
   getExternalSymbol: (ticker: string, externalLibrary: string) => MayBePromise<string>;
 }
 
 export interface AssetRepository {
-  loadAssetDataById(id: string): MayBePromise<{id: string; ticker: string; name: string;}>;
+  loadAssetDataById(id: string): MayBePromise<AssetData>;
 }
 
 export interface SavePricesRepository {

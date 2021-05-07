@@ -30,9 +30,6 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     if (!isNumber(id)) {
       throw new PositionNotFoundError(id);
     }
-    if (this.assets instanceof Factory) {
-      this.assets = this.assets.make();
-    }
     const [ data ] = await this.db.query<{
       asset: string; wallet_id: number; wallet_name: string; owner_id: string; owner_name: string;
     }>({
@@ -49,7 +46,7 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     if (!data) {
       throw new PositionNotFoundError(id);
     }
-    const asset = await this.assets.loadAssetDataById(data.asset);
+    const asset = await this.loadAssetDataById(data.asset);
     if (this.operations instanceof Factory) {
       this.operations = this.operations.make();
     }
@@ -107,13 +104,31 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     return async executor => translate((await executor(query)).rows);
   }
 
-  private async modelToData(
-    {id, asset, wallet_id}: PositionModel,
-    translateOnly = false,
-  ): Promise<PositionData> {
+  private async loadAssetDataById(assetId: string): Promise<PositionData['asset']> {
     if (this.assets instanceof Factory) {
       this.assets = this.assets.make();
     }
+    const assetData = await this.assets.loadAssetDataById(assetId)
+    const asset: PositionData['asset'] = {
+      id: assetData.id,
+      name: assetData.name,
+      ticker: assetData.ticker,
+    };
+    const price = assetData.prices.pop();
+    if (price) {
+      asset.lastPrice = assetData.prices.reduce(
+        (acc, value) => acc.date.getTime() > value.date.getTime()
+          ? acc : { date: value.date, price: value.close},
+        { date: price.date, price: price.close },
+      );
+    }
+    return asset;
+  }
+
+  private async modelToData(
+    {id, asset: assetId, wallet_id}: PositionModel,
+    translateOnly = false,
+  ): Promise<PositionData> {
     let operationIds: string[] = [];
     if (!translateOnly) {
       if (this.operations instanceof Factory) {
@@ -123,7 +138,7 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     }
     return {
       id: String(id),
-      asset: await this.assets.loadAssetDataById(asset),
+      asset: await this.loadAssetDataById(assetId),
       walletId: String(wallet_id),
       operationIds,
     };

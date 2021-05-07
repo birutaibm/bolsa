@@ -39,6 +39,7 @@ describe('Postgre operation repository', () => {
         id: 'ITUB3ITUB3ITUB3ITUB3ITUB',
         name: 'Itaú Unibanco SA',
         ticker: 'ITUB3',
+        prices: [],
       };
       [ position ] = await db.query<Data>({
         text: 'INSERT INTO positions(asset, wallet_id, created_on) VALUES ($1, $2, $3) RETURNING *',
