@@ -32,7 +32,7 @@ describe('Wallet creator controller', () => {
   it('should be able to create wallet', async done => {
     const params = { name, investorId: investor.id, authorization };
     const result = expect.objectContaining({
-      name, positions: { opened: [], closed: [], },
+      name, positions: [],
       owner: expect.objectContaining(investor),
     });
     await expect(

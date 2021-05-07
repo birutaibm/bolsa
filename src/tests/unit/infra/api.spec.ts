@@ -243,11 +243,12 @@ describe('API', () => {
         expect(res.body).toEqual(expect.objectContaining({
           name: walletName,
           owner: expect.objectContaining({ name: investorName }),
+          positions: expect.arrayContaining([
+            expect.objectContaining({
+              id: positionId,
+            })
+          ]),
         }));
-        expect(res.body.positions).toEqual({
-          opened: [positionId],
-          closed: expect.arrayContaining([]),
-        });
         done();
       });
   });
@@ -264,7 +265,7 @@ describe('API', () => {
       .end((err, res) => {
         if (err) return done(err);
         expect(res.body).toEqual(expect.objectContaining({
-          name, positions: {opened: [], closed: []},
+          name, positions: [],
           owner: expect.objectContaining({ name: investorName }),
         }));
         done();
