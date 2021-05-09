@@ -5,10 +5,8 @@ import { MongoUserRepository } from './user';
 import Mongo from '..';
 
 export default function createFactories(mongo: Mongo) {
-  const prices = new SingletonFactory(() => new MongoPriceRepository());
-  const users =  new SingletonFactory(
-    () => new MongoUserRepository()
-  );
+  const prices = new SingletonFactory(() => new MongoPriceRepository(mongo));
+  const users = new SingletonFactory(() => new MongoUserRepository(mongo));
 
   return {
     prices,

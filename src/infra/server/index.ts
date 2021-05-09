@@ -47,9 +47,9 @@ export class Server {
 
 export class ServerBuilder {
   readonly app: Express;
-  private rest: () => Promise<void>;
-  private graphql: () => Promise<void>;
-  private repositories: () => Promise<RepositoryFactories>;
+  private rest: () => void;
+  private graphql: () => void;
+  private repositories: () => RepositoryFactories;
   private security: Factory<ISecurity>;
   private factories: Factories;
 
@@ -59,16 +59,15 @@ export class ServerBuilder {
     this.graphql = async () => {};
   }
 
-  private async getFactories(): Promise<Factories> {
+  private getFactories(): Factories {
     if (!this.factories) {
-      const repositories = await this.repositories();
-      this.factories = new Factories(repositories, this.security);
+      this.factories = new Factories(this.repositories(), this.security);
     }
     return this.factories;
   };
 
-  withRepositories(repositories: Factory<MayBePromise<RepositoryFactories>>) {
-    this.repositories = async () => await repositories.make();
+  withRepositories(repositories: Factory<RepositoryFactories>) {
+    this.repositories = () => repositories.make();
     return this;
   }
 
@@ -78,26 +77,26 @@ export class ServerBuilder {
   }
 
   withRestAPI() {
-    this.rest = () => this.getFactories()
-      .then(factories => factories.ofControllers())
-      .then(controllers => new RestAPI(this.app).setup(controllers));
+    this.rest = () => new RestAPI(this.app)
+      .setup(this.getFactories().ofControllers());
     return this;
   }
 
   withGraphQL() {
-    this.graphql = () => this.getFactories()
-      .then(factories => factories.ofControllers())
-      .then(controllers => new GraphQL(this.app).setup(controllers));
+    this.graphql = () => new GraphQL(this.app)
+      .setup(this.getFactories().ofControllers())
     return this;
   }
 
   async build() {
+    console.log('Creating Server...');
     try {
-      await this.rest();
-      await this.graphql();
+      this.rest();
+      this.graphql();
       if (!this.factories) {
         throw new Error("Illegal State");
       }
+      console.log('Server created');
       return new Server(this.app, this.factories);
     } catch (error) {
       throw error

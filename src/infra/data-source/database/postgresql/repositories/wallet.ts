@@ -8,6 +8,7 @@ import {
 } from '@gateway/data/contracts';
 
 import PostgreSQL, { Executor } from '..';
+import { DatabaseConnectionError } from '@errors/database-connection';
 
 type WalletModel = {
   created_on: Date;

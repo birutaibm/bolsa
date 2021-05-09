@@ -3,8 +3,6 @@ import { Factory, SingletonFactory } from '@utils/factory';
 import { RepositoryFactories } from '@gateway/factories';
 import { ISecurity } from '@gateway/security';
 
-import { Factories } from '@infra/factories';
-
 import {
   FakePriceRepository,
   FakeExternalPriceRepository,

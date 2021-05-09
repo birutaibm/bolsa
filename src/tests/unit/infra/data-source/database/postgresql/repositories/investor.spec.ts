@@ -20,11 +20,16 @@ describe('Postgre investor repository', () => {
     investors = [];
     try {
       db = new PostgreSQL(env.postgre);
+      const [ { id: userId } ] = await db.query<{id: string}>({
+        text: `INSERT INTO users(username, pass_hash, role, created_on)
+        VALUES ($1, $2, $3, $4) RETURNING id`,
+        values: ['userName', '123456', 'USER', new Date()],
+      });
       dto = {
-        id: 'investorTest_investorId1',
+        id: userId,
         name: 'Rafael Arantes',
       };
-      const factories = await db.createRepositoryFactories(
+      const factories = db.createRepositoryFactories(
         new SingletonFactory(() => ({
           loadAssetDataById: (id) => {throw new AssetNotFoundError(id);}
         })),
@@ -65,6 +70,10 @@ describe('Postgre investor repository', () => {
         await db.query(query);
         investors = [];
       }
+      await db.query({
+        text: `DELETE FROM users WHERE id = $1`,
+        values: [dto.id],
+      });
       await db.disconnect();
     } catch (error) {
       done(error);

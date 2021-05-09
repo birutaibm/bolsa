@@ -10,7 +10,7 @@ describe('Factories at infra', () => {
   beforeAll(async done => {
     mongo = new Mongo(env.mongodb);
     factories = new Factories(
-      await new RepositoryFactoriesBuilder()
+      new RepositoryFactoriesBuilder()
         .withMongo(env.mongodb)
         .withAlphavantage(env.externalPrices.alphavantageKey)
         .withPostgre(env.postgre)

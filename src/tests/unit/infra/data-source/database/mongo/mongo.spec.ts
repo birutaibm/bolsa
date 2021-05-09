@@ -46,17 +46,17 @@ describe('Mongo database', () => {
   });
 
   it('should be able to create repository factories', async done => {
-    await expect(
+    expect(
       mongo.createRepositoryFactories()
-    ).resolves.toBeTruthy();
+    ).toBeTruthy();
     done();
   });
 
   it('should be able to create repository factories with a connected mongo', async done => {
     await mongo.connect();
-    await expect(
+    expect(
       mongo.createRepositoryFactories()
-    ).resolves.toBeTruthy();
+    ).toBeTruthy();
     done();
   });
 });

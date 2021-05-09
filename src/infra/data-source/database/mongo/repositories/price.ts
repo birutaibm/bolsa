@@ -10,11 +10,20 @@ import {
 } from '@gateway/data/dto';
 
 import Assets, { AssetDocument, adapter } from '@infra/data-source/model/asset';
+import Mongo from '..';
 
 export class MongoPriceRepository implements InternalPriceRepository {
+  constructor(
+    private readonly mongo: Mongo
+  ) {}
+
   async registryExternalSymbol(
     { ticker, source, externalSymbol }: SymbolDictionaryEntryDTO
   ): Promise<Persisted<SymbolDictionaryEntryDTO>> {
+    if (!this.mongo.isConnected()) {
+      await this.mongo.connect();
+    }
+
     const existent = await Assets.findOne({ ticker });
     let asset: AssetDocument;
     if (existent) {
@@ -34,6 +43,10 @@ export class MongoPriceRepository implements InternalPriceRepository {
   async getExternalSymbol(
     ticker: string, externalLibrary: string
   ): Promise<string> {
+    if (!this.mongo.isConnected()) {
+      await this.mongo.connect();
+    }
+
     const asset = await Assets.findOne({ ticker });
     if (asset) {
       const symbol = asset.externals.get(externalLibrary);
@@ -45,6 +58,10 @@ export class MongoPriceRepository implements InternalPriceRepository {
   }
 
   async save(ticker: string, prices: PriceDTO[]): Promise<AssetPriceDTO[]> {
+    if (!this.mongo.isConnected()) {
+      await this.mongo.connect();
+    }
+
     const existent = await Assets.findOne({ ticker });
     let asset: AssetDocument;
     if (existent) {
@@ -62,6 +79,10 @@ export class MongoPriceRepository implements InternalPriceRepository {
   }
 
   async loadPriceByTicker(ticker: string): Promise<AssetPriceDTO[]> {
+    if (!this.mongo.isConnected()) {
+      await this.mongo.connect();
+    }
+
     let asset: AssetDocument | null;
     try {
       asset = await Assets.findOne({ ticker });
@@ -75,6 +96,10 @@ export class MongoPriceRepository implements InternalPriceRepository {
   }
 
   async loadAssetDataById(id: string): Promise<AssetData> {
+    if (!this.mongo.isConnected()) {
+      await this.mongo.connect();
+    }
+
     const asset = await Assets.findById(id);
     if (!asset) {
       throw new AssetNotFoundError(id);

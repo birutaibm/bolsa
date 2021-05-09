@@ -5,7 +5,7 @@ import { DatabaseConnectionError } from '@errors/database-connection';
 
 describe('Repository factories builder', () => {
   it('should be able to create factories of all repositories', async done => {
-    const factories = await new RepositoryFactoriesBuilder()
+    const factories = new RepositoryFactoriesBuilder()
       .withMongo(env.mongodb)
       .withPostgre(env.postgre)
       .withAlphavantage(env.externalPrices.alphavantageKey)
@@ -20,7 +20,7 @@ describe('Repository factories builder', () => {
   });
 
   it('should be able to create factories of all repositories without alphavantage', async done => {
-    const factories = await new RepositoryFactoriesBuilder()
+    const factories = new RepositoryFactoriesBuilder()
       .withMongo(env.mongodb)
       .withPostgre(env.postgre)
       .build();
@@ -33,32 +33,29 @@ describe('Repository factories builder', () => {
     done();
   });
 
-  it('should not be able to create factories without mongo', async done => {
-    await expect(
+  it('should not be able to create factories without mongo', () => {
+    expect(() =>
       new RepositoryFactoriesBuilder()
         .withAlphavantage(env.externalPrices.alphavantageKey)
         .withPostgre(env.postgre)
         .build()
-    ).rejects.toBeInstanceOf(DatabaseConnectionError);
-    done();
+    ).toThrow(DatabaseConnectionError);
   });
 
-  it('should not be able to create factories without postgre', async done => {
-    await expect(
+  it('should not be able to create factories without postgre', () => {
+    expect(() =>
       new RepositoryFactoriesBuilder()
         .withAlphavantage(env.externalPrices.alphavantageKey)
         .withMongo(env.mongodb)
         .build()
-    ).rejects.toBeInstanceOf(DatabaseConnectionError);
-    done();
+    ).toThrow(DatabaseConnectionError);
   });
 
-  it('should not be able to create factories without any database', async done => {
-    await expect(
-      new RepositoryFactoriesBuilder()
+  it('should not be able to create factories without any database', () => {
+    expect(
+      () => new RepositoryFactoriesBuilder()
         .withAlphavantage(env.externalPrices.alphavantageKey)
         .build()
-    ).rejects.toBeInstanceOf(DatabaseConnectionError);
-    done();
+    ).toThrow(DatabaseConnectionError);
   });
 });

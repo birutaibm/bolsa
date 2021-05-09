@@ -11,7 +11,21 @@ export type MongoConfig = {
 export default class Mongo {
   private connection: Connection | undefined;
 
-  constructor(private readonly config: MongoConfig) {}
+  constructor(private readonly config: MongoConfig) {
+    this.connectWithRetry();
+  }
+
+  private connectWithRetry() {
+    mongoose.connect(
+      this.config.uri,
+      this.config.connectionOptions,
+    ).then(
+      connected => this.connection = connected.connection
+    ).catch(() => {
+      console.error('Failed to connect mongo - retrying in 5 seconds')
+      setTimeout(this.connectWithRetry.bind(this), 5000);
+    });
+  }
 
   async connect() {
     if (!this.connection) {
@@ -40,11 +54,7 @@ export default class Mongo {
     return this.connection && this.connection.readyState === 1;
   }
 
-  async createRepositoryFactories() {
-    if (!this.isConnected()) {
-      await this.connect();
-    }
-
+  createRepositoryFactories() {
     return createMongoRepositoryFactories(this);
   }
 }

@@ -27,9 +27,14 @@ describe('Postgre operation repository', () => {
     operations = [];
     try {
       db = new PostgreSQL(env.postgre);
+      const [ { id: userId } ] = await db.query<{id: string}>({
+        text: `INSERT INTO users(username, pass_hash, role, created_on)
+        VALUES ($1, $2, $3, $4) RETURNING id`,
+        values: ['userName', '123456', 'USER', new Date()],
+      });
       [ investor ] = await db.query<Data>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['operationTest_investorId', 'Rafael Arantes', new Date()],
+        values: [userId, 'Rafael Arantes', new Date()],
       });
       [ wallet ] = await db.query<Data>({
         text: 'INSERT INTO wallets(name, owner_id, created_on) VALUES ($1, $2, $3) RETURNING *',
@@ -50,7 +55,7 @@ describe('Postgre operation repository', () => {
         quantity: 100,
         value: -2345,
       };
-      const factories = await db.createRepositoryFactories(
+      const factories = db.createRepositoryFactories(
         new SingletonFactory(() => ({
           loadAssetDataById: async (id) => {
             if (id === asset.id) {
@@ -104,6 +109,10 @@ describe('Postgre operation repository', () => {
       });
       await db.query({
         text: `DELETE FROM investors WHERE id = $1`,
+        values: [investor.id],
+      });
+      await db.query({
+        text: `DELETE FROM users WHERE id = $1`,
         values: [investor.id],
       });
       await db.disconnect();

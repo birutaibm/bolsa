@@ -26,9 +26,14 @@ describe('Postgre position repository', () => {
   beforeAll(async done => {
     try {
       db = new PostgreSQL(env.postgre);
+      const [ { id: userId } ] = await db.query<{id: string}>({
+        text: `INSERT INTO users(username, pass_hash, role, created_on)
+        VALUES ($1, $2, $3, $4) RETURNING id`,
+        values: ['userName', '123456', 'USER', new Date()],
+      });
       [ investor ] = await db.query<InvestorData>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['positionTest_investorId1', 'Rafael Arantes', new Date()],
+        values: [userId, 'Rafael Arantes', new Date()],
       });
       [ wallet ] = await db.query<WalletData>({
         text: 'INSERT INTO wallets(name, owner_id, created_on) VALUES ($1, $2, $3) RETURNING *',
@@ -44,7 +49,7 @@ describe('Postgre position repository', () => {
         walletId: String(wallet.id),
         operationIds: [],
       };
-      const factories = await db.createRepositoryFactories(
+      const factories = db.createRepositoryFactories(
         new SingletonFactory(() => ({
           loadAssetDataById: async (id) => {
             if (id === asset.id) {
@@ -98,6 +103,10 @@ describe('Postgre position repository', () => {
         text: `DELETE FROM investors WHERE id = $1`,
         values: [investor.id],
       });
+      await db.query({
+        text: `DELETE FROM users WHERE id = $1`,
+        values: [investor.id],
+      });
       await db.disconnect();
     } catch (error) {
       done(error)
@@ -106,8 +115,6 @@ describe('Postgre position repository', () => {
   });
 
   it('should be able to load existent position', async done => {
-    expect(investor.id.length).toBe(24);
-    expect(asset.id.length).toBe(24);
     const [ { id } ] = await db.query<{id: string;}>({
       text: `INSERT INTO positions(asset, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
