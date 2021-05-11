@@ -9,14 +9,20 @@ import {
 } from '@gateway/data/contracts';
 
 import PostgreSQL, { Executor } from '..';
-import { DatabaseConnectionError } from '@errors/database-connection';
+import asset from '@infra/data-source/model/asset';
 
 type PositionModel = {
   id: number;
-  asset: string;
+  asset_id: string;
   wallet_id: number;
   created_on: Date;
 };
+
+type Asset = {id: string; name: string, ticker: string};
+
+type AssetWithLastPrice = Asset & { lastPrice?: {
+  date: Date; price: number;
+}};
 
 export class PostgrePositionRepository implements PositionRepository<Executor<PositionModel>> {
   private readonly selectAllWhere = 'SELECT * FROM positions WHERE';
@@ -24,7 +30,6 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
   constructor(
     private readonly db: PostgreSQL,
     private operations: OperationRepository | Factory<OperationRepository>,
-    private assets: AssetRepository | Factory<AssetRepository>,
   ) {}
 
   async loadPositionWithWalletAndOwnerById(id: string): Promise<Persisted<PositionWithWalletData>> {
@@ -32,13 +37,16 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
       throw new PositionNotFoundError(id);
     }
     const [ data ] = await this.db.query<{
-      asset: string; wallet_id: number; wallet_name: string; owner_id: string; owner_name: string;
+      asset_id: string; ticker: string; asset_name: string;
+      wallet_id: number; wallet_name: string;
+      owner_id: string; owner_name: string;
     }>({
       text: `SELECT
-                p.asset,
+                p.asset_id, a.ticker, a.name asset_name,
                 w.id wallet_id, w.name wallet_name, w.owner_id,
                 i.name owner_name
              FROM positions p
+             INNER JOIN assets a ON p.asset_id = a.id
              INNER JOIN wallets w ON p.wallet_id = w.id
              INNER JOIN investors i ON i.id = w.owner_id
              WHERE p.id = $1`,
@@ -47,7 +55,11 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     if (!data) {
       throw new PositionNotFoundError(id);
     }
-    const asset = await this.loadAssetDataById(data.asset);
+    const asset = await this.fillAssetLastPrice({
+      id: data.asset_id,
+      ticker: data.ticker,
+      name: data.asset_name || data.ticker,
+    });
     if (this.operations instanceof Factory) {
       this.operations = this.operations.make();
     }
@@ -58,15 +70,34 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     }}};
   }
 
+  private async fillAssetLastPrice(asset: Asset): Promise<AssetWithLastPrice> {
+    try {
+      const [ lastPrice ] = await this.db.query<{
+        date: Date; price: number;
+      }>({
+        text: `SELECT
+                  date, close price
+               FROM prices
+               WHERE asset_id = $1 ORDER BY date DESC LIMIT 1`,
+        values: [asset.id],
+      });
+      if (lastPrice) {
+        return { ...asset, lastPrice };
+      }
+    } catch (error) {
+    }
+    return { ...asset };
+  }
+
   async loadPositionIdsByWalletId(id: string): Promise<string[]> {
     if (!isNumber(id)) {
       return [];
     }
-    const models = await this.db.query<PositionModel>({
-      text: `${this.selectAllWhere} wallet_id = $1`,
+    const models = await this.db.query<{id: string}>({
+      text: `SELECT id FROM positions WHERE wallet_id = $1`,
       values: [id],
     });
-    return models.map(model => (String(model.id)));
+    return models.map(({id}) => id.toString());
   }
 
   async loadPositionDataById(id: string): Promise<PositionData> {
@@ -97,7 +128,7 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     assetId: string, walletId: string
   ): RepositoryChangeCommand<PositionData, Executor<PositionModel>> {
     const query = {
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING *`,
       values: [assetId, walletId, new Date()],
     };
@@ -105,29 +136,21 @@ export class PostgrePositionRepository implements PositionRepository<Executor<Po
     return async executor => translate((await executor(query)).rows);
   }
 
-  private async loadAssetDataById(assetId: string): Promise<PositionData['asset']> {
-    if (this.assets instanceof Factory) {
-      this.assets = this.assets.make();
-    }
-    const assetData = await this.assets.loadAssetDataById(assetId)
-    const asset: PositionData['asset'] = {
-      id: assetData.id,
-      name: assetData.name,
-      ticker: assetData.ticker,
-    };
-    const price = assetData.prices.pop();
-    if (price) {
-      asset.lastPrice = assetData.prices.reduce(
-        (acc, value) => acc.date.getTime() > value.date.getTime()
-          ? acc : { date: value.date, price: value.close},
-        { date: price.date, price: price.close },
-      );
-    }
-    return asset;
+  private async loadAssetDataById(assetId: string): Promise<AssetWithLastPrice> {
+    const [ { ticker, name, date, price, } ] = await this.db.query<{
+      ticker: string; name: string; date?: Date; price?: number;
+    }>({
+      text: `SELECT ticker, name, p.date, p.close price FROM assets
+              LEFT JOIN prices p ON p.asset_id = assets.id
+              WHERE assets.id = $1 ORDER BY p.date DESC LIMIT 1`,
+      values: [assetId]
+    });
+    const asset = { id: assetId, ticker, name: name || ticker };
+    return date && price ? { ...asset, lastPrice: { date, price } } : asset;
   }
 
   private async modelToData(
-    {id, asset: assetId, wallet_id}: PositionModel,
+    {id, asset_id: assetId, wallet_id}: PositionModel,
     translateOnly = false,
   ): Promise<PositionData> {
     let operationIds: string[] = [];

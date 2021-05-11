@@ -1,5 +1,4 @@
-import { AssetNotFoundError, PositionNotFoundError } from '@errors/not-found';
-import { SingletonFactory } from '@utils/factory';
+import { PositionNotFoundError } from '@errors/not-found';
 
 import { AssetData } from '@gateway/data/contracts';
 
@@ -12,11 +11,6 @@ type InvestorData = {id: string;};
 
 let db: PostgreSQL;
 let repo: PostgrePositionRepository;
-let dto: {
-  asset: Omit<AssetData, 'prices'>;
-  walletId: string;
-  operationIds: string[];
-};
 let investor: InvestorData;
 let wallet: WalletData;
 let asset: Omit<AssetData, 'prices'>;
@@ -39,26 +33,11 @@ describe('Postgre position repository', () => {
         text: 'INSERT INTO wallets(name, owner_id, created_on) VALUES ($1, $2, $3) RETURNING *',
         values: ['Wallet for position tests', investor.id, new Date()],
       });
-      asset = {
-        id: 'ITUB3ITUB3ITUB3ITUB3ITUB',
-        name: 'Itaú Unibanco SA',
-        ticker: 'ITUB3',
-      };
-      dto = {
-        asset,
-        walletId: String(wallet.id),
-        operationIds: [],
-      };
-      const factories = db.createRepositoryFactories(
-        new SingletonFactory(() => ({
-          loadAssetDataById: async (id) => {
-            if (id === asset.id) {
-              return {...asset, prices: []};
-            }
-            throw new AssetNotFoundError(id);
-          }
-        })),
-      );
+      [ asset ] = await db.query<{id: string; ticker: string; name: string;}>({
+        text: 'INSERT INTO assets(name, ticker, created_on) VALUES ($1, $2, $3) RETURNING id, ticker, name',
+        values: ['Asset used at position test', 'POSI3', new Date()],
+      });
+      const factories = db.createRepositoryFactories();
       repo = factories.positions.make();
       positions = [];
     } catch (error) {
@@ -96,6 +75,10 @@ describe('Postgre position repository', () => {
         positions = [];
       }
       await db.query({
+        text: `DELETE FROM assets WHERE id = $1`,
+        values: [asset.id],
+      });
+      await db.query({
         text: `DELETE FROM wallets WHERE id = $1`,
         values: [wallet.id],
       });
@@ -116,20 +99,24 @@ describe('Postgre position repository', () => {
 
   it('should be able to load existent position', async done => {
     const [ { id } ] = await db.query<{id: string;}>({
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
       values: [asset.id, wallet.id, new Date()],
     });
     positions.push(id);
     await expect(
       repo.loadPositionDataById(id)
-    ).resolves.toEqual(expect.objectContaining(dto));
+    ).resolves.toEqual(expect.objectContaining({
+      asset: expect.objectContaining(asset),
+      walletId: String(wallet.id),
+      operationIds: [],
+    }));
     done();
   });
 
   it('should be able to load position with operation', async done => {
     const [ { id } ] = await db.query<{id: string;}>({
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
       values: [asset.id, wallet.id, new Date()],
     });
@@ -168,7 +155,7 @@ describe('Postgre position repository', () => {
 
   it('should be able to load position ids by walletId', async done => {
     const [ { id } ] = await db.query<{id: string;}>({
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
       values: [asset.id, wallet.id, new Date()],
     });
@@ -181,7 +168,7 @@ describe('Postgre position repository', () => {
 
   it('should be able to return empty position ids list by invalid walletId', async done => {
     const [ { id } ] = await db.query<{id: string;}>({
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
       values: [asset.id, wallet.id, new Date()],
     });
@@ -194,14 +181,18 @@ describe('Postgre position repository', () => {
 
   it('should be able to load existents positions by ids', async done => {
     const [ { id } ] = await db.query<{id: string;}>({
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
       values: [asset.id, wallet.id, new Date()],
     });
     positions.push(id);
     await expect(
       repo.loadPositionsDataByIds([id, '987', 'pId'])
-    ).resolves.toEqual([expect.objectContaining(dto)]);
+    ).resolves.toEqual([expect.objectContaining({
+      asset: expect.objectContaining(asset),
+      walletId: String(wallet.id),
+      operationIds: [],
+    })]);
     done();
   });
 
@@ -217,7 +208,7 @@ describe('Postgre position repository', () => {
       })
     ).resolves.toEqual([
       expect.objectContaining({
-        id: Number(createdId), asset: asset.id, wallet_id: wallet.id,
+        id: Number(createdId), asset_id: asset.id, wallet_id: wallet.id,
       })
     ]);
     done();

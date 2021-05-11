@@ -1,7 +1,6 @@
 import { WalletNotFoundError } from '@errors/not-found';
-import { SingletonFactory } from '@utils/factory';
 
-import { InvestorData, RepositoryChangeCommandExecutor, WalletData } from '@gateway/data/contracts';
+import { InvestorData, WalletData } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -33,11 +32,7 @@ describe('Postgre wallet repository', () => {
         name: 'my wallet',
         ownerId: investor.id,
       };
-      const factories = db.createRepositoryFactories(
-        new SingletonFactory(() => ({
-          loadAssetDataById: (id) => ({id, ticker: 'asset', name: 'asset', prices: []})
-        })),
-      );
+      const factories = db.createRepositoryFactories();
       repo = factories.wallets.make();
       wallets = [];
     } catch (error) {
@@ -111,10 +106,15 @@ describe('Postgre wallet repository', () => {
       values: [dto.name, dto.ownerId, new Date()],
     });
     wallets.push(id);
+    const [ { id: assetId } ] = await db.query<{id: string;}>({
+      text: `INSERT INTO assets(ticker, created_on)
+      VALUES ($1, $2) RETURNING id`,
+      values: ['WALL3', new Date()],
+    });
     const [ { id: positionId } ] = await db.query<{id: string;}>({
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
-      values: ['assetId', id, new Date()],
+      values: [assetId, id, new Date()],
     });
     await expect(
       repo.loadWalletDataById(id)
@@ -124,6 +124,10 @@ describe('Postgre wallet repository', () => {
     await db.query({
       text: 'DELETE FROM positions WHERE id = $1',
       values: [positionId],
+    })
+    await db.query({
+      text: 'DELETE FROM assets WHERE id = $1',
+      values: [assetId],
     })
     done();
   });

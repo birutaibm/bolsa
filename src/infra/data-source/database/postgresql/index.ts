@@ -1,9 +1,9 @@
 import { Pool, ClientConfig, QueryConfig, QueryResult } from 'pg';
-
-import { Factory } from '@utils/factory';
+import fs from 'fs';
+import path from 'path';
 
 import {
-  AssetRepository, RepositoryChangeCommand, RepositoryChangeCommandExecutor,
+  RepositoryChangeCommand, RepositoryChangeCommandExecutor,
   RepositoryChangeCommandExecutors
 } from '@gateway/data/contracts';
 
@@ -23,64 +23,23 @@ export default class PostgreSQL implements RepositoryChangeCommandExecutors<Exec
   }
 
   private connectWithRetry() {
-    this.pool.connect().then(client =>
-      Promise.all([
-        client.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`),
-        client.query(`
-          CREATE TABLE IF NOT EXISTS users (
-            id uuid DEFAULT uuid_generate_v1 (),
-            created_on TIMESTAMP NOT NULL,
-            username VARCHAR(100) NOT NULL,
-            pass_hash VARCHAR(100) NOT NULL,
-            role VARCHAR(5) NOT NULL,
-            PRIMARY KEY (id)
-          );
-        `),
-        client.query(`
-          CREATE TABLE IF NOT EXISTS investors (
-            id UUID PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
-            created_on TIMESTAMP NOT NULL,
-            FOREIGN KEY (id) REFERENCES users (id)
-          );
-        `),
-        client.query(`
-          CREATE TABLE IF NOT EXISTS wallets (
-            id serial PRIMARY KEY,
-            name VARCHAR(50) NOT NULL,
-            owner_id UUID NOT NULL,
-            created_on TIMESTAMP NOT NULL,
-            FOREIGN KEY (owner_id) REFERENCES investors (id)
-          );
-        `),
-        client.query(`
-          CREATE TABLE IF NOT EXISTS positions (
-            id serial PRIMARY KEY,
-            asset CHAR(24) NOT NULL,
-            wallet_id INT NOT NULL,
-            created_on TIMESTAMP NOT NULL,
-            FOREIGN KEY (wallet_id) REFERENCES wallets (id)
-          );
-        `),
-        client.query(`
-          CREATE TABLE IF NOT EXISTS operations (
-            id serial PRIMARY KEY,
-            date TIMESTAMPTZ NOT NULL,
-            quantity INT NOT NULL,
-            value NUMERIC(10,2) NOT NULL,
-            position_id INT NOT NULL,
-            created_on TIMESTAMP NOT NULL,
-            FOREIGN KEY (position_id) REFERENCES positions (id)
-          );
-        `),
-      ]).then(() => {
-        client.release();
-        this.ready = true;
-      })
-    ).catch(() => {
-      console.error('Failed to connect PostgreSQL - retrying in 5 seconds')
-      setTimeout(this.connectWithRetry.bind(this), 5000);
-    });
+    if (this.isConnected()) return;
+    try {
+      const sql = fs.readFileSync(path.resolve(__dirname, 'init-db.sql')).toString();
+      const commands = sql.split(';\n').map(cmd => `${cmd.replace(/\s+/g, ' ')};`);
+      console.log({commands});
+      this.pool.connect().then(client =>
+        Promise.all(commands.map(cmd => client.query(cmd))).then(() => {
+          client.release();
+          this.ready = true;
+        })
+      ).catch(() => {
+        console.error('Failed to connect PostgreSQL - retrying in 5 seconds')
+        setTimeout(this.connectWithRetry.bind(this), 5000);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async isConnected() {
@@ -149,7 +108,7 @@ export default class PostgreSQL implements RepositoryChangeCommandExecutors<Exec
     return rows;
   }
 
-  createRepositoryFactories(assets: Factory<AssetRepository>) {
-    return createPostgreRepositoryFactories(this, assets);
+  createRepositoryFactories() {
+    return createPostgreRepositoryFactories(this);
   }
 }

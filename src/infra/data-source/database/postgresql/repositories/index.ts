@@ -9,15 +9,19 @@ import { PostgreWalletRepository } from './wallet';
 import { PostgrePositionRepository } from './position';
 import { PostgreOperationRepository } from './operation';
 import { PostgreUserRepository } from './user';
+import { PostgrePriceRepository } from './price';
 
 export default function createFactories(
-  db: PostgreSQL, assets: Factory<AssetRepository>
+  db: PostgreSQL
 ) {
+  const prices = new SingletonFactory(
+    () => new PostgrePriceRepository(db)
+  );
   const operations = new SingletonFactory(
     () => new PostgreOperationRepository(db)
   );
   const positions = new SingletonFactory(
-    () => new PostgrePositionRepository(db, operations, assets)
+    () => new PostgrePositionRepository(db, operations)
   );
   const wallets = new SingletonFactory(
     () => new PostgreWalletRepository(db, positions)
@@ -30,6 +34,7 @@ export default function createFactories(
   );
 
   return {
+    prices,
     users,
     investors,
     wallets,

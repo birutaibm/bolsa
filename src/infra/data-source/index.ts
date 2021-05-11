@@ -57,7 +57,7 @@ export class RepositoryFactoriesBuilder extends Builder<RepositoryFactories> {
     if (this.alphavantageKey) {
       prices.withAlphavantageKey(this.alphavantageKey);
     }
-    const postgreRepo = this.postgre.createRepositoryFactories(mongoRepo.prices);
+    const postgreRepo = this.postgre.createRepositoryFactories();
 
     const disconnectAll = () => {
       const connections = [this.mongo, this.postgre].filter(db => db !== undefined);

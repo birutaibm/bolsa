@@ -15,11 +15,7 @@ describe('PostgreSQL user repository', () => {
     users = [];
     userName = 'Rafael Arantes';
     db = new PostgreSQL(env.postgre);
-    repo = db.createRepositoryFactories(
-      new SingletonFactory(() => ({
-        loadAssetDataById: (id) => {throw new AssetNotFoundError(id);}
-      })),
-    ).users.make();
+    repo = db.createRepositoryFactories().users.make();
   });
 
   afterEach(async done => {

@@ -29,11 +29,7 @@ describe('Postgre investor repository', () => {
         id: userId,
         name: 'Rafael Arantes',
       };
-      const factories = db.createRepositoryFactories(
-        new SingletonFactory(() => ({
-          loadAssetDataById: (id) => {throw new AssetNotFoundError(id);}
-        })),
-      );
+      const factories = db.createRepositoryFactories();
       repo = factories.investors.make();
     } catch (error) {
       console.error(error);
@@ -107,7 +103,8 @@ describe('Postgre investor repository', () => {
     investors.push(createdId);
     await expect(
       db.query({
-        text: 'SELECT * FROM investors WHERE id = $1', values: [createdId],
+        text: 'SELECT * FROM investors WHERE id = $1',
+        values: [createdId],
       })
     ).resolves.toEqual([
       expect.objectContaining(dto)
