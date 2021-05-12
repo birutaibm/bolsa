@@ -15,7 +15,7 @@ describe('GraphQL', () => {
       .withGraphQL();
     app = builder.app;
     try {
-      builder.build();
+      await builder.build();
       done();
     } catch (error) {
       done(error);

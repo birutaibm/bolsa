@@ -1,7 +1,4 @@
-import { AssetNotFoundError, OperationNotFoundError } from '@errors/not-found';
-import { SingletonFactory } from '@utils/factory';
-
-import { AssetData } from '@gateway/data/contracts';
+import { OperationNotFoundError } from '@errors/not-found';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -18,7 +15,7 @@ let dto: {
 };
 let investor: Data;
 let wallet: Data;
-let asset: AssetData;
+let asset: {id: string; ticker: string; name: string;};
 let position: Data;
 let operations: string[];
 
@@ -27,22 +24,25 @@ describe('Postgre operation repository', () => {
     operations = [];
     try {
       db = new PostgreSQL(env.postgre);
+      const [ { id: userId } ] = await db.query<{id: string}>({
+        text: `INSERT INTO users(username, pass_hash, role, created_on)
+        VALUES ($1, $2, $3, $4) RETURNING id`,
+        values: ['userName', '123456', 'USER', new Date()],
+      });
       [ investor ] = await db.query<Data>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['operationTest_investorId', 'Rafael Arantes', new Date()],
+        values: [userId, 'Rafael Arantes', new Date()],
       });
       [ wallet ] = await db.query<Data>({
         text: 'INSERT INTO wallets(name, owner_id, created_on) VALUES ($1, $2, $3) RETURNING *',
         values: ['Wallet for operation tests', investor.id, new Date()],
       });
-      asset = {
-        id: 'ITUB3ITUB3ITUB3ITUB3ITUB',
-        name: 'Itaú Unibanco SA',
-        ticker: 'ITUB3',
-        prices: [],
-      };
+      [ asset ] = await db.query<{id: string; ticker: string; name: string;}>({
+        text: 'INSERT INTO assets(name, ticker, created_on) VALUES ($1, $2, $3) RETURNING id, ticker, name',
+        values: ['Asset used in operation test', 'OPER3', new Date()],
+      });
       [ position ] = await db.query<Data>({
-        text: 'INSERT INTO positions(asset, wallet_id, created_on) VALUES ($1, $2, $3) RETURNING *',
+        text: 'INSERT INTO positions(asset_id, wallet_id, created_on) VALUES ($1, $2, $3) RETURNING *',
         values: [asset.id, wallet.id, new Date()],
       });
       dto = {
@@ -50,16 +50,7 @@ describe('Postgre operation repository', () => {
         quantity: 100,
         value: -2345,
       };
-      const factories = await db.createRepositoryFactories(
-        new SingletonFactory(() => ({
-          loadAssetDataById: async (id) => {
-            if (id === asset.id) {
-              return asset;
-            }
-            throw new AssetNotFoundError(id);
-          }
-        })),
-      );
+      const factories = db.createRepositoryFactories();
       repo = factories.operations.make();
     } catch (error) {
       console.error(error);
@@ -99,11 +90,19 @@ describe('Postgre operation repository', () => {
         values: [position.id],
       });
       await db.query({
+        text: `DELETE FROM assets WHERE id = $1`,
+        values: [asset.id],
+      });
+      await db.query({
         text: `DELETE FROM wallets WHERE id = $1`,
         values: [wallet.id],
       });
       await db.query({
         text: `DELETE FROM investors WHERE id = $1`,
+        values: [investor.id],
+      });
+      await db.query({
+        text: `DELETE FROM users WHERE id = $1`,
         values: [investor.id],
       });
       await db.disconnect();

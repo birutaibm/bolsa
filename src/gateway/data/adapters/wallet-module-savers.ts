@@ -1,14 +1,15 @@
 import { SignInRequiredError } from '@errors/sign-in-required';
+import { Persisted } from '@utils/types';
 
 import {
-  OperationCreationData, OperationData, PositionCreationData, PositionData, WalletCreationData
+  OperationCreationData, OperationData,
+  PositionCreationData, PositionData, WalletCreationData
 } from '@domain/wallet/usecases/dtos';
 
 import {
   InvestorRepository, OperationRepository, PositionRepository, WalletRepository,
-  RepositoryChangeCommandExecutors, RepositoryChangeCommandExecutor, RepositoryChangeCommand,
+  RepositoryChangeCommandExecutors, RepositoryChangeCommandExecutor,
 } from '../contracts';
-import { Persisted } from '@utils/types';
 
 type Investor = { id: string; name: string; };
 type Wallet = { id: string; name: string; owner: Investor };

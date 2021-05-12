@@ -1,7 +1,6 @@
 import { WalletNotFoundError } from '@errors/not-found';
-import { SingletonFactory } from '@utils/factory';
 
-import { InvestorData, RepositoryChangeCommandExecutor, WalletData } from '@gateway/data/contracts';
+import { InvestorData, WalletData } from '@gateway/data/contracts';
 
 import { env } from '@infra/environment';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -20,19 +19,20 @@ describe('Postgre wallet repository', () => {
   beforeAll(async done => {
     try {
       db = new PostgreSQL(env.postgre);
+      const [ { id: userId } ] = await db.query<{id: string}>({
+        text: `INSERT INTO users(username, pass_hash, role, created_on)
+        VALUES ($1, $2, $3, $4) RETURNING id`,
+        values: ['userName', '123456', 'USER', new Date()],
+      });
       [ investor ] = await db.query<InvestorData>({
         text: 'INSERT INTO investors(id, name, created_on) VALUES ($1, $2, $3) RETURNING *',
-        values: ['walletTest_investorId123', 'Rafael Arantes', new Date()],
+        values: [userId, 'Rafael Arantes', new Date()],
       });
       dto = {
         name: 'my wallet',
         ownerId: investor.id,
       };
-      const factories = await db.createRepositoryFactories(
-        new SingletonFactory(() => ({
-          loadAssetDataById: (id) => ({id, ticker: 'asset', name: 'asset', prices: []})
-        })),
-      );
+      const factories = db.createRepositoryFactories();
       repo = factories.wallets.make();
       wallets = [];
     } catch (error) {
@@ -73,6 +73,10 @@ describe('Postgre wallet repository', () => {
         text: `DELETE FROM investors WHERE id = $1`,
         values: [investor.id],
       });
+      await db.query({
+        text: `DELETE FROM users WHERE id = $1`,
+        values: [investor.id],
+      });
       await db.disconnect();
     } catch (error) {
       done(error)
@@ -81,7 +85,6 @@ describe('Postgre wallet repository', () => {
   });
 
   it('should be able to load existent wallet', async done => {
-    expect(investor.id.length).toBe(24);
     dto.name = 'load existent';
     const [ { id } ] = await db.query<WalletData>({
       text: `INSERT INTO wallets(name, owner_id, created_on)
@@ -103,10 +106,15 @@ describe('Postgre wallet repository', () => {
       values: [dto.name, dto.ownerId, new Date()],
     });
     wallets.push(id);
+    const [ { id: assetId } ] = await db.query<{id: string;}>({
+      text: `INSERT INTO assets(ticker, created_on)
+      VALUES ($1, $2) RETURNING id`,
+      values: ['WALL3', new Date()],
+    });
     const [ { id: positionId } ] = await db.query<{id: string;}>({
-      text: `INSERT INTO positions(asset, wallet_id, created_on)
+      text: `INSERT INTO positions(asset_id, wallet_id, created_on)
       VALUES ($1, $2, $3) RETURNING id`,
-      values: ['assetId', id, new Date()],
+      values: [assetId, id, new Date()],
     });
     await expect(
       repo.loadWalletDataById(id)
@@ -116,6 +124,10 @@ describe('Postgre wallet repository', () => {
     await db.query({
       text: 'DELETE FROM positions WHERE id = $1',
       values: [positionId],
+    })
+    await db.query({
+      text: 'DELETE FROM assets WHERE id = $1',
+      values: [assetId],
     })
     done();
   });

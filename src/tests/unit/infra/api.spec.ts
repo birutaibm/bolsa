@@ -1,9 +1,6 @@
 import request from 'supertest';
 import { datatype, date, finance, internet, name as user } from 'faker';
 
-import { AssetData, PositionData } from '@gateway/data/contracts';
-
-import { Asset } from '@infra/data-source/model';
 import { Server, ServerBuilder } from '@infra/server';
 
 import {
@@ -14,6 +11,20 @@ import {
 } from '@mock/data-source/repositories/price-data';
 import { mockedServerBuilder } from '@mock/factories';
 import { users } from '@mock/data-source/repositories/users-data';
+
+type Asset = {
+  id: string;
+  ticker: string;
+  name?: string;
+  prices: Array<{
+    date: number;
+    open: number;
+    close: number;
+    min: number;
+    max: number;
+  }>;
+  externals: Map<string, string>;
+}
 
 let symbol: string;
 let investorId: string;

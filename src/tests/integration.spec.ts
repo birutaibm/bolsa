@@ -3,7 +3,6 @@ import faker from 'faker';
 
 import { MayBePromise } from '@utils/types';
 
-import { Assets, Users } from '@infra/data-source/model';
 import { ServerBuilder, Server } from '@infra/server';
 import { RepositoryFactoriesBuilder } from '@infra/data-source';
 import { PostgreSQL } from '@infra/data-source/database';
@@ -20,13 +19,12 @@ describe('Server', () => {
     try {
       clearFunctions = [];
       const repositories = new RepositoryFactoriesBuilder()
-        .withMongo(env.mongodb)
         .withAlphavantage(env.externalPrices.alphavantageKey)
         .withPostgre(env.postgre);
       postgre = repositories.getPostgreSQL();
       server = await new ServerBuilder()
         .withRepositories(repositories.asSingletonFactory())
-        .withSecurity(securityFactory)
+        .withSecurity(securityFactory(env.jwt))
         .withRestAPI()
         .withGraphQL()
         .build();
@@ -177,8 +175,11 @@ async function createUser() {
     password: faker.internet.password(),
     role: 'ADMIN',
   };
-  clearFunctions.push(() => Users.deleteOne({ userName: user.userName }));
   const { status, data } = await api.post('/api/users', user);
+  clearFunctions.push(() => postgre.query({
+    text: `DELETE FROM users WHERE id = $1`,
+    values: [data.id],
+  }));
   return {
     response: { status, data },
     data: { ...user, id: data.id },
@@ -196,7 +197,19 @@ async function createAsset(token: string) {
     { alphavantage: 'BBAS3.SAO' },
     { headers: { authorization: `Token ${token}` } }
   );
-  clearFunctions.push(() => Assets.findByIdAndDelete(data[0].id));
+  clearFunctions.push(() => postgre.query({
+    text: `DELETE FROM assets WHERE id = $1`,
+    values: [data[0].id],
+  }));
+  clearFunctions.push(() => postgre.query({
+    text: `DELETE FROM external_price_symbols
+           WHERE asset_id = $1 AND source = $2`,
+    values: [data[0].id, 'alphavantage'],
+  }));
+  clearFunctions.push(() => postgre.query({
+    text: `DELETE FROM prices WHERE asset_id = $1`,
+    values: [data[0].id],
+  }));
   return { response: {status, data: data[0]}};
 }
 

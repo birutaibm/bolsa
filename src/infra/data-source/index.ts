@@ -3,21 +3,13 @@ import { DatabaseConnectionError } from '@errors/database-connection';
 
 import { RepositoryFactories } from '@gateway/factories/repositories';
 
-import Mongo, { MongoConfig } from '@infra/data-source/database/mongo';
 import PostgreSQL, { PostgreConfig } from '@infra/data-source/database/postgresql';
 
 import { PriceRepositoriesProviderBuilder } from './price-repositories';
 
-export class RepositoryFactoriesBuilder extends Builder<Promise<RepositoryFactories>> {
-  private mongo: Mongo;
+export class RepositoryFactoriesBuilder extends Builder<RepositoryFactories> {
   private postgre: PostgreSQL;
   private alphavantageKey: string;
-
-  withMongo(config: MongoConfig) {
-    this.mongo = new Mongo(config);
-    this.mongo.connect();
-    return this;
-  }
 
   withPostgre(config: PostgreConfig) {
     this.postgre = new PostgreSQL(config);
@@ -33,43 +25,33 @@ export class RepositoryFactoriesBuilder extends Builder<Promise<RepositoryFactor
     return this;
   }
 
-  private async ensureDBReady() {
-    if (!this.mongo) {
+  private ensureDBReady() {
       if (!this.postgre) {
-        throw new DatabaseConnectionError('mongodb and postgreSQL');
-      } else {
-        await this.postgre.disconnect();
-        throw new DatabaseConnectionError('mongodb');
-      }
-    } else {
-      if (!this.postgre) {
-        await this.mongo.disconnect();
         throw new DatabaseConnectionError('postgreSQL');
       }
-    }
   }
 
-  async build(): Promise<RepositoryFactories> {
-    await this.ensureDBReady();
-    const mongoRepo = await this.mongo.createRepositoryFactories();
+  build(): RepositoryFactories {
+    console.log('Creating RepositoryFactories...');
+    this.ensureDBReady();
+    const postgreRepo = this.postgre.createRepositoryFactories();
     const prices = new PriceRepositoriesProviderBuilder()
-      .withInternal(mongoRepo.prices);
+      .withInternal(postgreRepo.prices);
     if (this.alphavantageKey) {
       prices.withAlphavantageKey(this.alphavantageKey);
     }
-    const postgreRepo = await this.postgre.createRepositoryFactories(mongoRepo.prices);
 
-    const disconnectAll = async () => {
-      const connections = [this.mongo, this.postgre].filter(db => db !== undefined);
+    const disconnectAll = () => {
+      const connections = [this.postgre].filter(db => db !== undefined);
       const promises = connections.map(con => con.disconnect());
-      const disconnected = await Promise.all(promises);
-      return disconnected;
+      return Promise.all(promises);
     };
+    console.log('RepositoryFactories created');
 
     return {
       disconnectAll,
       prices: prices.asSingletonFactory(),
-      users: mongoRepo.users,
+      users: postgreRepo.users,
       wallets: postgreRepo.wallets,
       investors: postgreRepo.investors,
       positions: postgreRepo.positions,

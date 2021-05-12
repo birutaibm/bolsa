@@ -6,27 +6,17 @@ services:
     user: node
     command: yarn dev
     depends_on:
-      - mongodb
-      - postgre
+      - postgres
     ports:
-      - "3000:3000"
+      - "3333:3333"
       - "9229:9229"
     volumes:
-      - ~/docker-volumes/bolsa/server:/app
+      - ./:/app
     working_dir: /app
     networks:
       - bolsa-net
 
-  mongodb:
-    image: mongo:latest
-    volumes:
-      - ~/docker-volumes/bolsa/mongodb:/data/db
-    ports:
-      - "27017:27017"
-    networks:
-      - bolsa-net
-
-  postgre:
+  postgres:
     image: postgres:latest
     volumes:
       - ~/docker-volumes/bolsa/postgres:/var/lib/postgresql/data

@@ -1,8 +1,11 @@
-import { ExternalRepository, InternalPriceRepository, PriceRepositoriesProvider } from '@gateway/data/contracts';
-
-import { AlphavantagePriceRepository } from '@infra/data-source/api';
 import { DatabaseConnectionError } from '@errors/database-connection';
 import { Builder, Factory } from '@utils/factory';
+
+import {
+  ExternalRepository, InternalPriceRepository, PriceRepositoriesProvider
+} from '@gateway/data/contracts';
+
+import { AlphavantagePriceRepository } from '@infra/data-source/api';
 
 export class PriceRepositoriesProviderBuilder extends Builder<PriceRepositoriesProvider> {
   private internal: Factory<InternalPriceRepository>;
@@ -20,7 +23,7 @@ export class PriceRepositoriesProviderBuilder extends Builder<PriceRepositoriesP
 
   build(): PriceRepositoriesProvider {
     if (!this.internal) {
-      throw new DatabaseConnectionError('mongodb');
+      throw new DatabaseConnectionError('PostgreSQL');
     }
     const externals: ExternalRepository[] = []
     if (this.alphavantageKey) {

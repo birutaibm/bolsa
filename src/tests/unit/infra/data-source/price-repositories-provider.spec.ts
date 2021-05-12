@@ -1,7 +1,9 @@
 import { SingletonFactory } from '@utils/factory';
 import { DatabaseConnectionError } from '@errors/database-connection';
+
 import { PriceRepositoriesProviderBuilder } from '@infra/data-source/price-repositories';
 import { AlphavantagePriceRepository } from '@infra/data-source/api';
+
 import { FakePriceRepository } from '@mock/data-source/repositories';
 
 describe('Price repositories provider builder', () => {
@@ -17,14 +19,13 @@ describe('Price repositories provider builder', () => {
     expect(provider.externals[0]).toBeInstanceOf(AlphavantagePriceRepository);
   });
 
-  it('should be able to create PriceRepositoriesProvider without any external', () => {
-    const internal = new FakePriceRepository();
+  it('should not be able to create PriceRepositoriesProvider without any internal', () => {
     const builder = new PriceRepositoriesProviderBuilder()
       .withAlphavantageKey('my_key');
     expect(() => builder.build()).toThrowError(DatabaseConnectionError)
   });
 
-  it('should not be able to create PriceRepositoriesProvider without any internal', () => {
+  it('should be able to create PriceRepositoriesProvider without any external', () => {
     const internal = new FakePriceRepository();
     const provider = new PriceRepositoriesProviderBuilder()
       .withInternal(new SingletonFactory(() => internal))

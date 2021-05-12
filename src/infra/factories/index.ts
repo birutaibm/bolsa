@@ -1,8 +1,9 @@
+import { Factory } from '@utils/factory';
+
 import {
   createControllerFactories, createUseCasesFactories, RepositoryFactories
 } from '@gateway/factories';
 import { ISecurity } from '@gateway/security';
-import { Factory } from '@utils/factory';
 
 export { securityFactory } from './security';
 

@@ -2,9 +2,21 @@ import { company, datatype, lorem } from 'faker';
 
 import { ExternalSymbolsDTO } from '@gateway/data/dto';
 
-import { Asset } from '@infra/data-source/model/asset';
-
 import { fakePrice, fakeTicker } from '@mock/price';
+
+type Asset = {
+  id: string;
+  ticker: string;
+  name?: string;
+  prices: Array<{
+    date: number;
+    open: number;
+    close: number;
+    min: number;
+    max: number;
+  }>;
+  externals: Map<string, string>;
+}
 
 export const externalSourceName = lorem.words(2);
 export const externalSourceSymbols: {[ticker: string]: ExternalSymbolsDTO} = {

@@ -3,7 +3,7 @@ import { Factory, SingletonFactory } from '@utils/factory';
 import { RepositoryFactories } from '@gateway/factories';
 import { ISecurity } from '@gateway/security';
 
-import { Factories } from '@infra/factories';
+import { ServerBuilder } from '@infra/server';
 
 import {
   FakePriceRepository,
@@ -16,7 +16,6 @@ import {
 } from './data-source/repositories';
 import { encoder, tokenVerifier, tokenCreator } from './security';
 import { admin, user } from './data-source/repositories/users-data';
-import { ServerBuilder } from '@infra/server';
 
 export function mockRepositories(): Factory<RepositoryFactories> {
   const prices = new SingletonFactory(() => ({
