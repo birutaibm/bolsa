@@ -1,19 +1,14 @@
-import { PostgreConfig } from '@infra/data-source/database/postgresql';
 import 'dotenv/config';
+
+import TypeGuard from '@utils/type-guard';
+
+import { JwtConfig } from '@gateway/security';
+
+import { PostgreConfig } from '@infra/data-source/database/postgresql';
+
 import { test } from './test';
 
-const mongodb = (process.env.NODE_ENV === 'test')
-  ? test.mongodb
-  : {
-    uri: process.env.MONGODB_URL || 'mongodb://localhost:27017/',
-    connectionOptions: {
-      dbName: process.env.MONGODB_DATABASE || 'dev',
-      autoIndex: false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      poolSize: parseInt(process.env.MONGODB_POOL_SIZE || '10'),
-    },
-  };
+const typeGuard = new TypeGuard<JwtConfig['options']['algorithm']>();
 
 const postgre: PostgreConfig = (process.env.NODE_ENV === 'test')
   ? test.postgre
@@ -25,16 +20,19 @@ const postgre: PostgreConfig = (process.env.NODE_ENV === 'test')
     port: Number(process.env.POSTGRE_PORT || '5432'),
   };
 
+const jwt: JwtConfig = {
+  publicKey: process.env.JWT_PUBLIC_KEY || 'se a chave é pública, melhor nem trancar',
+  privateKey: process.env.JWT_PRIVATE_KEY || 'chave? que chave?',
+  options: {
+    algorithm: typeGuard.isSafe(process.env.ALGORITHM) || 'RS256',
+    expiresIn: process.env.JWT_DURATION || '1h',
+  },
+};
+
 export const env = {
   port: process.env.PORT || 3000,
-  mongodb,
   postgre,
-  jwt: {
-    secret: process.env.JWT_SECRET || 'não tenho segredo',
-    duration: process.env.JWT_DURATION || '1h',
-    privateKey: process.env.JWT_PRIVATE_KEY || 'chave? que chave?',
-    publicKey: process.env.JWT_PUBLIC_KEY || 'se a chave é pública, melhor nem trancar',
-  },
+  jwt: jwt,
   externalPrices: {
     alphavantageKey: process.env.ALPHAVANTAGE_API_KEY || '',
   }

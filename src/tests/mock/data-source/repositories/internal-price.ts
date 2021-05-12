@@ -8,9 +8,40 @@ import {
   AssetPriceDTO, PriceDTO, SymbolDictionaryEntryDTO
 } from '@gateway/data/dto';
 
-import { Asset, adapter } from '@infra/data-source/model/asset';
-
 import { assets } from './price-data';
+
+type Asset = {
+  id: string;
+  ticker: string;
+  name?: string;
+  prices: Array<{
+    date: number;
+    open: number;
+    close: number;
+    min: number;
+    max: number;
+  }>;
+  externals: Map<string, string>;
+}
+const adapter = {
+  toPriceDTOs: (asset: Asset) => asset.prices.map(price => ({
+    ticker: asset.ticker,
+    name: asset.name || asset.ticker,
+    open: price.open,
+    close: price.close,
+    min: price.min,
+    max: price.max,
+    date: new Date(price.date),
+  })),
+
+  priceDTOToPriceField: (prices: PriceDTO[]) => prices.map(price => ({
+    open: price.open,
+    close: price.close,
+    min: price.min,
+    max: price.max,
+    date: price.date.getTime(),
+  })),
+};
 
 export class FakePriceRepository implements InternalPriceRepository {
   loadAssetDataById(id: string): AssetData {

@@ -88,7 +88,6 @@ export class PostgrePriceRepository implements InternalPriceRepository {
                WHERE assets.ticker = $1`,
         values: [ticker],
       });
-      console.log({ticker, data});
       if (data.length !== 0) {
         return data.map(price => ({
           ticker: price.ticker,

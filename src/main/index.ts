@@ -5,11 +5,10 @@ import { securityFactory } from '@infra/factories';
 
 new ServerBuilder()
   .withRepositories(new RepositoryFactoriesBuilder()
-    .withMongo(env.mongodb)
     .withAlphavantage(env.externalPrices.alphavantageKey)
     .withPostgre(env.postgre)
     .asSingletonFactory()
-  ).withSecurity(securityFactory)
+  ).withSecurity(securityFactory(env.jwt))
   .withRestAPI()
   .withGraphQL()
   .build()

@@ -4,12 +4,11 @@ import { Factory } from '@utils/factory';
 import { isNumber } from '@utils/validators';
 
 import {
-  PositionRepository, AssetRepository, OperationRepository,
+  PositionRepository, OperationRepository,
   PositionData, PositionWithWalletData, RepositoryChangeCommand
 } from '@gateway/data/contracts';
 
 import PostgreSQL, { Executor } from '..';
-import asset from '@infra/data-source/model/asset';
 
 type PositionModel = {
   id: number;

@@ -2,15 +2,14 @@ import express, { Express } from 'express';
 import { Server as HTTPServer } from 'http';
 
 import { Factory } from '@utils/factory';
-import { MayBePromise } from '@utils/types';
 
 import { RepositoryFactories } from '@gateway/factories';
+import { ISecurity } from '@gateway/security';
 
 import RestAPI from '@infra/api';
 import GraphQL from '@infra/graphql';
 import { Factories } from '@infra/factories'
 import { env } from '@infra/environment';
-import { ISecurity } from '@gateway/security';
 
 export class Server {
   private running: HTTPServer;
