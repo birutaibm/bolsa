@@ -1,4 +1,3 @@
-import { DatabaseConnectionError } from '@errors/database-connection';
 import { UserNotFoundError } from '@errors/not-found';
 import { Persisted } from '@utils/types';
 

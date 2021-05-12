@@ -1,6 +1,4 @@
-import { Factory, SingletonFactory } from '@utils/factory';
-
-import { AssetRepository } from '@gateway/data/contracts';
+import { SingletonFactory } from '@utils/factory';
 
 import PostgreSQL from '..';
 

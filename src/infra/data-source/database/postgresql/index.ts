@@ -42,7 +42,7 @@ export default class PostgreSQL implements RepositoryChangeCommandExecutors<Exec
     }
   }
 
-  async isConnected() {
+  isConnected() {
     return this.ready;
   }
 
