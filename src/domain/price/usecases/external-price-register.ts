@@ -33,7 +33,7 @@ export class ExternalPriceRegister {
       prices = await this.worker.getExternalPrices(ticker);
     } catch (error) {
       if (error.name === 'AssetNotFoundError') {
-        throw error
+        throw error;
       } else {
         throw new PriceUnavailableError(ticker, error);
       }

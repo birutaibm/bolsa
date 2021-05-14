@@ -1,14 +1,10 @@
 import 'dotenv/config';
 
-import TypeGuard from '@utils/type-guard';
-
 import { JwtConfig } from '@gateway/security';
 
 import { PostgreConfig } from '@infra/data-source/database/postgresql';
 
 import { test } from './test';
-
-const typeGuard = new TypeGuard<JwtConfig['options']['algorithm']>();
 
 const postgre: PostgreConfig = (process.env.NODE_ENV === 'test')
   ? test.postgre
@@ -24,7 +20,7 @@ const jwt: JwtConfig = {
   publicKey: process.env.JWT_PUBLIC_KEY || 'se a chave é pública, melhor nem trancar',
   privateKey: process.env.JWT_PRIVATE_KEY || 'chave? que chave?',
   options: {
-    algorithm: typeGuard.isSafe(process.env.ALGORITHM) || 'RS256',
+    algorithm: process.env.ALGORITHM as JwtConfig['options']['algorithm'] || 'RS256',
     expiresIn: process.env.JWT_DURATION || '1h',
   },
 };

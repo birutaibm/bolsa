@@ -27,7 +27,6 @@ export default class PostgreSQL implements RepositoryChangeCommandExecutors<Exec
     try {
       const sql = fs.readFileSync(path.resolve(__dirname, 'init-db.sql')).toString();
       const commands = sql.split(';\n').map(cmd => `${cmd.replace(/\s+/g, ' ')};`);
-      console.log({commands});
       this.pool.connect().then(client =>
         Promise.all(commands.map(cmd => client.query(cmd))).then(() => {
           client.release();
