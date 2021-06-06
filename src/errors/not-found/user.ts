@@ -1,4 +1,4 @@
-import NotFoundError from '.';
+import NotFoundError from './base';
 
 export class UserNotFoundError extends NotFoundError {
   constructor(username: string) {

@@ -1,6 +1,9 @@
-export class ExternalSymbolNotFoundError extends Error {
+import NotFoundError from "./base";
+
+export class ExternalSymbolNotFoundError extends NotFoundError {
   constructor(externalLibrary: string, ticker: string) {
-    super(`Ticker ${ticker} not found at library ${externalLibrary}`);
+    super('Ticker', ticker);
+    this.message = super.message + ` at library ${externalLibrary}`;
     this.name = 'ExternalSymbolNotFoundError';
   }
 }

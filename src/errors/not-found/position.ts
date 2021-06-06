@@ -1,4 +1,4 @@
-import NotFoundError from '.';
+import NotFoundError from './base';
 
 export class PositionNotFoundError extends NotFoundError {
   constructor(id: string) {

@@ -1,4 +1,4 @@
-import NotFoundError from '.';
+import NotFoundError from './base';
 
 export class InvestorNotFoundError extends NotFoundError {
   constructor(id: string) {
