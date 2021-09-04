@@ -1,4 +1,4 @@
-FROM node:16.2.0-alpine3.13
+FROM node:current-alpine
 
 # Add global build dependencies
 RUN apk add --no-cache bash
