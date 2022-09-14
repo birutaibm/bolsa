@@ -25,7 +25,7 @@
     "graphql": "^15.6.1",
     "graphql-type-json": "^0.3.2",
     "jsonwebtoken": "^8.5.1",
-    "pg": "^8.7.3"
+    "pg": "^8.8.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",
