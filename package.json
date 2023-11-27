@@ -17,7 +17,7 @@
     "posttest": "docker-compose down"
   },
   "dependencies": {
-    "apollo-server-express": "^2.25.4",
+    "apollo-server-express": "^3.0.0",
     "axios": "^0.26.0",
     "bcrypt": "^5.1.0",
     "dotenv": "^8.6.0",
