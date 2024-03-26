@@ -17,11 +17,11 @@
     "posttest": "docker-compose down"
   },
   "dependencies": {
-    "apollo-server-express": "^2.25.4",
+    "apollo-server-express": "^3.13.0",
     "axios": "^1.6.0",
     "bcrypt": "^5.1.0",
     "dotenv": "^8.6.0",
-    "express": "^4.18.0",
+    "express": "^4.19.2",
     "graphql": "^15.6.1",
     "graphql-type-json": "^0.3.2",
     "jsonwebtoken": "^8.5.1",
